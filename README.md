@@ -47,7 +47,7 @@ Conectar o repositório para deploy a cada merge na `main`:
 | Config TSE (base e códigos) | `src/config/tse.ts` | — |
 | Front Tela 1 (majoritárias) | `public/js/tela1-*.js`, `public/js/app.js` | #4 |
 | Front Tela 2 (proporcionais) | `public/js/tela2-*.js` (a criar) | #6 |
-| Tema / CSS / movimento | `public/css/tema.css`, `public/js/movimento/` | #8 |
+| Tema / CSS / painel D / movimento | `public/css/tema.css`, `public/js/painel/`, `public/js/movimento/` | #8 |
 | Fixtures TSE | `fixtures/tse-provisorio/` (provisórias; #2 substitui) | #2 |
 
 ## Fixtures provisórias

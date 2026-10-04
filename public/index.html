@@ -1,44 +1,14 @@
 <!doctype html>
-<html lang="pt-BR" data-tema="escuro">
+<html lang="pt-BR">
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<title>Apuração 2026</title>
-		<link rel="preconnect" href="https://fonts.googleapis.com" />
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-		<link
-			href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,650;9..144,700&family=IBM+Plex+Mono:wght@500;600&family=Source+Sans+3:wght@400;650&display=swap"
-			rel="stylesheet"
-		/>
+		<title>Apuração 2026 · Pará</title>
+		<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🗳️</text></svg>" />
 		<link rel="stylesheet" href="/css/tema.css" />
-		<script type="module">
-			import { aplicarTemaSalvo } from "/js/movimento/tema.js";
-			aplicarTemaSalvo();
-		</script>
 	</head>
 	<body>
-		<main class="painel">
-			<header class="marca">
-				<div class="marca-texto">
-					<b>Apuração 2026</b>
-					<span>Presidente ao vivo · dados oficiais do TSE</span>
-				</div>
-				<div class="status" data-status>
-					<span class="vivo"><i></i>Ao vivo</span>
-					<span>carregando…</span>
-				</div>
-				<button
-					type="button"
-					class="btn-tema"
-					data-tema-toggle
-					title="Alternar tema claro/escuro"
-					aria-label="Alternar tema claro/escuro"
-				>
-					◐
-				</button>
-			</header>
-			<div class="grade-3" data-app></div>
-		</main>
+		<main id="app"></main>
 		<div id="aviso" role="status" aria-live="polite"></div>
 		<script type="module" src="/js/app.js"></script>
 	</body>

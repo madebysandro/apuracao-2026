@@ -1,18 +1,16 @@
 /**
- * Camada visual reutilizável (issue #8).
+ * Utilitários de movimento (issue #8) — API estável para Telas 1/2.
  *
- * Telas 1 e 2 plugam assim:
- * 1. CSS: classes em `/css/tema.css` (`.grade-3`, `.grade-2`, `.cartao`, `.rolagem`,
- *    `.barra`, `.cadeira`, `.ping`, `.abas`, `#aviso`, `[data-tema]`).
- * 2. Números: `conta(chave, valor, 'p'|'n', delta?)` no HTML; depois `ativar()`.
- * 3. Barras/props: `animaProp(chave, 'width', pct)` + `ativar()`.
- * 4. Ranking/tabela: `data-flip="id-unico"` → `capturarFlip()` antes do paint, `flip(antes)` depois.
- * 5. Gráfico: `clipRevelacao` + `htmlClipPath` + `animarRevelacao` após inserir o SVG.
- * 6. Cadeiras: `htmlCadeiras` / `attrsCadeira` (transição de cor + onda CSS).
- * 7. Abas: `deslizarAba({ de, para, atual, pintar })`.
- * 8. Tema: `ligarSeletorTema()` uma vez no boot; botão `[data-tema-toggle]`.
- * 9. Aviso: `aviso(resumoAtualizacao({…}))` quando a versão da API muda.
- * 10. Movimento: consulte `preferirCalmo()` antes de `Element.animate`.
+ * A UI de alta fidelidade da variante D vive em `public/js/painel/variante-d.js`
+ * (port quase literal do protótipo). Estes módulos continuam disponíveis para
+ * #4/#6 plugarem contagem, FLIP, tema etc. sem depender do monólito do painel.
+ *
+ * Uso típico:
+ * 1. CSS: classes `.db-*` em `/css/tema.css` (tokens, aurora, grades, ticker…)
+ * 2. Números: `conta(chave, valor, 'p'|'n', delta?)` + `ativar()`
+ * 3. Ranking: `data-flip` → `capturarFlip()` / `flip(antes)`
+ * 4. Gráfico: `clipRevelacao` + `htmlClipPath` + `animarRevelacao`
+ * 5. Cadeiras / abas / tema / aviso: ver exports abaixo
  */
 
 export { preferirCalmo } from "./calmo.js";

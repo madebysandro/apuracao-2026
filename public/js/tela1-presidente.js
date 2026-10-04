@@ -1,38 +1,11 @@
-/** Cartão da Tela 1 — Presidente. Isolado para a issue #4 expandir majoritárias. */
-import { animaProp, conta } from "./movimento/conta.js";
-import { escapar } from "./movimento/formato.js";
+/**
+ * Ponto de extensão da issue #4.
+ * A Tela 1 de produção (Presidente + Governador + Senado) é renderizada por
+ * `painel/variante-d.js` (`dbMaj` / `dbTela1`). Este arquivo permanece para
+ * o paralelismo documentado no README — não é importado pelo `app.js` atual.
+ */
 
-export function renderizarPresidente(cargo) {
-	if (!cargo) {
-		return `<section class="cartao"><p class="vazio">Aguardando primeira leitura do TSE…</p></section>`;
-	}
-
-	const linhas = cargo.candidatos
-		.slice(0, 8)
-		.map(
-			(c, i) => `<li class="cand" data-flip="pres-${c.n}">
-        <span class="pos">${c.pos}º</span>
-        <span class="nome">${escapar(c.nome)}</span>
-        <span class="pct">${conta(`pres-${c.n}-pct`, c.pct, "p", true)}</span>
-        <span class="partido">${escapar(c.partido)}</span>
-        <span class="votos">${conta(`pres-${c.n}-votos`, c.votos, "n")} votos</span>
-        <span class="barra cand-barra" aria-hidden="true" style="--atraso:${(i * 0.35).toFixed(2)}s"><i ${animaProp(`pres-${c.n}-barra`, "width", c.pct)}></i></span>
-      </li>`,
-		)
-		.join("");
-
-	return `<section class="cartao" aria-labelledby="titulo-presidente">
-    <header>
-      <div>
-        <h1 id="titulo-presidente">${escapar(cargo.titulo)}</h1>
-        <small>${escapar(cargo.local)} · dados oficiais do TSE</small>
-      </div>
-      <div class="apurado">
-        ${conta("pres-apurado", cargo.apurado, "p")}
-        <small>das seções</small>
-        <span class="prog" aria-hidden="true"><i ${animaProp("pres-apurado-barra", "width", cargo.apurado)}></i></span>
-      </div>
-    </header>
-    <ol class="ranking">${linhas}</ol>
-  </section>`;
+/** @deprecated Use o painel variante D; mantido só como marcador de módulo. */
+export function renderizarPresidente() {
+	return `<section class="db-card"><p class="db-vazio">Use public/js/painel/variante-d.js</p></section>`;
 }
