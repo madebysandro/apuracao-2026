@@ -1,7 +1,7 @@
 import { urlFoto, type ConfigTse } from "../../config/tse";
 import { numeroTse } from "../numeros";
 import type { Cargo, MetaCargo } from "../tipos";
-import type { DadosBrutosCargo } from "./presidente";
+import type { DadosBrutosCargo } from "./dados-brutos";
 
 /**
  * Normalização compartilhada dos cargos majoritários (Presidente, Governador, Senado).

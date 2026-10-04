@@ -61,8 +61,11 @@ export type TseFalso = {
 	simular429: (retryAfter: number) => void;
 	/** Próxima resposta do Presidente será erro HTTP genérico. */
 	simularErro: (status?: number) => void;
-	/** Sobrescreve o Cache-Control do próximo 200/304 do Presidente. */
-	definirCacheControlPresidente: (cacheControl: string) => void;
+	/**
+	 * Sobrescreve o Cache-Control do próximo 200/304 de todos os arquivos
+	 * (útil para testar max(30 s, max-age) com valor controlado).
+	 */
+	definirCacheControl: (cacheControl: string) => void;
 	urlPresidente: string;
 };
 
@@ -77,7 +80,7 @@ export function instalarTseFalso(): TseFalso {
 		indice: 0,
 		pedidos: [] as PedidoTse[],
 		modo: null as ModoEspecial,
-		cacheControlPresidente: null as string | null,
+		cacheControlOverride: null as string | null,
 	};
 
 	const responderArquivo = (
@@ -86,13 +89,7 @@ export function instalarTseFalso(): TseFalso {
 		atual: { etag: string; cacheControl: string; corpo: object },
 	) => {
 		estado.pedidos.push({ url, ifNoneMatch });
-		const cacheControl =
-			estado.cacheControlPresidente && url === URLS_TSE.presidente
-				? estado.cacheControlPresidente
-				: atual.cacheControl;
-		if (estado.cacheControlPresidente && url === URLS_TSE.presidente) {
-			estado.cacheControlPresidente = null;
-		}
+		const cacheControl = estado.cacheControlOverride ?? atual.cacheControl;
 
 		if (ifNoneMatch && ifNoneMatch === atual.etag) {
 			return new HttpResponse(null, {
@@ -167,8 +164,8 @@ export function instalarTseFalso(): TseFalso {
 		simularErro(status = 503) {
 			estado.modo = { tipo: "erro", status };
 		},
-		definirCacheControlPresidente(cacheControl: string) {
-			estado.cacheControlPresidente = cacheControl;
+		definirCacheControl(cacheControl: string) {
+			estado.cacheControlOverride = cacheControl;
 		},
 		urlPresidente: URLS_TSE.presidente,
 	};

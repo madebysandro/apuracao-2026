@@ -1,7 +1,7 @@
 import type { ConfigTse } from "../../config/tse";
 import type { Cargo, MetaCargo } from "../tipos";
 import { normalizarMajoritario } from "./majoritario";
-import type { DadosBrutosCargo } from "./presidente";
+import type { DadosBrutosCargo } from "./dados-brutos";
 
 /** Normaliza o arquivo de Senador (Pará, 2 vagas) do TSE. */
 export function normalizarSenador(

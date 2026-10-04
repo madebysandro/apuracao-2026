@@ -105,7 +105,7 @@ export class PollerApuracao extends DurableObject<Env> {
 		const backoffAnterior =
 			(await this.ctx.storage.get<number>(CHAVE_BACKOFF)) ?? null;
 
-		let esperaSegundos = 60;
+		let maxAgeCiclo = 0;
 		let novoBackoff: number | null = null;
 
 		try {
@@ -116,7 +116,7 @@ export class PollerApuracao extends DurableObject<Env> {
 					url,
 					etags[meta.id],
 				);
-				esperaSegundos = Math.max(30, maxAge);
+				maxAgeCiclo = Math.max(maxAgeCiclo, maxAge);
 				if (etag) etags[meta.id] = etag;
 				if (!json) continue;
 
@@ -141,15 +141,17 @@ export class PollerApuracao extends DurableObject<Env> {
 			const e = erro as ErroTse;
 			estado.erro = e.message ?? String(erro);
 			if (typeof e.espera === "number") {
-				esperaSegundos = e.espera;
+				maxAgeCiclo = e.espera;
 				novoBackoff = null;
 			} else {
 				const base = backoffAnterior ?? 60;
-				esperaSegundos = Math.min(base * 2, 600);
-				novoBackoff = esperaSegundos;
+				maxAgeCiclo = Math.min(base * 2, 600);
+				novoBackoff = maxAgeCiclo;
 			}
 		}
 
+		// Sucesso: max(30 s, maior max-age do ciclo). Erro: Retry-After ou backoff.
+		const esperaSegundos = Math.max(30, maxAgeCiclo || 60);
 		estado.consultadoEm = Date.now();
 		estado.proximaConsulta = Date.now() + esperaSegundos * 1000;
 		await this.ctx.storage.put(CHAVE_ESTADO, estado);

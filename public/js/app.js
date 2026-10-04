@@ -9,11 +9,6 @@ const barraEl = document.querySelector("[data-barra-ciclo]");
 
 let ultimoEstado = null;
 
-function formatarHoraLocal(ms) {
-	if (ms == null) return "—";
-	return new Date(ms).toLocaleTimeString("pt-BR", { hour12: false });
-}
-
 function segundosAte(proximaConsulta) {
 	if (proximaConsulta == null) return null;
 	return Math.max(0, Math.round((proximaConsulta - Date.now()) / 1000));
@@ -52,7 +47,12 @@ function renderizarStatus(dados) {
 	const contagem =
 		prox == null ? "próxima consulta —" : `próxima consulta em ${prox}s`;
 
-	if (!dados.cargos?.presidente && !dados.cargos?.governador && !dados.erro) {
+	const temCargo =
+		dados.cargos?.presidente ||
+		dados.cargos?.governador ||
+		dados.cargos?.senador;
+
+	if (!temCargo && !dados.erro) {
 		statusEl.innerHTML = `
       <span class="vivo"><i></i>Ao vivo</span>
       <span>Aguardando a primeira leitura do TSE…</span>
@@ -64,7 +64,6 @@ function renderizarStatus(dados) {
 	statusEl.innerHTML = `
     <span class="vivo"><i></i>Ao vivo</span>
     <span>TSE ${horaTse}</span>
-    <span>consultado ${formatarHoraLocal(dados.consultadoEm)}</span>
     <span>${contagem}</span>
     ${dados.erro ? `<span class="erro" role="alert">Falha na consulta: ${dados.erro}</span>` : ""}
   `;

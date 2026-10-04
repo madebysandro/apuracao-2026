@@ -231,18 +231,29 @@ describe("GET /api/apuracao — Tela 1 (Presidente, Governador, Senado)", () => 
 
 	it("agenda a próxima consulta em max(30 s, max-age) do cache-control", async () => {
 		const antes = Date.now();
-		tse.definirCacheControlPresidente("max-age=45");
+		tse.definirCacheControl("max-age=45");
 		await forcarConsulta();
 		const { dados } = await lerApuracao();
 		const alarme = await lerAlarme();
 
 		expect(dados.proximaConsulta).toEqual(expect.any(Number));
 		expect(alarme).toEqual(expect.any(Number));
-		// Último arquivo do ciclo (senador) traz max-age=58 → espera 58 s.
-		expect(dados.proximaConsulta!).toBeGreaterThanOrEqual(antes + 58_000 - 50);
-		expect(dados.proximaConsulta!).toBeLessThanOrEqual(Date.now() + 58_000 + 50);
-		expect(alarme!).toBeGreaterThanOrEqual(antes + 58_000 - 50);
-		expect(alarme!).toBeLessThanOrEqual(Date.now() + 58_000 + 50);
+		expect(dados.proximaConsulta!).toBeGreaterThanOrEqual(antes + 45_000 - 50);
+		expect(dados.proximaConsulta!).toBeLessThanOrEqual(Date.now() + 45_000 + 50);
+		expect(alarme!).toBeGreaterThanOrEqual(antes + 45_000 - 50);
+		expect(alarme!).toBeLessThanOrEqual(Date.now() + 45_000 + 50);
+
+		// Abaixo de 30 s, o piso da política vale.
+		tse.definirCacheControl("max-age=10");
+		const antesPiso = Date.now();
+		await forcarConsulta();
+		const aposPiso = (await lerApuracao()).dados;
+		expect(aposPiso.proximaConsulta!).toBeGreaterThanOrEqual(
+			antesPiso + 30_000 - 50,
+		);
+		expect(aposPiso.proximaConsulta!).toBeLessThanOrEqual(
+			Date.now() + 30_000 + 50,
+		);
 	});
 
 	it("num 429 com Retry-After, a próxima consulta respeita o valor e registra erro", async () => {
