@@ -1,0 +1,1560 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Apuração 2026 · Pará</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🗳️</text></svg>">
+<!--
+  PROTÓTIPO descartável. Pergunta: "como a página de apuração deve parecer?"
+  3 variantes na mesma rota (?variant=A|B|C, ou ← →) × 2 motores de animação (?fx=js|three).
+  Dados reais do TSE via server.mjs (/api/apuracao).
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;600;800;900&family=Baloo+2:wght@500;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root { --verde:#009c3b; --amarelo:#ffdf00; --azul:#002776; --acai:#5b1f6a; --rosa:#ff5fa2; --vermelho:#e4322b; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Archivo', system-ui, sans-serif; min-height: 100vh; overflow-x: hidden; }
+button { font: inherit; color: inherit; }
+#app { position: relative; z-index: 1; }
+
+/* ---------- comum: foto, contagem, animações ambientes ---------- */
+.foto { position: relative; display: inline-grid; place-items: center; flex: none; width: 48px; height: 48px; border-radius: 50%; overflow: hidden; background: #d9dbe8; color: #334; font: 800 16px/1 'Archivo'; }
+.foto::before { content: attr(data-ini); }
+.foto img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top; }
+[data-anim] { transition: width 1.6s cubic-bezier(.2,.9,.25,1.05), left 1.8s cubic-bezier(.3,1.25,.5,1); }
+@keyframes listras { to { background-position: 28px 0; } }
+@keyframes pulso { 0%,100% { box-shadow: 0 0 0 0 rgb(255 255 255/.8); } 70% { box-shadow: 0 0 0 10px rgb(255 255 255/0); } }
+@keyframes boia { 0%,100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-10px) rotate(2deg); } }
+@keyframes pula { 0% { transform: scale(1); } 30% { transform: translateY(-46px) scale(1.15) rotate(-10deg); } 60% { transform: translateY(0) scale(.92, 1.08); } 100% { transform: scale(1); } }
+@keyframes cai { to { transform: translateY(125vh) rotate(380deg); } }
+@keyframes voa { 0% { transform: translate(0,0) rotate(0); } 45% { transform: translate(var(--dx), var(--dy)) rotate(var(--r)); } 100% { transform: translate(calc(var(--dx) * 1.3), calc(var(--dy) + 75vh)) rotate(calc(var(--r) * 3)); opacity: 0; } }
+
+#palco3d { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; }
+#palco3d.festa { z-index: 55; }
+#fundo { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+#fundo span { position: absolute; left: var(--x); top: -12vh; font-size: calc(24px * var(--s)); opacity: .45; animation: cai var(--d) linear var(--a) infinite; }
+.chuva { position: fixed; inset: 0; z-index: 58; pointer-events: none; }
+.chuva i { position: absolute; width: 11px; height: 7px; border-radius: 2px; background: var(--c); animation: voa var(--t) cubic-bezier(.15,.7,.35,1) forwards; }
+
+/* vídeo de confete (Grok) por cima de tudo, preto vira transparente */
+#festa { position: fixed; inset: 0; z-index: 60; pointer-events: none; mix-blend-mode: screen; opacity: 0; transition: opacity .35s; }
+#festa.on { opacity: 1; }
+#festa video { width: 100%; height: 100%; object-fit: cover; }
+
+#urgente { position: fixed; z-index: 70; top: 16%; left: 50%; pointer-events: none; opacity: 0; transform: translate(-50%, -40px) rotate(-3deg) scale(.5);
+  background: var(--amarelo); color: var(--azul); border: 6px solid var(--azul); box-shadow: 10px 10px 0 var(--verde);
+  font: 900 clamp(26px, 6vw, 72px)/1 'Archivo'; text-transform: uppercase; padding: .25em .6em; white-space: nowrap; transition: .5s cubic-bezier(.3,1.6,.5,1); }
+#urgente.on { opacity: 1; transform: translate(-50%, 0) rotate(-3deg) scale(1); }
+
+/* atualização discreta: aviso no topo + realce no que mudou */
+#aviso { position: fixed; z-index: 70; top: 12px; left: 50%; display: flex; align-items: center; gap: 8px; max-width: calc(100vw - 32px); padding: 8px 14px; border-radius: 99px;
+  background: rgb(8 12 32/.86); color: #eef1ff; border: 1px solid rgb(255 255 255/.14); backdrop-filter: blur(8px); font: 600 12px/1.3 'JetBrains Mono', monospace;
+  pointer-events: none; opacity: 0; transform: translate(-50%, -8px); transition: opacity .4s, transform .4s; }
+#aviso.on { opacity: 1; transform: translate(-50%, 0); }
+#aviso i { flex: none; width: 8px; height: 8px; border-radius: 50%; background: #24d167; animation: pulso 1.4s infinite; }
+.conta.mudou { border-radius: 6px; animation: realce 3s ease-out; }
+@keyframes realce { 0%, 35% { background: rgb(255 223 0/.2); box-shadow: 0 0 0 3px rgb(255 223 0/.2); } 100% { background: transparent; box-shadow: 0 0 0 3px transparent; } }
+.delta { display: inline-block; margin-left: 8px; vertical-align: middle; font: 700 13px/1 'JetBrains Mono', monospace; text-shadow: none; animation: some 8s ease-out forwards; }
+.delta.sobe { color: #3ee07f; }
+.delta.desce { color: #ff7b7b; }
+@keyframes some { 0% { opacity: 0; transform: translateY(4px); } 8%, 75% { opacity: 1; transform: none; } 100% { opacity: 0; } }
+
+/* mascotes (vídeos do Grok), persistentes fora do #app pra não reiniciar o loop */
+.mascote { position: fixed; z-index: 40; pointer-events: none; --tam: 120px; transition: transform .5s cubic-bezier(.3,1.5,.5,1); }
+.mascote video, .mascote .falso { display: block; width: var(--tam); height: var(--tam); border-radius: 32%; object-fit: cover; border: 4px solid #fff; box-shadow: 0 10px 30px rgb(0 0 0/.35); background: var(--amarelo); animation: boia 3.2s ease-in-out infinite; }
+#urninha video, #urninha .falso { background: #f6d412; }
+#boto video, #boto .falso { background: #ffd6e8; animation-delay: -1.4s; }
+.mascote .falso { display: none; place-items: center; font-size: calc(var(--tam) * .55); }
+.mascote.sem-video video { display: none; }
+.mascote.sem-video .falso { display: grid; }
+.mascote.pula video, .mascote.pula .falso { animation: pula .9s cubic-bezier(.3,1.6,.5,1); }
+.fala { position: absolute; bottom: 62%; left: calc(100% + 10px); width: max-content; max-width: 250px; padding: 10px 14px; border-radius: 18px; background: #fff; color: #161616; font: 700 15px/1.25 'Baloo 2', sans-serif; box-shadow: 0 8px 24px rgb(0 0 0/.25); opacity: 0; transform: scale(.5); transform-origin: left bottom; transition: .35s cubic-bezier(.3,1.6,.5,1); }
+.fala.on { opacity: 1; transform: scale(1); }
+.fala.esq, body[data-v=B] #urninha .fala, body[data-v=C] #urninha .fala { left: auto; right: calc(100% + 10px); transform-origin: right bottom; }
+body[data-v=B] #urninha .fala { top: 40%; bottom: auto; transform-origin: right top; }
+
+.carregando { min-height: 100vh; display: grid; place-content: center; text-align: center; gap: 10px; padding: 16px; }
+.carregando .urna { font-size: 90px; animation: boia 1.6s ease-in-out infinite; }
+.carregando h1 { font: 400 56px/1 'Anton'; }
+
+/* barra do protótipo — não faz parte do design */
+#proto { position: fixed; z-index: 100; bottom: 14px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 6px; max-width: calc(100vw - 16px); overflow-x: auto;
+  padding: 6px 8px; border-radius: 999px; background: #111; color: #fff; border: 2px dashed #ff3d7f; box-shadow: 0 6px 24px rgb(0 0 0/.45); font: 600 13px/1 system-ui, sans-serif; white-space: nowrap; }
+#proto button { all: unset; cursor: pointer; padding: 7px 11px; border-radius: 999px; background: #2a2a2a; }
+#proto button:hover { background: #3a3a3a; }
+#proto button.on { background: #ff3d7f; }
+#proto .sep { width: 1px; align-self: stretch; background: #444; margin: 0 2px; }
+#proto-nome { min-width: 120px; text-align: center; }
+
+/* ======================= A — TELÃO ======================= */
+body[data-v=A] { background: radial-gradient(1200px 640px at 50% -10%, #1d2c70, #070b1d 62%) fixed; color: #f4f6ff; }
+body[data-v=A] #urninha { left: 16px; bottom: 74px; }
+body[data-v=A] #boto { right: 16px; bottom: 74px; --tam: 96px; }
+.ta { max-width: 1180px; margin: 0 auto; padding: 24px 16px 150px; }
+.ta-topo { display: grid; grid-template-columns: auto auto 1fr; align-items: center; gap: 12px 24px; margin-bottom: 26px; }
+.ta-marca { font: 400 clamp(40px, 7vw, 84px)/.88 'Anton'; letter-spacing: 1px; }
+.ta-marca span { color: var(--amarelo); }
+.ta-vivo { display: flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 6px; background: var(--vermelho); font: 900 14px 'Archivo'; letter-spacing: 1px; }
+.ta-vivo i { width: 10px; height: 10px; border-radius: 50%; background: #fff; animation: pulso 1.4s infinite; }
+.ta-barras { display: grid; gap: 7px; }
+.apurado { display: grid; grid-template-columns: 64px 1fr 74px; align-items: center; gap: 10px; font: 700 13px 'JetBrains Mono', monospace; }
+.trilho { height: 12px; border-radius: 99px; overflow: hidden; background: rgb(255 255 255/.12); }
+.trilho i { display: block; height: 100%; background: repeating-linear-gradient(-45deg, var(--verde) 0 10px, #24d167 10px 20px); background-size: 28px 100%; animation: listras .9s linear infinite; }
+.ta-hora { grid-column: 1 / -1; font: 500 12px 'JetBrains Mono', monospace; opacity: .7; }
+.ta-bloco { position: relative; margin-bottom: 22px; padding: 22px; border-radius: 22px; background: rgb(12 18 48/.72); border: 1px solid rgb(255 255 255/.09); backdrop-filter: blur(6px); }
+.ta-tit { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 18px; font: 400 clamp(26px, 4vw, 40px)/1 'Anton'; text-transform: uppercase; letter-spacing: .5px; }
+.ta-tit small { padding: 5px 11px; border-radius: 99px; background: var(--azul); font: 800 12px 'Archivo'; letter-spacing: 1px; }
+.ta-tit small.pa { background: var(--vermelho); }
+.ta-tit em { font: 600 13px 'Archivo'; font-style: normal; opacity: .65; text-transform: none; }
+.ta-duelo { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px; }
+.ta-lado { position: relative; display: grid; justify-items: center; gap: 4px; text-align: center; }
+.ta-lado .foto { width: clamp(84px, 14vw, 150px); height: clamp(84px, 14vw, 150px); border: 5px solid var(--c); font-size: 34px; }
+.ta-lado.lider::before { content: '👑'; position: absolute; top: -30px; font-size: 36px; animation: boia 1.6s ease-in-out infinite; }
+.ta-nome { font: 400 clamp(20px, 3.4vw, 38px)/1 'Anton'; text-transform: uppercase; }
+.ta-part { font: 700 12px 'JetBrains Mono', monospace; opacity: .7; }
+.ta-pct { font: 700 clamp(36px, 7vw, 86px)/1 'JetBrains Mono', monospace; color: var(--amarelo); text-shadow: 0 0 24px rgb(255 223 0/.45); }
+.ta-gov .ta-pct { font-size: clamp(30px, 5vw, 64px); }
+.ta-votos { font: 500 13px 'JetBrains Mono', monospace; opacity: .75; }
+.selo { padding: 3px 9px; border-radius: 99px; background: var(--verde); font: 800 11px 'Archivo'; text-transform: uppercase; }
+.ta-vs { display: grid; place-items: center; width: 64px; height: 64px; border-radius: 50%; background: var(--vermelho); font: 400 30px 'Anton'; animation: boia 2s ease-in-out infinite; }
+.ta-cabo { position: relative; display: flex; height: 20px; margin: 22px 0 10px; border-radius: 99px; overflow: hidden; background: rgb(255 255 255/.12); }
+.ta-cabo i { height: 100%; background: var(--c); }
+.ta-cabo i.b { margin-left: auto; }
+.ta-cabo::after { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 3px; background: #fff; }
+.ta-meio { text-align: center; font: 600 11px 'JetBrains Mono', monospace; opacity: .6; }
+.ta-outros { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 12px; list-style: none; font-size: 14px; opacity: .85; }
+.ta-outros b { font-family: 'JetBrains Mono', monospace; color: var(--amarelo); }
+.ta-vagas { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.ta-vaga { position: relative; display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 4px 16px; padding: 20px 16px 16px; border-radius: 18px; border: 2px solid rgb(255 223 0/.55); background: linear-gradient(135deg, rgb(255 223 0/.16), transparent); }
+.ta-vaga .foto { grid-row: span 3; width: 86px; height: 86px; border: 4px solid var(--c); font-size: 26px; }
+.ta-vaga-n { position: absolute; top: -12px; left: 16px; padding: 4px 10px; border-radius: 99px; background: var(--amarelo); color: var(--azul); font: 900 12px 'Archivo'; letter-spacing: 1px; }
+.ta-vaga .ta-pct { font-size: clamp(30px, 4vw, 48px); }
+.ta-fila { display: grid; gap: 8px; margin-top: 16px; }
+.ta-fila div { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+.ta-fila .foto { width: 34px; height: 34px; font-size: 12px; }
+.ta-fila em { margin-left: auto; font: 500 12px 'JetBrains Mono', monospace; font-style: normal; opacity: .65; }
+.ta-nota { margin: -8px 0 14px; font-size: 13px; opacity: .65; }
+.ta-cadeiras { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+.ta-cadeiras.denso { grid-template-columns: repeat(auto-fill, minmax(124px, 1fr)); gap: 8px; }
+.ta-cad { position: relative; display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 1px 8px; padding: 8px; border-radius: 12px; background: rgb(255 255 255/.07); }
+.ta-cad.novo { animation: senta .55s cubic-bezier(.3,1.6,.5,1) backwards; animation-delay: calc(var(--i) * 22ms); }
+@keyframes senta { from { transform: translateY(18px) scale(.6); opacity: 0; } }
+.ta-cad .foto { grid-row: span 2; width: 40px; height: 40px; font-size: 13px; border: 2px solid var(--c); }
+.denso .ta-cad .foto { width: 32px; height: 32px; }
+.ta-cad b { font-size: 13px; line-height: 1.1; }
+.denso .ta-cad b { font-size: 12px; }
+.ta-cad small { font: 500 11px 'JetBrains Mono', monospace; opacity: .7; }
+.ta-pos { position: absolute; top: 4px; right: 7px; font: 700 10px 'JetBrains Mono', monospace; opacity: .45; }
+.ta-cad.eleito { outline: 2px solid #24d167; }
+.ta-beira { margin-top: 12px; font-size: 13px; opacity: .7; }
+@media (max-width: 680px) {
+  .ta-topo { grid-template-columns: 1fr auto; }
+  .ta-barras { grid-column: 1 / -1; }
+  .ta-duelo { gap: 6px; }
+  .ta-vs { width: 44px; height: 44px; font-size: 20px; }
+  .ta-vagas { grid-template-columns: 1fr; }
+  .ta-bloco { padding: 16px 14px; }
+  .ta-cadeiras, .ta-cadeiras.denso { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+}
+
+/* ======================= B — CORRIDA ======================= */
+body[data-v=B] { background: linear-gradient(#aee3ff, #fff6cf 38%, #e3f6d9) fixed; color: #1b2a1f; font-family: 'Baloo 2', sans-serif; }
+body[data-v=B] #urninha { right: 16px; top: 16px; --tam: 104px; }
+body[data-v=B] #boto { right: 16px; bottom: 74px; --tam: 150px; }
+.co { max-width: 1100px; margin: 0 auto; padding: 18px 16px 170px; }
+.co-topo { position: relative; padding: 26px 120px 18px; text-align: center; }
+.co-topo h1 { font: 800 clamp(38px, 8vw, 92px)/.9 'Baloo 2'; color: var(--azul); letter-spacing: -1px; }
+.co-topo h1 span { display: inline-block; color: var(--verde); animation: boia 2.4s ease-in-out infinite; }
+.co-topo p { margin-top: 10px; font-weight: 700; }
+.co-topo p b { padding: 1px 8px; border-radius: 99px; background: #fff; }
+.co-sol { position: absolute; top: -6px; left: 2%; width: 96px; height: 96px; border-radius: 50%; background: radial-gradient(#fff6a8, #ffcf00 70%); box-shadow: 0 0 0 14px rgb(255 207 0/.25), 0 0 70px #ffcf00; animation: boia 4s ease-in-out infinite; }
+.co-pista { margin-bottom: 22px; padding: 18px 18px 22px; border: 3px solid #1b2a1f; border-radius: 28px; background: #fff; box-shadow: 0 10px 0 #1b2a1f; }
+.co-pista h2 { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; font: 800 28px/1 'Baloo 2'; }
+.co-pista h2 small { padding: 3px 10px; border-radius: 99px; background: var(--amarelo); font-size: 14px; }
+.co-legenda { margin: 4px 0 12px; font-size: 14px; opacity: .7; }
+.co-raias { position: relative; padding: 4px 0; border-radius: 16px; background: #c8553d; overflow: hidden; }
+.co-raia { display: grid; grid-template-columns: 38px 1fr; align-items: center; height: 58px; border-bottom: 2px dashed rgb(255 255 255/.6); }
+.co-raia:last-child { border-bottom: 0; }
+.co-raia-n { color: #fff; text-align: center; font: 800 18px 'Baloo 2'; }
+.co-chao { position: relative; height: 100%; margin-right: 26px; }
+.co-rastro { position: absolute; left: 0; top: 50%; height: 8px; border-radius: 99px; transform: translateY(-50%); background: var(--c); opacity: .9; }
+.co-corredor { position: absolute; top: 50%; z-index: 2; transform: translate(-50%, -50%); }
+.co-corredor .foto { width: 46px; height: 46px; border: 3px solid #fff; box-shadow: 0 3px 0 rgb(0 0 0/.25); animation: corre .42s ease-in-out infinite alternate; }
+@keyframes corre { from { transform: translateY(0) rotate(-7deg); } to { transform: translateY(-6px) rotate(7deg); } }
+.co-placa { position: absolute; top: 50%; left: calc(100% + 6px); transform: translateY(-50%); padding: 1px 9px; border-radius: 10px; background: #fff; white-space: nowrap; font: 700 15px/1.3 'Baloo 2'; }
+.co-placa b { color: var(--c); filter: brightness(.8); }
+.co-corredor.direita .co-placa { left: auto; right: calc(100% + 6px); }
+.co-medalha { position: absolute; top: -8px; right: -8px; font-size: 20px; }
+.co-chegada { position: absolute; top: 0; bottom: 0; z-index: 1; width: 16px; transform: translateX(-50%); background: repeating-conic-gradient(#111 0 25%, #fff 0 50%) 0 0 / 16px 16px; }
+.co-chegada span { position: absolute; top: 2px; left: 20px; padding: 0 6px; border-radius: 6px; background: #111; color: #fff; font: 800 12px 'Baloo 2'; white-space: nowrap; }
+.co-para { position: relative; margin-top: 34px; padding: 24px 18px 18px; border-radius: 36px; background: linear-gradient(160deg, #0f5d3a, #1f7a4a 50%, #6b3f1d); }
+.co-para-tit { display: flex; align-items: center; gap: 14px; margin: 0 4px 18px; color: #fff; font: 800 clamp(30px, 5vw, 52px)/1 'Baloo 2'; }
+.bandeira-pa { position: relative; width: 66px; height: 44px; border-radius: 4px; background: linear-gradient(-33.7deg, var(--vermelho) 40%, #fff 40% 60%, var(--vermelho) 60%); box-shadow: 0 3px 0 rgb(0 0 0/.3); animation: tremula 1.6s ease-in-out infinite; transform-origin: left center; }
+.bandeira-pa::after { content: '★'; position: absolute; inset: 0; display: grid; place-items: center; color: #0b3d91; font-size: 18px; }
+@keyframes tremula { 50% { transform: skewY(-4deg) scaleX(.96); } }
+.co-para .co-pista { border-color: #0b2e1c; box-shadow: 0 10px 0 #0b2e1c; }
+.co-bolinhas { position: relative; height: 270px; margin: 6px 0 14px; border-radius: 16px; background: #c8553d; overflow: hidden; }
+.co-zona { position: absolute; top: 0; bottom: 0; right: 0; border-left: 3px dashed var(--amarelo); background: repeating-linear-gradient(-45deg, rgb(255 223 0/.28) 0 12px, transparent 12px 24px); }
+.co-zona span { position: absolute; top: 6px; left: 8px; color: var(--amarelo); font: 800 13px 'Baloo 2'; white-space: nowrap; }
+.co-bola { position: absolute; z-index: 1; transform: translate(-50%, -50%); }
+.co-bola .foto { width: 36px; height: 36px; border: 2px solid #fff; font-size: 11px; animation: boia 2.4s ease-in-out infinite; animation-delay: calc(var(--i) * -.37s); }
+.co-bola.fora .foto { width: 26px; height: 26px; filter: grayscale(1); opacity: .7; }
+.co-lista { display: flex; flex-wrap: wrap; gap: 6px; }
+.co-lista span { padding: 1px 10px; border: 2px solid #1b2a1f; border-radius: 99px; background: #fff; font: 700 13px/1.5 'Baloo 2'; }
+.co-lista span.eleito { background: #c9f7d8; }
+.co-lista i { font-style: normal; opacity: .55; }
+@media (max-width: 680px) {
+  .co-topo { padding: 16px 0; }
+  .co-sol { display: none; }
+  body[data-v=B] #urninha { top: auto; right: auto; bottom: 74px; left: 16px; }
+  body[data-v=B] #urninha .fala { top: auto; bottom: 62%; left: calc(100% + 10px); right: auto; transform-origin: left bottom; }
+  .co-placa { font-size: 13px; }
+}
+
+/* ======================= C — PLANTÃO ======================= */
+body[data-v=C] { background: #0d0d12; color: #fff; overflow: hidden; }
+body[data-v=C] #proto { bottom: 50px; }
+body[data-v=C] #urninha { right: 22px; bottom: 54px; --tam: 140px; }
+body[data-v=C] #boto { right: 22px; top: 76px; --tam: 108px; transform: scale(0); }
+body[data-v=C][data-pa="1"] #boto { transform: scale(1); }
+.pl { display: grid; grid-template-columns: 290px 1fr; grid-template-rows: auto 1fr auto; height: 100vh; height: 100dvh; }
+.pl-topo { grid-column: 1 / -1; display: flex; align-items: center; gap: 16px; padding: 12px 20px; background: linear-gradient(90deg, #c4002f, #7d001d); }
+.pl-logo { font: 900 22px/1 'Archivo'; letter-spacing: 2px; }
+.pl-logo b { display: block; color: var(--amarelo); font-size: 12px; letter-spacing: 4px; }
+.pl-vivo { padding: 5px 10px; border-radius: 4px; background: #fff; color: #c4002f; font: 900 13px 'Archivo'; animation: pisca 1s steps(2) infinite; }
+@keyframes pisca { 50% { opacity: .35; } }
+.pl-relogio { margin-left: auto; font: 700 22px 'JetBrains Mono', monospace; }
+.pl-apu { font: 600 12px 'JetBrains Mono', monospace; opacity: .85; }
+.pl-trilho { display: flex; flex-direction: column; gap: 6px; padding: 14px; overflow: auto; background: #15151d; }
+.pl-trilho button { all: unset; position: relative; display: grid; gap: 2px; padding: 12px 14px; border-radius: 10px; overflow: hidden; background: #1f1f2a; cursor: pointer; }
+.pl-trilho button.ativo { background: #2d2d40; box-shadow: inset 4px 0 0 var(--amarelo); }
+.pl-trilho small { font: 700 11px 'Archivo'; letter-spacing: 2px; text-transform: uppercase; opacity: .6; }
+.pl-trilho b { font: 800 17px 'Archivo'; }
+.pl-trilho span { overflow: hidden; color: var(--amarelo); font: 600 12px 'JetBrains Mono', monospace; text-overflow: ellipsis; white-space: nowrap; }
+.pl-prog { position: absolute; left: 0; bottom: 0; width: 0; height: 3px; background: var(--amarelo); }
+.ativo .pl-prog { animation: prog var(--dur) linear forwards; }
+@keyframes prog { to { width: 100%; } }
+.pl-palco { position: relative; display: grid; align-content: safe center; padding: 26px 190px 26px 36px; overflow: auto; }
+.pl-palco > * { animation: entra .7s cubic-bezier(.2,.9,.2,1); }
+@keyframes entra { from { transform: translateX(60px); opacity: 0; } }
+.pl-kicker { color: var(--amarelo); font: 800 14px 'Archivo'; letter-spacing: 3px; text-transform: uppercase; }
+.pl-maj { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 22px 40px; }
+.pl-retrato { width: clamp(150px, 20vw, 270px); aspect-ratio: 3 / 4; height: auto; border-radius: 22px; border: 6px solid var(--c); font-size: 60px; box-shadow: 0 0 0 6px #0d0d12, 0 0 60px var(--c); }
+.pl-nome { font: 900 clamp(36px, 6vw, 92px)/.92 'Archivo'; text-transform: uppercase; }
+.pl-part { margin-top: 6px; font: 700 15px 'JetBrains Mono', monospace; opacity: .7; }
+.pl-pct { margin-top: 10px; color: var(--amarelo); font: 700 clamp(54px, 9vw, 140px)/1 'JetBrains Mono', monospace; }
+.pl-votos { font: 500 16px 'JetBrains Mono', monospace; opacity: .75; }
+.pl-duas { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; }
+.pl-duas .pl-retrato { width: clamp(110px, 12vw, 170px); }
+.pl-duas .pl-nome { font-size: clamp(28px, 3.6vw, 54px); }
+.pl-duas .pl-pct { font-size: clamp(40px, 5vw, 80px); }
+.pl-ranking { display: grid; gap: 8px; margin-top: 26px; }
+.pl-linha { display: grid; grid-template-columns: 34px minmax(120px, 230px) 1fr 84px; align-items: center; gap: 12px; font: 700 15px 'Archivo'; }
+.pl-linha .foto { width: 34px; height: 34px; font-size: 11px; }
+.pl-linha .barra { height: 14px; border-radius: 99px; background: rgb(255 255 255/.08); overflow: hidden; }
+.pl-linha .barra i { display: block; height: 100%; background: var(--c); }
+.pl-linha em { font: 700 14px 'JetBrains Mono', monospace; font-style: normal; text-align: right; }
+.pl-bancada { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; margin-top: 18px; perspective: 900px; }
+.pl-bancada.denso { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 7px; }
+.pl-cad { position: relative; display: grid; justify-items: center; gap: 4px; padding: 10px 6px; border-radius: 12px; background: #1d1d28; border-top: 4px solid var(--c); text-align: center; animation: vira .6s cubic-bezier(.2,.9,.3,1.2) backwards; animation-delay: calc(var(--i) * 40ms); }
+@keyframes vira { from { transform: rotateY(90deg); opacity: 0; } }
+.pl-cad .foto { width: 54px; height: 54px; }
+.denso .pl-cad .foto { width: 38px; height: 38px; font-size: 12px; }
+.pl-cad b { font-size: 12px; line-height: 1.1; }
+.pl-cad small { font: 500 11px 'JetBrains Mono', monospace; opacity: .65; }
+.pl-cad .pos { position: absolute; top: 4px; left: 7px; font: 700 10px 'JetBrains Mono', monospace; opacity: .5; }
+.pl-ticker { grid-column: 1 / -1; display: flex; overflow: hidden; background: var(--amarelo); color: #111; font: 800 16px/40px 'Archivo'; white-space: nowrap; }
+.pl-ticker::before { content: 'URNAS'; flex: none; z-index: 1; padding: 0 16px; background: #111; color: var(--amarelo); letter-spacing: 2px; }
+.pl-rolo { display: inline-block; padding-left: 24px; animation: rola 80s linear infinite; }
+@keyframes rola { to { transform: translateX(-50%); } }
+@media (max-width: 760px) {
+  body[data-v=C] { overflow: auto; }
+  body[data-v=C] #urninha { --tam: 90px; }
+  .pl { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto 1fr auto; }
+  .pl-topo { flex-wrap: wrap; gap: 8px 12px; padding: 10px 16px; }
+  .pl-relogio { font-size: 16px; }
+  .pl-apu { order: 3; width: 100%; }
+  .pl-apu br { display: none; }
+  .pl-trilho { flex-direction: row; }
+  .pl-trilho button { min-width: 150px; }
+  .pl-palco { padding: 18px 16px 120px; }
+  .pl-maj, .pl-duas { grid-template-columns: 1fr; }
+  .pl-linha { grid-template-columns: 30px 1fr 70px; }
+  .pl-linha .barra { display: none; }
+}
+@media (max-width: 680px) {
+  .mascote { --tam: 64px !important; }
+  .fala { max-width: 170px; font-size: 13px; }
+}
+/* ======================= D — PAINEL ======================= */
+/* Paleta categórica validada (skill dataviz): passos do modo escuro e do claro, cada um contra sua superfície. */
+body[data-v=D] {
+  --pagina: #161b24; --superficie: #1e2430; --superficie-2: #283040; --tinta: #e6e9f0; --tinta-2: #b3bac8; --tinta-3: #8a93a5;
+  --grade: #2b3240; --eixo: #3a4252; --borda: rgba(255,255,255,.08); --outros: #5d6577; --acento: #3987e5;
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181; --s6: #008300; --s7: #9085e9; --s8: #e66767;
+  --sobe: #0ca30c; --desce: #d03b3b;
+  color-scheme: dark; background: var(--pagina); color: var(--tinta); font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+body[data-v=D][data-tema=claro] {
+  --pagina: #f9f9f7; --superficie: #fcfcfb; --superficie-2: #f0efec; --tinta: #0b0b0b; --tinta-2: #52514e; --tinta-3: #898781;
+  --grade: #e1e0d9; --eixo: #c3c2b7; --borda: rgba(11,11,11,.10); --outros: #b5b3ab; --acento: #2a78d6;
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100; --s5: #e87ba4; --s6: #008300; --s7: #4a3aa7; --s8: #e34948;
+  --sobe: #006300; --desce: #d03b3b; color-scheme: light;
+}
+body[data-v=D]::before { content: ''; position: fixed; inset: -20%; z-index: 0; pointer-events: none;
+  background: radial-gradient(38% 34% at 22% 24%, rgb(57 135 229/.16), transparent 70%), radial-gradient(34% 30% at 82% 18%, rgb(25 158 112/.11), transparent 70%),
+    radial-gradient(44% 40% at 62% 86%, rgb(144 133 233/.12), transparent 70%);
+  animation: aurora 38s ease-in-out infinite alternate; }
+body[data-v=D][data-tema=claro]::before { opacity: .45; }
+@keyframes aurora { 0% { transform: translate(0, 0) rotate(0) scale(1); } 50% { transform: translate(4%, -3%) rotate(7deg) scale(1.08); } 100% { transform: translate(-3%, 4%) rotate(-5deg) scale(1.03); } }
+body[data-v=D] .db-card, body[data-v=D] .db-kpi, body[data-v=D] .db-abas, body[data-v=D] .db-ticker { background: color-mix(in srgb, var(--superficie) 86%, transparent); backdrop-filter: blur(14px); }
+body[data-v=D] .mascote, body[data-v=D] #fundo, body[data-v=D] #palco3d, body[data-v=D] #festa, body[data-v=D] #urgente { display: none; }
+body[data-v=D] .conta.mudou { animation-name: realce-d; }
+body[data-v=D] #aviso { top: auto; bottom: 24px; left: 24px; transform: translateY(8px); background: var(--superficie-2); color: var(--tinta); border-color: var(--borda); font-family: inherit; }
+body[data-v=D] #aviso.on { transform: none; }
+@media (max-width: 760px) { body[data-v=D] #aviso { bottom: 72px; left: 16px; } }
+@keyframes realce-d { 0%, 35% { background: rgb(57 135 229/.24); box-shadow: 0 0 0 3px rgb(57 135 229/.24); } 100% { background: transparent; box-shadow: 0 0 0 3px transparent; } }
+@keyframes vivo-d { 0%, 100% { box-shadow: 0 0 0 0 rgb(12 163 12/.6); } 70% { box-shadow: 0 0 0 6px rgb(12 163 12/0); } }
+.db { max-width: 1480px; margin: 0 auto; padding: 16px 16px 100px; }
+.db-topo { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; padding: 4px 0 16px; border-bottom: 1px solid var(--grade); }
+.db-marca b { display: block; font-size: 20px; font-weight: 700; letter-spacing: -.01em; }
+.db-marca span { font-size: 13px; color: var(--tinta-2); }
+.db-abas { display: flex; gap: 4px; padding: 4px; border: 1px solid var(--borda); border-radius: 12px; background: var(--superficie); }
+.db-abas button { all: unset; display: flex; align-items: center; gap: 10px; padding: 7px 14px 7px 8px; border-radius: 9px; color: var(--tinta-2); cursor: pointer; transition: background .25s, color .25s; }
+.db-abas button:hover { color: var(--tinta); }
+.db-abas button:focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; }
+.db-abas button > b { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 6px; background: var(--superficie-2); font-size: 12px; transition: background .25s, color .25s; }
+.db-abas button > span { display: grid; font-size: 14px; font-weight: 600; line-height: 1.2; }
+.db-abas small { font-size: 11px; font-weight: 400; color: var(--tinta-3); }
+.db-abas button[aria-selected=true] { background: var(--superficie-2); color: var(--tinta); }
+.db-abas button[aria-selected=true] > b { background: var(--acento); color: #fff; }
+.db-status { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin-left: auto; color: var(--tinta-2); font-size: 12px; font-variant-numeric: tabular-nums; }
+.db-vivo { display: flex; align-items: center; gap: 6px; color: var(--tinta); font-weight: 600; }
+.db-vivo i { width: 8px; height: 8px; border-radius: 50%; background: #0ca30c; animation: vivo-d 2s infinite; }
+.db-tema { all: unset; display: grid; place-items: center; width: 30px; height: 30px; border: 1px solid var(--borda); border-radius: 8px; cursor: pointer; }
+.db-tema:focus-visible { outline: 2px solid var(--acento); }
+.db-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin: 16px 0; }
+.db-kpi { position: relative; display: grid; gap: 4px; padding: 14px 16px; border: 1px solid var(--borda); border-radius: 14px; background: var(--superficie); }
+.db-kpi-rot { padding-right: 76px; color: var(--tinta-2); font-size: 12px; }
+.db-kpi-val { font-size: 26px; font-weight: 650; letter-spacing: -.02em; }
+.db-kpi-sub { color: var(--tinta-3); font-size: 12px; }
+.db-kpi .spark { position: absolute; top: 14px; right: 14px; }
+.spark { display: inline-block; vertical-align: middle; overflow: visible; }
+.spark polyline { fill: none; stroke: var(--tinta-3); stroke-width: 1.5; stroke-linejoin: round; stroke-linecap: round; }
+.spark circle { fill: var(--acento); }
+.db-grade3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: start; }
+.db-grade2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; }
+.db-card { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; min-width: 0; padding: 18px; border: 1px solid var(--borda); border-radius: 16px; background: var(--superficie); }
+.db-card-topo { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.db-card-topo h2 { font-size: 17px; font-weight: 650; }
+.db-card-topo span { color: var(--tinta-2); font-size: 12px; }
+.db-apu { text-align: right; font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.db-apu small { display: block; color: var(--tinta-3); font-size: 11px; font-weight: 400; }
+.db-manchete { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+.db-heroi { font-size: 48px; font-weight: 650; line-height: 1; letter-spacing: -.03em; }
+.db-heroi.menor { font-size: 30px; }
+.db-manchete > span { color: var(--tinta-2); font-size: 13px; }
+.db-cands { list-style: none; }
+.db-cand { display: grid; grid-template-columns: 10px minmax(0, 1fr) minmax(60px, 96px) 64px 62px; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--grade); }
+.db-sw { display: inline-block; flex: none; width: 10px; height: 10px; border-radius: 3px; vertical-align: baseline; }
+.db-nome { display: grid; min-width: 0; }
+.db-nome b { overflow: hidden; font-size: 14px; font-weight: 600; white-space: nowrap; text-overflow: ellipsis; }
+.db-nome small { color: var(--tinta-3); font-size: 12px; font-variant-numeric: tabular-nums; }
+.db-barra { position: relative; height: 6px; border-radius: 3px; background: var(--superficie-2); }
+.db-barra i { display: block; height: 100%; border-radius: 0 3px 3px 0; }
+.db-barra em { position: absolute; top: -4px; bottom: -4px; left: 50%; width: 1px; background: var(--tinta-3); }
+.db-pct { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+.db-delta { text-align: right; font-size: 12px; font-variant-numeric: tabular-nums; }
+.d { color: var(--tinta-3); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.d.sobe { color: var(--sobe); }
+.d.desce { color: var(--desce); }
+.db-fig figcaption { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 12px; margin-bottom: 8px; color: var(--tinta-2); font-size: 12px; }
+.db-leg { display: flex; flex-wrap: wrap; gap: 4px 12px; }
+.db-leg span { display: inline-flex; align-items: center; gap: 6px; }
+.db-graf { position: relative; min-height: 210px; }
+.db-graf svg { display: block; overflow: visible; }
+.db-graf .g { stroke: var(--grade); stroke-width: 1; }
+.db-graf .eixo { stroke: var(--eixo); stroke-width: 1; }
+.db-graf .ref { stroke: var(--tinta-3); stroke-width: 1; stroke-dasharray: 4 4; }
+.db-graf .t { fill: var(--tinta-3); font-size: 11px; font-variant-numeric: tabular-nums; }
+.db-graf .l { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.db-graf .pt { stroke: var(--superficie); stroke-width: 2; }
+.db-graf .v { fill: var(--tinta); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.db-graf .guia, .db-graf .mira { stroke: var(--tinta-3); stroke-width: 1; }
+.db-graf .mira { opacity: 0; }
+.db-graf .mira.on { opacity: 1; }
+.db-graf .hit { fill: transparent; cursor: crosshair; }
+.db-tip { position: absolute; z-index: 5; min-width: 180px; padding: 8px 10px; border: 1px solid var(--borda); border-radius: 10px; background: var(--superficie-2); box-shadow: 0 8px 24px rgb(0 0 0/.3); font-size: 12px; pointer-events: none; }
+.db-tip b { display: block; margin-bottom: 4px; font-weight: 600; }
+.db-tip div { display: flex; align-items: center; gap: 6px; padding: 1px 0; }
+.db-tip i { width: 8px; height: 8px; border-radius: 2px; }
+.db-tip span { margin-left: auto; padding-left: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.db-vazio { color: var(--tinta-3); font-size: 12px; font-weight: 400; }
+.db-analise { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 16px; padding-top: 14px; border-top: 1px solid var(--grade); }
+.db-analise div { min-width: 0; }
+.db-analise dt { color: var(--tinta-3); font-size: 11px; letter-spacing: .04em; text-transform: uppercase; }
+.db-analise dd { margin-top: 2px; font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.db-analise .db-sub { color: var(--tinta-2); font-size: 12px; font-weight: 400; }
+.db-tend { display: flex; justify-content: space-between; gap: 8px; }
+.db-mini { display: flex; flex-wrap: wrap; gap: 8px 22px; padding-bottom: 14px; border-bottom: 1px solid var(--grade); }
+.db-mini dt { color: var(--tinta-3); font-size: 11px; }
+.db-mini dd { font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.db-sec h3 { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 10px; margin-bottom: 10px; color: var(--tinta); font-size: 13px; font-weight: 600; }
+.db-sec h3 small { color: var(--tinta-3); font-weight: 400; }
+.db-waffle { display: grid; grid-template-columns: repeat(auto-fill, 20px); gap: 3px; margin-bottom: 14px; }
+.db-seat { width: 20px; height: 20px; border-radius: 4px; transition: background .8s ease; }
+.db-rolagem { overflow-x: auto; }
+.db-tab { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+.db-tab th { padding: 6px 8px; border-bottom: 1px solid var(--eixo); color: var(--tinta-3); font-size: 11px; font-weight: 500; text-align: left; white-space: nowrap; }
+.db-tab td { padding: 6px 8px; border-bottom: 1px solid var(--grade); white-space: nowrap; }
+.db-tab .n { text-align: right; }
+.db-tab .db-sw { margin-right: 8px; }
+.db-tab small { color: var(--tinta-3); }
+.db-ok { color: var(--sobe); font-size: 11px; font-weight: 600; }
+/* movimento contínuo, sempre ligado a dado ou estado ao vivo */
+.db-ciclo { height: 2px; margin-top: -1px; background: var(--grade); overflow: hidden; }
+.db-ciclo i { display: block; width: 0; height: 100%; background: linear-gradient(90deg, transparent, var(--acento)); transition: width 1s linear; }
+.db-ticker { display: flex; align-items: center; gap: 12px; height: 40px; margin-top: 14px; padding-left: 14px; overflow: hidden; border: 1px solid var(--borda); border-radius: 12px; color: var(--tinta-2); font-size: 13px; }
+.db-ticker > b { display: flex; flex: none; align-items: center; gap: 8px; color: var(--tinta); font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+.db-ticker > b i { width: 6px; height: 6px; border-radius: 50%; background: var(--acento); animation: vivo-d 2s infinite; }
+.db-janela { flex: 1; overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 40px, #000 calc(100% - 40px), transparent); mask-image: linear-gradient(90deg, transparent, #000 40px, #000 calc(100% - 40px), transparent); }
+.db-rolo { display: inline-flex; white-space: nowrap; animation: rola-d 60s linear infinite; }
+.db-rolo span { position: relative; padding: 0 24px; }
+.db-rolo span::after { content: ''; position: absolute; top: 50%; right: -3px; width: 5px; height: 5px; border-radius: 1px; background: var(--tinta-3); transform: translateY(-50%) rotate(45deg); }
+.db-rolo b { margin-right: 6px; color: var(--tinta); font-weight: 600; }
+.db-ticker:hover .db-rolo { animation-play-state: paused; }
+@keyframes rola-d { to { transform: translateX(-50%); } }
+.db-graf .ping, .spark .ping { transform-box: fill-box; transform-origin: center; animation: ping-d 2.4s cubic-bezier(.2,.6,.3,1) infinite; }
+.spark .ping { fill: var(--acento); }
+@keyframes ping-d { from { transform: scale(1); opacity: .55; } to { transform: scale(3.4); opacity: 0; } }
+.db-barra i, .db-prog i { position: relative; overflow: hidden; }
+.db-barra i::after, .db-prog i::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgb(255 255 255/.4), transparent); transform: translateX(-100%); animation: brilho-d 5s ease-in-out infinite; animation-delay: var(--atraso, 0s); }
+@keyframes brilho-d { 0%, 55% { transform: translateX(-100%); } 85%, 100% { transform: translateX(100%); } }
+.db-prog { height: 4px; margin-top: 6px; border-radius: 2px; background: var(--superficie-2); }
+.db-prog i { display: block; height: 100%; border-radius: 2px; background: var(--acento); }
+.db-seat { animation: onda-d 7s ease-in-out infinite; animation-delay: calc(var(--i) * 60ms); }
+@keyframes onda-d { 0%, 80%, 100% { filter: brightness(1); transform: none; } 88% { filter: brightness(1.45); transform: translateY(-2px); } }
+.db-rodape { max-width: 960px; margin-top: 18px; color: var(--tinta-3); font-size: 12px; line-height: 1.5; }
+@media (max-width: 1240px) {
+  .db-grade3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .db-grade3 > :first-child { grid-column: 1 / -1; }
+}
+@media (max-width: 1100px) { .db-grade2 { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 760px) {
+  .db-grade3 { grid-template-columns: minmax(0, 1fr); }
+  .db-abas, .db-status { width: 100%; margin-left: 0; }
+  .db-abas button { flex: 1; }
+  .db-abas small { display: none; }
+  .db-cand { grid-template-columns: 10px minmax(0, 1fr) 60px 56px; }
+  .db-cand .db-barra { display: none; }
+  .db-analise { grid-template-columns: minmax(0, 1fr); }
+  .db-heroi { font-size: 40px; }
+  .db-oculta-mob { display: none; }
+  .db-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .db-kpi { padding: 12px; }
+  .db-kpi:last-child { grid-column: 1 / -1; }
+  .db-kpi .spark { display: none; }
+  .db-kpi-rot { padding-right: 0; }
+  .db-kpi-val { font-size: 22px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
+  .delta { animation: none !important; }
+}
+</style>
+</head>
+<body data-v="A">
+<div id="fundo" aria-hidden="true"></div>
+<main id="app"></main>
+
+<div class="mascote" id="urninha" aria-hidden="true">
+  <video src="media/urninha.mp4" poster="media/urninha.jpg" autoplay loop muted playsinline onerror="this.parentNode.classList.add('sem-video')"></video>
+  <span class="falso">🗳️</span><span class="fala"></span>
+</div>
+<div class="mascote" id="boto" aria-hidden="true">
+  <video src="media/boto.mp4" poster="media/boto.jpg" autoplay loop muted playsinline onerror="this.parentNode.classList.add('sem-video')"></video>
+  <span class="falso">🐬</span><span class="fala esq"></span>
+</div>
+<div id="festa" aria-hidden="true"><video src="media/confete.mp4" muted playsinline preload="auto"></video></div>
+<div id="urgente" role="status"></div>
+<div id="aviso" role="status" aria-live="polite"></div>
+
+<nav id="proto" hidden>
+  <button data-ir="-1" title="Variante anterior (←)">←</button>
+  <span id="proto-nome"></span>
+  <button data-ir="1" title="Próxima variante (→)">→</button>
+  <span class="sep"></span>
+  <button data-fx="js">JS</button>
+  <button data-fx="three">Three.js</button>
+  <span class="sep"></span>
+  <button id="simular">⚡ simular atualização</button>
+</nav>
+
+<script type="module">
+const ORDEM = ['presidente', 'governador', 'senador', 'depfed', 'depest'];
+const ROTULO = { presidente: 'Presidente', governador: 'Governador', senador: 'Senadores 1 e 2', depfed: 'Dep. Federal', depest: 'Dep. Estadual' };
+const VARIANTES = { A: ['Telão', telao], B: ['Corrida', corrida], C: ['Plantão', plantao], D: ['Painel', painel] };
+const params = new URLSearchParams(location.search);
+let variante = VARIANTES[params.get('variant')] ? params.get('variant') : 'D';
+let fx = params.get('fx') === 'three' ? 'three' : 'js';
+let dados = null, versaoReal = -1, simulando = false;
+const calmo = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const app = document.getElementById('app');
+const urninha = document.getElementById('urninha'), boto = document.getElementById('boto');
+
+// ---------- formatação e helpers ----------
+const nf = new Intl.NumberFormat('pt-BR');
+const pf = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmt = (v, t) => t === 'p' ? pf.format(v) + '%' : nf.format(Math.round(v));
+const esc = s => String(s ?? '').replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[ch]);
+const C = id => dados.cargos[id];
+const CORES = ['#00a651', '#f5b800', '#1e5bc6', '#e4322b', '#8e44ad', '#ff7a00', '#00a6b4', '#e91e63', '#5fa52d', '#6d4c41'];
+const cor = s => CORES[[...String(s)].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 7) % CORES.length];
+const iniciais = nome => String(nome).split(/\s+/).filter(p => p.length > 2).slice(0, 2).map(p => p[0]).join('');
+const foto = (x, cls = '') => `<span class="foto ${cls}" data-ini="${esc(iniciais(x.nome))}"><img src="${esc(x.foto)}" alt="" loading="lazy" onerror="this.remove()"></span>`;
+
+// Valores animados: lembra o último valor de cada chave e anima do antigo pro novo.
+// Se mudou desde a leitura anterior, ganha um realce discreto; com `delta`, mostra ▲/▼ quanto mudou.
+const memoria = new Map();
+function conta(k, v, t = 'n', delta = false) {
+  const de = memoria.get(k) ?? 0;
+  memoria.set(k, v);
+  const mudou = de > 0 && fmt(de, t) !== fmt(v, t);
+  const dif = Math.abs(v - de), num = t === 'p' ? pf.format(dif) : nf.format(Math.round(dif));
+  return `<span class="conta ${mudou ? 'mudou' : ''}" data-de="${de}" data-para="${v}" data-t="${t}">${fmt(de, t)}</span>`
+    + (mudou && delta ? `<small class="delta ${v > de ? 'sobe' : 'desce'}">${v > de ? '▲' : '▼'} ${num}</small>` : '');
+}
+function anima(k, prop, v, extra = '', un = '%') {
+  const de = memoria.has(k) ? memoria.get(k) : un === '%' ? 0 : v;
+  memoria.set(k, v);
+  return `data-anim="${prop}" data-para="${v}${un}" style="${prop}:${de}${un};${extra}"`;
+}
+function ativar() {
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    for (const el of document.querySelectorAll('[data-anim]')) el.style[el.dataset.anim] = el.dataset.para;
+  }));
+  for (const el of document.querySelectorAll('.conta')) {
+    const de = +el.dataset.de, para = +el.dataset.para, t = el.dataset.t, t0 = performance.now();
+    if (de === para) { el.textContent = fmt(para, t); continue; }
+    const passo = agora => {
+      const k = Math.min(1, (agora - t0) / 1500);
+      el.textContent = fmt(de + (para - de) * (1 - (1 - k) ** 3), t);
+      if (k < 1) requestAnimationFrame(passo);
+    };
+    requestAnimationFrame(passo);
+  }
+}
+
+// ======================= A — TELÃO =======================
+function telao() {
+  const P = C('presidente'), G = C('governador');
+  return `<div class="ta">
+    <header class="ta-topo">
+      <div class="ta-marca">APURAÇÃO<br><span>2026</span></div>
+      <div class="ta-vivo"><i></i>AO VIVO</div>
+      <div class="ta-barras">${taApurado('Brasil', P)}${taApurado('Pará', G)}</div>
+      <div class="ta-hora">Dados do TSE às ${esc(P.hora)} · <span data-contagem></span></div>
+    </header>
+    ${taDuelo(P, 'ta-pres')}
+    ${taDuelo(G, 'ta-gov')}
+    ${taSenado(C('senador'))}
+    ${taCadeiras(C('depfed'))}
+    ${taCadeiras(C('depest'))}
+  </div>`;
+}
+const taApurado = (rot, c) => `<div class="apurado"><span>${rot}</span><div class="trilho"><i ${anima('ta-ap-' + rot, 'width', c.apurado)}></i></div>${conta('ta-apn-' + rot, c.apurado, 'p')}</div>`;
+const taTitulo = (c, extra = '') => `<h2 class="ta-tit">${esc(c.titulo)} <small class="${c.local === 'Pará' ? 'pa' : ''}">${esc(c.local)}</small> ${extra}</h2>`;
+function taLado(c, x, lider) {
+  return `<div class="ta-lado ${lider ? 'lider' : ''}" style="--c:${cor(x.partido)}">
+    ${foto(x)}
+    <div class="ta-nome">${esc(x.nome)}</div>
+    <div class="ta-part">${esc(x.n)} · ${esc(x.partido)}</div>
+    <div class="ta-pct">${conta(`ta-${c.id}-${x.n}-p`, x.pct, 'p', true)}</div>
+    <div class="ta-votos">${conta(`ta-${c.id}-${x.n}-v`, x.votos, 'n', true)} votos</div>
+    ${x.situacao ? `<div class="selo">${esc(x.situacao)}</div>` : ''}
+  </div>`;
+}
+function taDuelo(c, cls) {
+  const [a, b, ...resto] = c.candidatos;
+  return `<section class="ta-bloco ${cls}">
+    ${taTitulo(c, `<em>${conta(`ta-${c.id}-ap`, c.apurado, 'p')} das seções</em>`)}
+    <div class="ta-duelo">${taLado(c, a, true)}<div class="ta-vs">VS</div>${taLado(c, b, false)}</div>
+    <div class="ta-cabo">
+      <i ${anima(`ta-${c.id}-cabo-a`, 'width', a.pct, `--c:${cor(a.partido)}`)}></i>
+      <i class="b" ${anima(`ta-${c.id}-cabo-b`, 'width', b.pct, `--c:${cor(b.partido)}`)}></i>
+    </div>
+    <div class="ta-meio">50% dos votos válidos = vitória no 1º turno</div>
+    <ol class="ta-outros">${resto.slice(0, 8).map(x => `<li>${esc(x.nome)} <b>${pf.format(x.pct)}%</b></li>`).join('')}</ol>
+  </section>`;
+}
+function taSenado(c) {
+  const [v1, v2, ...fila] = c.candidatos;
+  return `<section class="ta-bloco">
+    ${taTitulo(c, `<em>2 vagas · ${conta(`ta-${c.id}-ap`, c.apurado, 'p')} das seções</em>`)}
+    <div class="ta-vagas">${[v1, v2].map((x, i) => `
+      <div class="ta-vaga" style="--c:${cor(x.partido)}">
+        <span class="ta-vaga-n">VAGA ${i + 1}</span>
+        ${foto(x)}
+        <div class="ta-nome">${esc(x.nome)}</div>
+        <div class="ta-pct">${conta(`ta-sen-${x.n}-p`, x.pct, 'p', true)}</div>
+        <div class="ta-votos">${esc(x.partido)} · ${conta(`ta-sen-${x.n}-v`, x.votos, 'n', true)} votos</div>
+      </div>`).join('')}
+    </div>
+    <div class="ta-fila">${fila.slice(0, 4).map(x => `
+      <div>${foto(x)} <b>${esc(x.nome)}</b> ${pf.format(x.pct)}% <em>${nf.format(v2.votos - x.votos)} votos atrás da vaga 2</em></div>`).join('')}
+    </div>
+  </section>`;
+}
+function taCadeiras(c) {
+  const dentro = c.candidatos.slice(0, c.vagas), beira = c.candidatos.slice(c.vagas, c.vagas + 5);
+  return `<section class="ta-bloco">
+    ${taTitulo(c, `<em>${c.vagas} cadeiras · ${conta(`ta-${c.id}-ap`, c.apurado, 'p')} das seções</em>`)}
+    <p class="ta-nota">Os mais votados até agora. A cadeira depende do quociente partidário: o TSE marca com contorno verde quando confirma.</p>
+    <div class="ta-cadeiras ${c.vagas > 20 ? 'denso' : ''}">${dentro.map((x, i) => {
+      const k = `ta-cad-${c.id}-${x.n}`, novo = !memoria.has(k);
+      return `<div class="ta-cad ${x.eleito ? 'eleito' : ''} ${novo ? 'novo' : ''}" style="--i:${i};--c:${cor(x.partido)}">
+        <span class="ta-pos">${i + 1}</span>${foto(x)}
+        <b>${esc(x.nome)}</b><small>${esc(x.partido)} · ${conta(k, x.votos)}</small>
+      </div>`;
+    }).join('')}
+    </div>
+    <div class="ta-beira">Na beira: ${beira.map(x => `${esc(x.nome)} (${esc(x.partido)}) ${nf.format(x.votos)}`).join(' · ')}</div>
+  </section>`;
+}
+
+// ======================= B — CORRIDA =======================
+function corrida() {
+  const P = C('presidente'), G = C('governador');
+  return `<div class="co">
+    <header class="co-topo">
+      <div class="co-sol"></div>
+      <h1>Corrida <span>das urnas</span></h1>
+      <p>Brasil <b>${conta('co-apb', P.apurado, 'p')}</b> apurado · Pará <b>${conta('co-app', G.apurado, 'p')}</b> apurado · <span data-contagem></span></p>
+    </header>
+    ${coPista(P, 50)}
+    <section class="co-para">
+      <div class="co-para-tit"><span class="bandeira-pa"></span>Pará</div>
+      ${coPista(G, 50)}
+      ${coPista(C('senador'))}
+      ${coBolinhas(C('depfed'))}
+      ${coBolinhas(C('depest'))}
+    </section>
+  </div>`;
+}
+function coPista(c, chegada) {
+  const corredores = c.candidatos.slice(0, chegada ? 6 : 6);
+  const lider = corredores[0].pct || 1;
+  const max = chegada ? Math.max(60, lider + 8) : lider * 1.12;
+  const legenda = chegada
+    ? 'A bandeirada é em 50% dos votos válidos: quem passar vence no 1º turno.'
+    : `${c.vagas} vagas: os dois primeiros da corrida levam.`;
+  return `<section class="co-pista">
+    <h2>${esc(c.titulo)} <small>${esc(c.local)}</small></h2>
+    <p class="co-legenda">${legenda}</p>
+    <div class="co-raias">
+      ${chegada ? `<div class="co-chegada" style="left:calc(38px + (100% - 64px) * ${chegada / max})"><span>${chegada}%</span></div>` : ''}
+      ${corredores.map((x, i) => {
+        const pos = x.pct / max * 100;
+        return `<div class="co-raia" style="--c:${cor(x.partido)}">
+          <span class="co-raia-n">${i + 1}º</span>
+          <div class="co-chao">
+            <i class="co-rastro" ${anima(`co-${c.id}-${x.n}-r`, 'width', pos, `--c:${cor(x.partido)}`)}></i>
+            <div class="co-corredor ${pos > 55 ? 'direita' : ''}" ${anima(`co-${c.id}-${x.n}-l`, 'left', pos)}>
+              ${foto(x)}${!chegada && i < c.vagas ? `<span class="co-medalha">${i ? '🥈' : '🥇'}</span>` : ''}
+              <span class="co-placa">${esc(x.nome)} <b>${conta(`co-${c.id}-${x.n}-p`, x.pct, 'p')}</b></span>
+            </div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+  </section>`;
+}
+function coBolinhas(c) {
+  const max = c.candidatos[0].votos || 1;
+  const x = v => Math.sqrt(v / max) * 92 + 4; // raiz pra cauda não amontoar no zero
+  const corte = c.candidatos[c.vagas - 1];
+  return `<section class="co-pista">
+    <h2>${esc(c.titulo)} <small>${c.vagas} cadeiras</small></h2>
+    <p class="co-legenda">Cada bolinha é um candidato; quanto mais pra direita, mais voto. A zona amarela é onde estão os ${c.vagas} mais votados (a cadeira ainda depende do quociente partidário).</p>
+    <div class="co-bolinhas">
+      <div class="co-zona" ${anima(`co-${c.id}-zona`, 'left', x(corte.votos) - 2)}><span>zona das cadeiras</span></div>
+      ${c.candidatos.map((k, i) => `
+        <div class="co-bola ${i >= c.vagas ? 'fora' : ''}" title="${esc(k.nome)} (${esc(k.partido)}) · ${nf.format(k.votos)} votos"
+          ${anima(`co-${c.id}-${k.n}`, 'left', x(k.votos), `top:${10 + (i * 37) % 80}%;--i:${i}`)}>${foto(k)}</div>`).join('')}
+    </div>
+    <div class="co-lista">${c.candidatos.slice(0, c.vagas).map((k, i) => `<span class="${k.eleito ? 'eleito' : ''}"><i>${i + 1}.</i> ${esc(k.nome)} <i>${esc(k.partido)} · ${nf.format(k.votos)}</i></span>`).join('')}</div>
+  </section>`;
+}
+
+// ======================= C — PLANTÃO =======================
+const DUR_PALCO = 12000;
+let palco = 0, palcoTimer = null;
+function plantao() {
+  const P = C('presidente'), G = C('governador');
+  const ticker = ORDEM.map(id => {
+    const c = C(id), n = id === 'senador' ? 2 : id.startsWith('dep') ? 5 : 3;
+    return `<b>${esc(c.titulo.toUpperCase())} · ${esc(c.local.toUpperCase())}</b> — ${c.candidatos.slice(0, n).map(x => `${esc(x.nome)} ${pf.format(x.pct)}%`).join(' • ')}`;
+  }).join(' &nbsp;&nbsp;★&nbsp;&nbsp; ');
+  return `<div class="pl">
+    <header class="pl-topo">
+      <div class="pl-logo">PLANTÃO<b>APURAÇÃO 2026</b></div>
+      <div class="pl-vivo">● AO VIVO</div>
+      <div class="pl-apu">Brasil ${pf.format(P.apurado)}% · Pará ${pf.format(G.apurado)}% apurado · <br><span data-contagem></span></div>
+      <div class="pl-relogio" data-relogio></div>
+    </header>
+    <nav class="pl-trilho" style="--dur:${DUR_PALCO}ms">${plTrilho()}</nav>
+    <section class="pl-palco">${plCena(C(ORDEM[palco]))}</section>
+    <div class="pl-ticker"><div class="pl-rolo">${ticker} &nbsp;&nbsp;★&nbsp;&nbsp; ${ticker} &nbsp;&nbsp;★&nbsp;&nbsp;</div></div>
+  </div>`;
+}
+const plTrilho = () => ORDEM.map((id, i) => {
+  const c = C(id), l = c.candidatos[0];
+  return `<button class="${i === palco ? 'ativo' : ''}" data-palco="${i}"><small>${esc(c.local)}</small><b>${ROTULO[id]}</b><span>${esc(l.nome)} ${pf.format(l.pct)}%</span><i class="pl-prog"></i></button>`;
+}).join('');
+function plCena(c) {
+  for (const k of memoria.keys()) if (k.startsWith('pl-')) memoria.delete(k); // cada entrada no palco conta do zero
+  const kicker = `<div class="pl-kicker">${esc(c.titulo)} · ${esc(c.local)} · ${pf.format(c.apurado)}% das seções</div>`;
+  const destaque = (x, rot) => `<div class="pl-maj" style="--c:${cor(x.partido)}">
+      ${foto(x, 'pl-retrato')}
+      <div>${rot ? `<div class="pl-kicker">${rot}</div>` : ''}
+        <div class="pl-nome">${esc(x.nome)}</div>
+        <div class="pl-part">${esc(x.n)} · ${esc(x.partido)}${x.situacao ? ' · ' + esc(x.situacao) : ''}</div>
+        <div class="pl-pct">${conta(`pl-${x.n}-p`, x.pct, 'p')}</div>
+        <div class="pl-votos">${conta(`pl-${x.n}-v`, x.votos)} votos</div>
+      </div>
+    </div>`;
+  const ranking = lista => `<div class="pl-ranking">${lista.map((x, i) => `
+      <div class="pl-linha" style="--c:${cor(x.partido)}">
+        ${foto(x)}<span>${esc(x.nome)} <small style="opacity:.6">${esc(x.partido)}</small></span>
+        <div class="barra"><i ${anima(`pl-${x.n}-b`, 'width', x.pct / (c.candidatos[0].pct || 1) * 100)}></i></div>
+        <em>${pf.format(x.pct)}%</em>
+      </div>`).join('')}</div>`;
+  if (c.vagas === 1) return `<div>${kicker}${destaque(c.candidatos[0], 'Na frente')}${ranking(c.candidatos.slice(1, 6))}</div>`;
+  if (c.vagas === 2) return `<div>${kicker}<div class="pl-duas">${destaque(c.candidatos[0], '1ª vaga')}${destaque(c.candidatos[1], '2ª vaga')}</div>${ranking(c.candidatos.slice(2, 6))}</div>`;
+  return `<div>${kicker}<div class="pl-nome" style="font-size:clamp(28px,4vw,56px)">Bancada do Pará: ${c.vagas} cadeiras</div>
+    <div class="pl-bancada ${c.vagas > 20 ? 'denso' : ''}">${c.candidatos.slice(0, c.vagas).map((x, i) => `
+      <div class="pl-cad" style="--i:${i};--c:${cor(x.partido)}"><span class="pos">${i + 1}</span>${foto(x)}<b>${esc(x.nome)}</b><small>${esc(x.partido)} · ${nf.format(x.votos)}</small></div>`).join('')}
+    </div></div>`;
+}
+function irPalco(i) {
+  palco = (i + ORDEM.length) % ORDEM.length;
+  const palcoEl = document.querySelector('.pl-palco');
+  if (variante !== 'C' || !palcoEl) return;
+  palcoEl.innerHTML = plCena(C(ORDEM[palco]));
+  document.querySelector('.pl-trilho').innerHTML = plTrilho();
+  ativar();
+  agendarPalco();
+}
+function agendarPalco() {
+  clearTimeout(palcoTimer);
+  document.body.dataset.pa = C(ORDEM[palco]).local === 'Pará' ? '1' : '0';
+  palcoTimer = setTimeout(() => irPalco(palco + 1), DUR_PALCO);
+}
+app.addEventListener('click', e => {
+  const b = e.target.closest('[data-palco]');
+  if (b) irPalco(+b.dataset.palco);
+});
+
+// ======================= D — PAINEL =======================
+// Tela 1: majoritárias (Presidente, Governador, Senado). Tela 2: proporcionais (deputados).
+// Paleta categórica validada do skill de dataviz; cor fixa por entidade (candidato/agremiação), nunca por posição.
+let tela = params.get('tela') === '2' ? 2 : 1;
+let hist = []; // leituras acumuladas pelo servidor (+ pontos simulados, marcados com sim)
+const cf = new Intl.NumberFormat('pt-BR', { notation: 'compact', maximumFractionDigits: 1 });
+const graficos = new Map();
+const coresD = new Map(), proxCor = new Map();
+function corD(ns, chave) {
+  const k = ns + ':' + chave;
+  if (!coresD.has(k)) {
+    const i = proxCor.get(ns) ?? 0;
+    proxCor.set(ns, i + 1);
+    coresD.set(k, i < 8 ? `var(--s${i + 1})` : 'var(--outros)'); // 9ª+ vira "outros", nunca uma cor gerada
+  }
+  return coresD.get(k);
+}
+let semeado = false;
+function semearCoresAgr() {
+  if (semeado) return;
+  semeado = true;
+  const tot = new Map();
+  for (const id of ['depfed', 'depest']) for (const a of C(id).agremiacoes) tot.set(a.sigla, (tot.get(a.sigla) ?? 0) + a.vagas * 1e9 + a.votos);
+  [...tot].filter(([, v]) => v >= 1e9).sort((a, b) => b[1] - a[1]).forEach(([s]) => corD('agr', s));
+}
+const corAgr = s => corD('agr', s);
+const nomeBonito = s => String(s).toLowerCase().replace(/(^|[\s.-])(\p{L})/gu, (m, a, b) => a + b.toUpperCase()).replace(/ (Da|De|Do|Dos|Das|E) /g, w => w.toLowerCase());
+// Leituras do histórico para um cargo (sem repetir leituras idênticas do TSE).
+const pontos = id => hist.filter((p, i) => p.c[id] && !(hist[i + 1]?.c[id]?.hora === p.c[id].hora && hist[i + 1]?.c[id]?.ap === p.c[id].ap));
+const anteriorD = id => pontos(id).at(-2)?.c[id] ?? null;
+const serieCand = (id, n) => pontos(id).filter(p => p.c[id].c[n]).map(p => [p.c[id].ap, p.c[id].c[n][1], p.c[id].hora]);
+const media = v => v.reduce((a, b) => a + b, 0) / v.length;
+// Inclinação (regressão linear) de % de votos × % apurado nas últimas 8 leituras, em p.p. a cada 10% apurado.
+function tendencia(id, n) {
+  const s = serieCand(id, n).slice(-8);
+  if (s.length < 3) return null;
+  const mx = media(s.map(p => p[0])), my = media(s.map(p => p[1]));
+  const sxx = s.reduce((a, p) => a + (p[0] - mx) ** 2, 0);
+  if (sxx < 0.25) return null;
+  return s.reduce((a, p) => a + (p[0] - mx) * (p[1] - my), 0) / sxx * 10;
+}
+// Votos válidos que faltam, supondo o mesmo comparecimento nas seções restantes.
+function restante(c) {
+  const f = c.totais.eleitoradoApurado / c.totais.eleitorado;
+  return f > 0 && f < 1 ? c.totais.validos / f - c.totais.validos : null;
+}
+function deltaPp(v, neutro = false) {
+  const r = Math.round(v * 100) / 100;
+  if (!r) return '<span class="d">= 0,00</span>';
+  return `<span class="d ${neutro ? '' : r > 0 ? 'sobe' : 'desce'}">${r > 0 ? '▲' : '▼'} ${pf.format(Math.abs(r))}</span>`;
+}
+const deltaInt = v => v ? `<span class="d ${v > 0 ? 'sobe' : 'desce'}">${v > 0 ? '▲' : '▼'} ${Math.abs(v)}</span>` : '<span class="d">=</span>';
+function spark(vals, w = 72, h = 22, vivo = false) {
+  if (vals.length < 2) return `<svg class="spark" width="${w}" height="${h}" aria-hidden="true"></svg>`;
+  const mn = Math.min(...vals), mx = Math.max(...vals), d = mx - mn || 1;
+  const pts = vals.map((v, i) => [2 + i / (vals.length - 1) * (w - 6), h - 4 - (v - mn) / d * (h - 8)]);
+  const [lx, ly] = pts.at(-1);
+  return `<svg class="spark" width="${w}" height="${h}" aria-hidden="true"><polyline points="${pts.map(p => p.map(n => n.toFixed(1)).join(',')).join(' ')}"/>${vivo ? `<circle class="ping" cx="${lx}" cy="${ly}" r="2.5"/>` : ''}<circle cx="${lx}" cy="${ly}" r="2.5"/></svg>`;
+}
+
+function painel() {
+  semearCoresAgr();
+  const P = C('presidente'), G = C('governador');
+  const leituras = pontos('presidente'), inicio = leituras[0] ? new Date(leituras[0].t).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '—';
+  const kpi = (rot, id, campo, valor, sub = '', neutro = true) => {
+    const serie = pontos(id).map(p => p.c[id][campo]);
+    const ant = serie.length > 1 ? serie.at(-2) : null;
+    return `<div class="db-kpi"><span class="db-kpi-rot">${rot}</span><b class="db-kpi-val">${conta('d-kpi-' + rot, valor, 'p')}</b>
+      ${campo === 'ap' ? `<div class="db-prog" style="--atraso:${rot.length % 3}s"><i ${anima('d-kpi-prog-' + rot, 'width', valor)}></i></div>` : ''}
+      <span class="db-kpi-sub">${ant == null ? '' : deltaPp(valor - ant, neutro) + ' p.p. na última leitura'}${sub}</span>${spark(serie, 72, 22, true)}</div>`;
+  };
+  return `<div class="db">
+    <header class="db-topo">
+      <div class="db-marca"><b>Apuração 2026</b><span>Presidente e Pará · dados oficiais do TSE</span></div>
+      <nav class="db-abas" role="tablist" aria-label="Telas do painel">
+        ${[[1, 'Majoritárias', 'Presidente · Governador · Senado'], [2, 'Proporcionais', 'Deputados federais e estaduais']].map(([n, t, sub]) =>
+          `<button role="tab" aria-selected="${tela === n}" data-tela="${n}"><b>${n}</b><span>${t}<small>${sub}</small></span></button>`).join('')}
+      </nav>
+      <div class="db-status">
+        <span class="db-vivo"><i></i>Ao vivo</span>
+        <span data-relogio></span>
+        <span>TSE ${esc(P.hora)}</span>
+        <span data-contagem></span>
+        <button class="db-tema" data-tema-toggle title="Alternar tema claro/escuro" aria-label="Alternar tema claro/escuro">◐</button>
+      </div>
+    </header>
+    <div class="db-ciclo" title="Tempo até a próxima consulta ao TSE"><i data-ciclo></i></div>
+    <div class="db-ticker" aria-label="Destaques ao vivo"><b><i></i>Destaques</b>
+      <div class="db-janela"><div class="db-rolo">${(t => t + t)(destaques().map(d => `<span>${d}</span>`).join(''))}</div></div></div>
+    <section class="db-kpis">
+      ${kpi('Seções apuradas · Brasil', 'presidente', 'ap', P.apurado)}
+      ${kpi('Seções apuradas · Pará', 'governador', 'ap', G.apurado)}
+      ${kpi('Comparecimento · Brasil', 'presidente', 'comp', P.totais.comparecimento, ` · abstenção ${pf.format(P.totais.abstencao)}%`)}
+      ${kpi('Comparecimento · Pará', 'governador', 'comp', G.totais.comparecimento, ` · abstenção ${pf.format(G.totais.abstencao)}%`)}
+      <div class="db-kpi"><span class="db-kpi-rot">Acompanhamento</span><b class="db-kpi-val">${leituras.length} leituras</b>
+        <span class="db-kpi-sub">desde ${inicio} · o TSE publica a cada poucos minutos</span></div>
+    </section>
+    <main class="db-tela">${tela === 1 ? dbTela1() : dbTela2()}</main>
+    <p class="db-rodape">Estimativas de votos a apurar, virada e 1º turno supõem que as seções ainda não apuradas têm o mesmo comparecimento das já apuradas. Como a ordem de chegada das urnas não é aleatória, use-as como referência, não como previsão. Nas proporcionais, a distribuição de cadeiras é a calculada pelo TSE com os votos de agora.</p>
+  </div>`;
+}
+
+const dbTela1 = () => `<div class="db-grade3">${['presidente', 'governador', 'senador'].map(dbMaj).join('')}</div>`;
+function dbMaj(id) {
+  const c = C(id), [a, b, d3] = c.candidatos, duas = c.vagas === 2;
+  const noGrafico = c.candidatos.slice(0, duas ? 4 : 2);
+  noGrafico.forEach(x => corD(id, x.n));
+  const ant = anteriorD(id);
+  const linhas = c.candidatos.slice(0, duas ? 6 : 5).map(x => {
+    const corX = noGrafico.includes(x) ? corD(id, x.n) : 'var(--outros)';
+    const pa = ant?.c[x.n]?.[1];
+    return `<li class="db-cand" data-flip="${id}-${x.n}" style="--atraso:${(c.candidatos.indexOf(x) * 0.35).toFixed(2)}s">
+      <span class="db-sw" style="background:${corX}"></span>
+      <span class="db-nome"><b>${esc(nomeBonito(x.nome))}</b><small>${esc(x.partido)} · ${conta(`d-${id}-${x.n}-v`, x.votos)} votos</small></span>
+      <span class="db-barra" aria-hidden="true"><i ${anima(`d-${id}-${x.n}-b`, 'width', x.pct, `background:${corX}`)}></i>${duas ? '' : '<em></em>'}</span>
+      <span class="db-pct">${conta(`d-${id}-${x.n}-p`, x.pct, 'p')}</span>
+      <span class="db-delta">${pa == null ? '' : deltaPp(x.pct - pa)}</span>
+    </li>`;
+  }).join('');
+  graficos.set(id, {
+    rotulo: `Evolução do percentual de votos válidos de ${c.titulo}`,
+    ref: duas ? null : 50,
+    series: noGrafico.map(x => ({ nome: nomeBonito(x.nome), cor: corD(id, x.n), pts: serieCand(id, x.n) })),
+  });
+  const manchete = duas
+    ? `<b class="db-heroi menor">${esc(nomeBonito(a.nome))} e ${esc(nomeBonito(b.nome))}</b><span>ocupam as 2 vagas · 3º lugar a ${pf.format(b.pct - d3.pct)} p.p. da 2ª vaga</span>`
+    : `<b class="db-heroi ${id === 'presidente' ? '' : 'menor'}">${conta(`d-${id}-heroi`, a.pct, 'p')}</b><span>${esc(nomeBonito(a.nome))} lidera, ${pf.format(a.pct - b.pct)} p.p. à frente de ${esc(nomeBonito(b.nome))}</span>`;
+  return `<article class="db-card">
+    <header class="db-card-topo">
+      <div><h2>${esc(c.titulo)}${duas ? 'es' : ''}</h2><span>${esc(c.local)} · ${duas ? '2 vagas' : '1 vaga'}</span></div>
+      <div class="db-apu">${conta(`d-${id}-ap`, c.apurado, 'p')}<small>das seções apuradas</small></div>
+    </header>
+    <div class="db-manchete">${manchete}</div>
+    <ol class="db-cands">${linhas}</ol>
+    <figure class="db-fig">
+      <figcaption><span>% dos votos válidos conforme as seções são apuradas</span>
+        <span class="db-leg">${noGrafico.map(x => `<span><i class="db-sw" style="background:${corD(id, x.n)}"></i>${esc(nomeBonito(x.nome))}</span>`).join('')}</span></figcaption>
+      <div class="db-graf" data-graf="${id}"></div>
+    </figure>
+    ${dbAnalise(c)}
+  </article>`;
+}
+function dbAnalise(c) {
+  const id = c.id, [a, b, d3] = c.candidatos, duas = c.vagas === 2;
+  const [def, per] = duas ? [b, d3] : [a, b]; // quem defende a vaga × quem persegue
+  const L = def.votos - per.votos, R = restante(c);
+  const margens = pontos(id).map(p => (p.c[id].c[def.n]?.[1] ?? NaN) - (p.c[id].c[per.n]?.[1] ?? NaN)).filter(v => !Number.isNaN(v));
+  const nm = x => esc(nomeBonito(x.nome));
+  const itens = [[duas ? 'Disputa pela 2ª vaga' : 'Vantagem do líder', `${nf.format(L)} votos · ${pf.format(def.pct - per.pct)} p.p. ${spark(margens, 56, 18)}`, `${nm(def)} sobre ${nm(per)}`]];
+  if (R) {
+    itens.push(['Válidos a apurar (est.)', `≈ ${cf.format(R)}`, `${pf.format(100 - c.apurado)}% das seções ainda faltam`]);
+    const pp = L / R * 100;
+    itens.push([duas ? 'Para tomar a 2ª vaga' : 'Para virar', pp > 100 ? 'fora de alcance' : `+${pf.format(pp)} p.p.`, `${nm(per)} precisa superar ${nm(def)} por essa margem no que falta`]);
+    if (!duas) {
+      const s = (0.5 * (c.totais.validos + R) - a.votos) / R * 100;
+      itens.push(['Vencer no 1º turno', s <= 0 ? 'já tem a maioria (est.)' : s > 100 ? 'fora de alcance (est.)' : `${pf.format(s)}% do que falta`, `${nm(a)} tem ${pf.format(a.pct)}% dos válidos até agora`]);
+    }
+  }
+  const tend = c.candidatos.slice(0, duas ? 4 : 2).map(x => [x, tendencia(id, x.n)]).filter(([, t]) => t != null);
+  itens.push(['Tendência recente', tend.length ? tend.map(([x, t]) => `<span class="db-tend">${nm(x)} ${deltaPp(t)}</span>`).join('') : '<span class="db-vazio">aguardando mais leituras</span>',
+    tend.length ? 'p.p. a cada 10% de seções, nas últimas leituras' : 'aparece a partir da 3ª leitura com avanço na apuração']);
+  return `<dl class="db-analise">${itens.map(([r, v, sub]) => `<div><dt>${r}</dt><dd>${v}</dd>${sub ? `<dd class="db-sub">${sub}</dd>` : ''}</div>`).join('')}</dl>`;
+}
+
+// Disputa interna: o primeiro da fila de cada agremiação contra o último que entra.
+function filaInterna(c) {
+  const proj = c.candidatos.filter(x => x.projetado);
+  return c.agremiacoes.filter(a => a.vagas > 0).map(a => {
+    const ultimo = proj.filter(x => x.agr === a.sigla).sort((x, y) => y.votos - x.votos).at(-1);
+    const prox = c.candidatos.filter(x => x.agr === a.sigla && !x.projetado && x.valido).sort((x, y) => y.votos - x.votos)[0];
+    return ultimo && prox ? { a, ultimo, prox, gap: ultimo.votos - prox.votos } : null;
+  }).filter(Boolean).sort((p, q) => p.gap - q.gap);
+}
+// Faixa de destaques: Brasil (foco em Presidente) intercalado com o Pará, 2 pra 1, recalculada a cada leitura.
+function destaques() {
+  const br = destaquesBrasil(), pa = destaquesPara(), out = [];
+  while (br.length || pa.length) {
+    out.push(...br.splice(0, 2));
+    if (pa.length) out.push(pa.shift());
+  }
+  return out;
+}
+const REGIOES = {
+  Norte: ['ac', 'am', 'ap', 'pa', 'ro', 'rr', 'to'], Nordeste: ['al', 'ba', 'ce', 'ma', 'pb', 'pe', 'pi', 'rn', 'se'],
+  'Centro-Oeste': ['df', 'go', 'ms', 'mt'], Sudeste: ['es', 'mg', 'rj', 'sp'], Sul: ['pr', 'rs', 'sc'],
+};
+function destaquesBrasil() {
+  const ufs = dados.ufs ?? {}, [a, b] = C('presidente').candidatos, out = [];
+  const lista = Object.values(ufs).filter(u => u.uf !== 'zz' && u.candidatos.length > 1);
+  if (!lista.length) return out;
+  const nm = x => esc(nomeBonito(x.nome));
+  const duelo = (rot, u) => {
+    const [l, s2] = [...u.candidatos].sort((p, q) => q.votos - p.votos);
+    return `<b>${rot}</b>${nm(l)} ${pf.format(l.pct)}% × ${nm(s2)} ${pf.format(s2.pct)}% · ${pf.format(u.apurado)}% das seções`;
+  };
+  const dif = u => u.candidatos[0].pct - u.candidatos[1].pct;
+  const lideres = new Map();
+  for (const u of lista) lideres.set(u.candidatos[0].nome, (lideres.get(u.candidatos[0].nome) ?? 0) + 1);
+  out.push(`<b>Presidente · placar dos estados</b>${[...lideres].sort((p, q) => q[1] - p[1]).map(([n, k]) => `${esc(nomeBonito(n))} lidera em ${k} UF${k > 1 ? 's' : ''}`).join(', ')}`);
+  for (const [reg, siglas] of Object.entries(REGIOES)) {
+    const us = siglas.map(sg => ufs[sg]).filter(Boolean), vv = us.reduce((t, u) => t + u.validos, 0);
+    if (!vv) continue;
+    const votos = n => us.reduce((t, u) => t + (u.candidatos.find(x => x.n === n)?.votos ?? 0), 0);
+    const secoes = us.reduce((t, u) => t + u.secoes, 0), apuradas = us.reduce((t, u) => t + u.secoesApuradas, 0);
+    out.push(duelo(`Presidente · ${reg}`, { apurado: apuradas / secoes * 100, candidatos: [a, b].map(x => ({ nome: x.nome, votos: votos(x.n), pct: votos(x.n) / vv * 100 })) }));
+  }
+  [...lista].sort((p, q) => q.eleitorado - p.eleitorado).slice(0, 8).forEach(u => out.push(duelo(`Presidente · ${u.nome}`, u)));
+  const comAvanco = lista.filter(u => u.apurado >= 5).sort((p, q) => dif(p) - dif(q));
+  if (comAvanco.length) {
+    const ap = comAvanco[0], fo = comAvanco.at(-1);
+    out.push(`<b>Presidente · disputa mais apertada</b>${ap.nome}: ${nm(ap.candidatos[0])} ${pf.format(ap.candidatos[0].pct)}% × ${nm(ap.candidatos[1])} ${pf.format(ap.candidatos[1].pct)}%, ${pf.format(dif(ap))} p.p.`);
+    out.push(`<b>Presidente · maior vantagem</b>${fo.nome}: ${nm(fo.candidatos[0])} com ${pf.format(fo.candidatos[0].pct)}%, ${pf.format(dif(fo))} p.p. à frente`);
+  }
+  const ritmo = [...lista].sort((p, q) => q.apurado - p.apurado);
+  out.push(`<b>Apuração por estado</b>mais adiantado: ${ritmo[0].nome} ${pf.format(ritmo[0].apurado)}% · mais atrasado: ${ritmo.at(-1).nome} ${pf.format(ritmo.at(-1).apurado)}%`);
+  if (ufs.zz?.candidatos.length > 1) out.push(duelo('Presidente · Exterior', ufs.zz));
+  return out;
+}
+function destaquesPara() {
+  const nm = x => esc(nomeBonito(x.nome)), out = [];
+  const P = C('presidente'), G = C('governador');
+  out.push(`<b>Apuração</b>Brasil ${pf.format(P.apurado)}% · Pará ${pf.format(G.apurado)}% das seções`);
+  for (const id of ['presidente', 'governador']) {
+    const c = C(id), [a, b] = c.candidatos, ant = anteriorD(id);
+    const m = a.pct - b.pct, mAnt = ant?.c[a.n] && ant?.c[b.n] ? ant.c[a.n][1] - ant.c[b.n][1] : null;
+    out.push(`<b>${c.titulo} · ${c.local}</b>${nm(a)} lidera com ${pf.format(a.pct)}%, ${pf.format(m)} p.p. à frente de ${nm(b)}`
+      + (mAnt == null || Math.abs(m - mAnt) < 0.005 ? '' : ` · vantagem ${m > mAnt ? 'subiu' : 'caiu'} ${pf.format(Math.abs(m - mAnt))} p.p. na última leitura`));
+  }
+  const S = C('senador'), [, s2, s3] = S.candidatos;
+  out.push(`<b>Senado · Pará</b>2ª vaga: ${nm(s2)} ${pf.format(s2.pct)}% × ${nm(s3)} ${pf.format(s3.pct)}%, diferença de ${nf.format(s2.votos - s3.votos)} votos`);
+  for (const id of ['depfed', 'depest']) {
+    const c = C(id), ini = pontos(id)[0]?.c[id], rot = id === 'depfed' ? 'Dep. Federal' : 'Dep. Estadual';
+    for (const a of c.agremiacoes) {
+      const dv = ini?.a?.[a.sigla] ? a.vagas - ini.a[a.sigla][1] : 0;
+      if (dv) out.push(`<b>${rot}</b>${esc(a.sigla)} ${dv > 0 ? 'ganhou' : 'perdeu'} ${Math.abs(dv)} cadeira${Math.abs(dv) > 1 ? 's' : ''} desde o início do acompanhamento`);
+    }
+    const f = filaInterna(c)[0];
+    if (f) out.push(`<b>${rot}</b>disputa interna mais apertada: ${esc(f.a.sigla)}, ${nm(f.ultimo)} × ${nm(f.prox)}, ${nf.format(f.gap)} votos`);
+  }
+  out.push(`<b>Comparecimento</b>Brasil ${pf.format(P.totais.comparecimento)}% · Pará ${pf.format(G.totais.comparecimento)}%`);
+  return out;
+}
+const dbTela2 = () => `<div class="db-grade2">${['depfed', 'depest'].map(dbProp).join('')}</div>`;
+function dbProp(id) {
+  const c = C(id), ag = c.agremiacoes, ps = pontos(id), ant = anteriorD(id), ini = ps[0]?.c[id];
+  const proj = c.candidatos.filter(x => x.projetado).sort((x, y) => y.votos - x.votos);
+  const cadeiras = ag.filter(a => a.vagas > 0).flatMap(a => proj.filter(x => x.agr === a.sigla));
+  const waffle = cadeiras.map((x, i) => `<span class="db-seat" title="${esc(x.agr)} · ${esc(nomeBonito(x.nome))} · ${nf.format(x.votos)} votos"
+    ${anima(`d-${id}-seat-${i}`, 'background', corAgr(x.agr), `--i:${i}`, '')}></span>`).join('');
+  const linhasAgr = ag.filter(a => a.vagas > 0 || (c.qe && a.votos >= c.qe * 0.5)).map(a => {
+    const dv = ini?.a?.[a.sigla] ? a.vagas - ini.a[a.sigla][1] : null;
+    return `<tr data-flip="${id}-agr-${a.sigla}">
+      <td><span class="db-sw" style="background:${a.vagas ? corAgr(a.sigla) : coresD.get('agr:' + a.sigla) ?? 'var(--outros)'}"></span>${esc(a.sigla)}${a.federacao ? ' <small>federação</small>' : ''}</td>
+      <td class="n">${conta(`d-${id}-agr-${a.sigla}-v`, a.votos)}</td>
+      <td class="n db-oculta-mob">${pf.format(a.votos / c.totais.validos * 100)}%</td>
+      <td class="n">${c.qe ? pf.format(a.votos / c.qe) : '—'}</td>
+      <td class="n"><b>${conta(`d-${id}-agr-${a.sigla}-c`, a.vagas)}</b></td>
+      <td class="n">${dv == null ? '' : deltaInt(dv)}</td>
+    </tr>`;
+  }).join('');
+  const linhasCand = proj.map(x => {
+    const pa = ant?.c[x.n]?.[2];
+    const serie = ps.map(p => p.c[id].c[x.n]?.[1]).filter(v => v != null);
+    return `<tr data-flip="${id}-${x.n}">
+      <td class="n">${x.pos}º</td>
+      <td class="n">${pa == null ? (ant ? '<span class="d">novo</span>' : '') : deltaInt(pa - x.pos)}</td>
+      <td><span class="db-sw" style="background:${corAgr(x.agr)}"></span><b>${esc(nomeBonito(x.nome))}</b> <small>${esc(x.partido)}</small>${x.eleito ? ' <span class="db-ok">✓ eleito</span>' : ''}</td>
+      <td class="n">${conta(`d-${id}-${x.n}-v`, x.votos)}</td>
+      <td class="n db-oculta-mob">${pf.format(x.pct)}%</td>
+      <td class="db-oculta-mob">${spark(serie, 64, 18)}</td>
+    </tr>`;
+  }).join('');
+  const fila = filaInterna(c);
+  const nm = x => esc(nomeBonito(x.nome));
+  return `<article class="db-card">
+    <header class="db-card-topo">
+      <div><h2>${esc(c.titulo)}</h2><span>${esc(c.local)} · ${c.vagas} cadeiras</span></div>
+      <div class="db-apu">${conta(`d-${id}-ap`, c.apurado, 'p')}<small>das seções apuradas</small></div>
+    </header>
+    <dl class="db-mini">
+      <div><dt>Votos válidos</dt><dd>${conta(`d-${id}-vv`, c.totais.validos)}</dd></div>
+      <div><dt>Quociente eleitoral</dt><dd>${c.qe ? conta(`d-${id}-qe`, c.qe) : '—'}</dd></div>
+      <div><dt>Votos de legenda</dt><dd>${pf.format(c.totais.legenda / c.totais.validos * 100)}%</dd></div>
+      <div><dt>Brancos · nulos</dt><dd>${pf.format(c.totais.brancos)}% · ${pf.format(c.totais.nulos)}%</dd></div>
+    </dl>
+    <section class="db-sec">
+      <h3>Bancada projetada <small>cada quadrado é uma cadeira; passe o mouse para ver quem ocupa</small></h3>
+      <div class="db-waffle" role="img" aria-label="Distribuição projetada das ${c.vagas} cadeiras por agremiação">${waffle}</div>
+      <div class="db-rolagem"><table class="db-tab">
+        <thead><tr><th>Agremiação</th><th class="n">Votos</th><th class="n db-oculta-mob">% válidos</th><th class="n" title="Votos da agremiação divididos pelo quociente eleitoral">Quocientes</th><th class="n">Cadeiras</th><th class="n" title="Variação desde a primeira leitura do acompanhamento">Δ desde o início</th></tr></thead>
+        <tbody>${linhasAgr}</tbody>
+      </table></div>
+    </section>
+    <section class="db-sec">
+      <h3>Projetados para as ${c.vagas} cadeiras <small>posição geral por votos · Δ desde a leitura anterior</small></h3>
+      <div class="db-rolagem"><table class="db-tab">
+        <thead><tr><th class="n">Pos.</th><th class="n">Δ</th><th>Candidato</th><th class="n">Votos</th><th class="n db-oculta-mob">%</th><th class="db-oculta-mob">Evolução do %</th></tr></thead>
+        <tbody>${linhasCand}</tbody>
+      </table></div>
+    </section>
+    <section class="db-sec">
+      <h3>Disputa interna <small>1º da fila × último que entra, na mesma agremiação</small></h3>
+      <div class="db-rolagem"><table class="db-tab">
+        <thead><tr><th>Agremiação</th><th>Último que entra</th><th>1º da fila</th><th class="n">Diferença</th></tr></thead>
+        <tbody>${fila.map(f => `<tr data-flip="${id}-fila-${f.a.sigla}">
+          <td><span class="db-sw" style="background:${corAgr(f.a.sigla)}"></span>${esc(f.a.sigla)}</td>
+          <td>${nm(f.ultimo)} <small>${nf.format(f.ultimo.votos)}</small></td>
+          <td>${nm(f.prox)} <small>${nf.format(f.prox.votos)}</small></td>
+          <td class="n"><b>${conta(`d-${id}-fila-${f.a.sigla}`, f.gap)}</b></td></tr>`).join('')}</tbody>
+      </table></div>
+    </section>
+  </article>`;
+}
+
+// ---------- gráfico de linhas (SVG à mão), desenhado na largura real do container ----------
+const passoBonito = raw => [0.1, 0.2, 0.25, 0.5, 1, 2, 2.5, 5, 10, 20, 25, 50].find(x => x >= raw) ?? 100;
+const faixa = (a, b, p) => { const r = []; for (let v = a; v <= b + 1e-9; v += p) r.push(+v.toFixed(6)); return r; };
+const fmtTick = (v, p) => v.toFixed(p >= 1 ? 0 : Number.isInteger(+(p * 10).toFixed(6)) ? 1 : 2).replace('.', ',');
+function svgLinhas(id, cfg, W, animar) {
+  const H = 210, m = { t: 14, r: 58, b: 26, l: 38 }, pw = W - m.l - m.r, ph = H - m.t - m.b;
+  const series = cfg.series.filter(s => s.pts.length);
+  const xs = [...new Set(series.flatMap(s => s.pts.map(p => p[0])))].sort((p, q) => p - q);
+  if (!xs.length || pw < 80) return '';
+  let x0 = xs[0], x1 = xs.at(-1);
+  if (x1 - x0 < 0.5) { x0 -= 1; x1 += 1; } else x1 += (x1 - x0) * 0.03;
+  const ys = series.flatMap(s => s.pts.map(p => p[1]));
+  let y0 = Math.min(...ys), y1 = Math.max(...ys);
+  if (cfg.ref != null && cfg.ref > y0 - 8 && cfg.ref < y1 + 8) { y0 = Math.min(y0, cfg.ref); y1 = Math.max(y1, cfg.ref); }
+  const folga = Math.max(0.4, (y1 - y0) * 0.12);
+  const py = passoBonito((y1 - y0 + 2 * folga) / 4);
+  y0 = Math.floor((y0 - folga) / py) * py; y1 = Math.ceil((y1 + folga) / py) * py;
+  const px = passoBonito((x1 - x0) / Math.max(2, Math.floor(pw / 90)));
+  const X = v => m.l + (v - x0) / (x1 - x0) * pw, Y = v => m.t + (1 - (v - y0) / (y1 - y0)) * ph;
+  cfg.escala = { X, x0, x1, m, pw, xs };
+  const grade = faixa(y0, y1, py).map(v => `<line class="g" x1="${m.l}" x2="${W - m.r}" y1="${Y(v)}" y2="${Y(v)}"/><text class="t" x="${m.l - 6}" y="${Y(v) + 4}" text-anchor="end">${fmtTick(v, py)}</text>`).join('')
+    + faixa(Math.ceil(x0 / px) * px, x1, px).map(v => `<text class="t" x="${X(v)}" y="${H - 7}" text-anchor="middle">${fmtTick(v, px)}%</text>`).join('');
+  const ref = cfg.ref != null && cfg.ref >= y0 && cfg.ref <= y1
+    ? `<line class="ref" x1="${m.l}" x2="${W - m.r}" y1="${Y(cfg.ref)}" y2="${Y(cfg.ref)}"/><text class="t" x="${m.l + 6}" y="${Y(cfg.ref) + 14}">maioria absoluta (${cfg.ref}%)</text>` : '';
+  // Rótulo de ponta = só o valor; se dois colidem, o de baixo desce com uma linha-guia.
+  const pontas = series.map(s => { const p = s.pts.at(-1); return { s, x: X(p[0]), y: Y(p[1]), v: p[1] }; }).sort((p, q) => p.y - q.y);
+  let ult = -Infinity;
+  for (const p of pontas) { p.ly = Math.max(p.y, ult + 15); ult = p.ly; }
+  const linhas = series.map(s => `<path class="l" stroke="${s.cor}" d="${s.pts.map((p, i) => `${i ? 'L' : 'M'}${X(p[0]).toFixed(1)},${Y(p[1]).toFixed(1)}`).join('')}"/>`).join('');
+  const marcas = pontas.map(p => `<circle class="ping" cx="${p.x}" cy="${p.y}" r="4" fill="${p.s.cor}"/><circle class="pt" cx="${p.x}" cy="${p.y}" r="4" fill="${p.s.cor}"/>`
+    + (p.ly - p.y > 2 ? `<line class="guia" x1="${p.x + 5}" y1="${p.y}" x2="${p.x + 10}" y2="${p.ly - 4}"/>` : '')
+    + `<text class="v" x="${p.x + 10}" y="${p.ly + 4}">${pf.format(p.v)}%</text>`).join('');
+  // Revelação suave do trecho novo: o clip começa onde estava a última leitura e corre até o fim.
+  const chave = 'graf-' + id, apAnt = memoria.get(chave);
+  const de = !animar ? W : apAnt == null ? m.l : Math.min(W, X(apAnt) + 1);
+  memoria.set(chave, xs.at(-1));
+  return `<svg width="${W}" height="${H}" role="img" aria-label="${esc(cfg.rotulo)}">
+    <defs><clipPath id="cl-${id}"><rect x="0" y="0" height="${H}" width="${de}" data-tw="width" data-para="${W}"/></clipPath></defs>
+    ${grade}<line class="eixo" x1="${m.l}" x2="${W - m.r}" y1="${m.t + ph}" y2="${m.t + ph}"/>${ref}
+    <g clip-path="url(#cl-${id})">${linhas}${marcas}</g>
+    <line class="mira" x1="-10" x2="-10" y1="${m.t}" y2="${m.t + ph}"/>
+    <rect class="hit" x="${m.l}" y="${m.t}" width="${pw}" height="${ph}"/>
+  </svg>${xs.length < 2 ? '<p class="db-vazio">A linha aparece a partir da 2ª leitura do TSE.</p>' : ''}<div class="db-tip" hidden></div>`;
+}
+function ligarHover(el, cfg) {
+  const svg = el.querySelector('svg');
+  if (!svg || !cfg.escala) return;
+  const tip = el.querySelector('.db-tip'), mira = svg.querySelector('.mira'), hit = svg.querySelector('.hit');
+  const { X, x0, x1, m, pw, xs } = cfg.escala;
+  hit.addEventListener('pointermove', e => {
+    const r = svg.getBoundingClientRect(), xv = x0 + (e.clientX - r.left - m.l) / pw * (x1 - x0);
+    const ap = xs.reduce((p, q) => Math.abs(q - xv) < Math.abs(p - xv) ? q : p);
+    const px = X(ap);
+    mira.setAttribute('x1', px); mira.setAttribute('x2', px); mira.classList.add('on');
+    const vals = cfg.series.map(s => [s, s.pts.findLast(p => p[0] === ap)]).filter(([, p]) => p).sort((p, q) => q[1][1] - p[1][1]);
+    tip.innerHTML = `<b>${pf.format(ap)}% apurado${vals[0]?.[1][2] ? ' · ' + esc(vals[0][1][2]) : ''}</b>`
+      + vals.map(([s, p]) => `<div><i style="background:${s.cor}"></i>${esc(s.nome)}<span>${pf.format(p[1])}%</span></div>`).join('');
+    tip.hidden = false;
+    tip.style.left = Math.max(0, Math.min(px + 12, r.width - tip.offsetWidth)) + 'px';
+    tip.style.top = m.t + 'px';
+  });
+  hit.addEventListener('pointerleave', () => { tip.hidden = true; mira.classList.remove('on'); });
+}
+function pintarGraficos(animar) {
+  for (const el of document.querySelectorAll('[data-graf]')) {
+    const cfg = graficos.get(el.dataset.graf);
+    if (!cfg) continue;
+    el.innerHTML = svgLinhas(el.dataset.graf, cfg, el.clientWidth, animar && !calmo);
+    ligarHover(el, cfg);
+    for (const r of el.querySelectorAll('[data-tw]')) {
+      const attr = r.dataset.tw, de = +r.getAttribute(attr), para = +r.dataset.para, t0 = performance.now();
+      if (de === para) continue;
+      const passo = agora => {
+        const k = Math.min(1, (agora - t0) / 1100);
+        r.setAttribute(attr, de + (para - de) * (1 - (1 - k) ** 3));
+        if (k < 1) requestAnimationFrame(passo);
+      };
+      requestAnimationFrame(passo);
+    }
+  }
+}
+let redim;
+addEventListener('resize', () => { clearTimeout(redim); redim = setTimeout(() => variante === 'D' && pintarGraficos(false), 150); });
+
+// FLIP: linhas que trocam de posição deslizam do lugar antigo pro novo; linhas novas entram com fade.
+function capturar() {
+  const m = new Map();
+  for (const el of document.querySelectorAll('[data-flip]')) m.set(el.dataset.flip, el.getBoundingClientRect().top);
+  return m;
+}
+function flip(antes) {
+  if (calmo || !antes.size) return;
+  for (const el of document.querySelectorAll('[data-flip]')) {
+    const y0 = antes.get(el.dataset.flip);
+    if (y0 == null) { el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 500, easing: 'ease-out' }); continue; }
+    const dy = y0 - el.getBoundingClientRect().top;
+    if (Math.abs(dy) > 1) el.animate([{ transform: `translateY(${dy}px)` }, { transform: 'none' }], { duration: 700, easing: 'cubic-bezier(.2,.8,.2,1)' });
+  }
+}
+function entrada() {
+  if (calmo) return;
+  document.querySelectorAll('.db-kpi, .db-card').forEach((el, i) => el.animate(
+    [{ opacity: 0, transform: 'translateY(14px)' }, { opacity: 1, transform: 'none' }],
+    { duration: 500, delay: i * 60, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'backwards' }));
+}
+async function trocarTela(n) {
+  if (n === tela || variante !== 'D') return;
+  const atual = document.querySelector('.db-tela'), dir = n > tela ? 1 : -1;
+  if (atual && !calmo) await atual.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: `translateX(${-24 * dir}px)` }], { duration: 180, easing: 'ease-in', fill: 'forwards' }).finished;
+  tela = n;
+  desenhar('tela');
+  const nova = document.querySelector('.db-tela');
+  if (nova && !calmo) nova.animate([{ opacity: 0, transform: `translateX(${24 * dir}px)` }, { opacity: 1, transform: 'none' }], { duration: 320, easing: 'cubic-bezier(.2,.8,.2,1)' });
+  barra();
+}
+app.addEventListener('click', e => {
+  const aba = e.target.closest('[data-tela]');
+  if (aba) trocarTela(+aba.dataset.tela);
+  if (e.target.closest('[data-tema-toggle]')) {
+    document.body.dataset.tema = document.body.dataset.tema === 'claro' ? '' : 'claro';
+    try { localStorage.setItem('tema', document.body.dataset.tema); } catch {}
+  }
+});
+try { document.body.dataset.tema = localStorage.getItem('tema') ?? ''; } catch {}
+
+async function puxarHist() {
+  const reais = hist.filter(p => !p.sim);
+  try {
+    const novos = await (await fetch('/api/historico?desde=' + (reais.at(-1)?.t ?? 0), { cache: 'no-store' })).json();
+    hist = reais.concat(novos);
+  } catch { hist = reais; }
+}
+
+// ---------- desenho + dados ----------
+// modo: 'entrada' (primeira vez / troca de variante), 'tela' (troca de aba), 'atualiza' (dados novos)
+function desenhar(modo = 'atualiza') {
+  document.body.dataset.v = variante;
+  clearTimeout(palcoTimer);
+  const pronto = dados && ORDEM.every(id => dados.cargos?.[id]);
+  const antes = modo === 'atualiza' && variante === 'D' ? capturar() : new Map();
+  graficos.clear();
+  app.innerHTML = pronto ? VARIANTES[variante][1]() : `<div class="carregando"><div class="urna">🗳️</div><h1>Contando votos…</h1>
+    <p>${dados?.erro ? 'O TSE ainda não respondeu: ' + esc(dados.erro) : 'Primeira consulta ao TSE em andamento.'}</p></div>`;
+  ativar();
+  if (pronto && variante === 'D') {
+    pintarGraficos(true);
+    flip(antes);
+    if (modo === 'entrada') entrada();
+    const rolo = document.querySelector('.db-rolo');
+    if (rolo) { // mantém a faixa andando do mesmo ponto quando a tela é redesenhada
+      const dur = Math.max(30, rolo.scrollWidth / 2 / 55);
+      rolo.style.animationDuration = dur + 's';
+      rolo.style.animationDelay = -((performance.now() / 1000) % dur) + 's';
+    }
+  }
+  if (pronto && variante === 'C') agendarPalco();
+  tique();
+}
+
+async function puxar() {
+  try {
+    const novo = await (await fetch('/api/apuracao', { cache: 'no-store' })).json();
+    const mudou = novo.versao !== versaoReal;
+    if (!mudou && !simulando) { Object.assign(dados, { proximaConsulta: novo.proximaConsulta, consultadoEm: novo.consultadoEm, erro: novo.erro }); return; }
+    await puxarHist();
+    const anterior = dados;
+    dados = novo; versaoReal = novo.versao; simulando = false;
+    desenhar(anterior?.cargos?.presidente ? 'atualiza' : 'entrada');
+    if (mudou && anterior?.cargos?.presidente && novo.cargos?.presidente) festa(anterior, novo);
+  } catch { /* servidor fora do ar: tenta de novo no próximo ciclo */ }
+}
+
+function tique() {
+  const s = dados?.proximaConsulta ? Math.max(0, Math.round((dados.proximaConsulta - Date.now()) / 1000)) : null;
+  for (const el of document.querySelectorAll('[data-contagem]')) el.textContent = s === null ? 'consultando o TSE…' : s ? `próxima consulta ao TSE em ${s}s` : 'consultando o TSE…';
+  for (const el of document.querySelectorAll('[data-relogio]')) el.textContent = new Date().toLocaleTimeString('pt-BR');
+  const [a, b] = [dados?.consultadoEm, dados?.proximaConsulta];
+  for (const el of document.querySelectorAll('[data-ciclo]')) el.style.width = a && b > a ? Math.min(100, (Date.now() - a) / (b - a) * 100) + '%' : '0%';
+}
+
+// ---------- a cada atualização: aviso discreto; festa grande só em virada ----------
+function festa(antes, depois) {
+  const viradas = ['presidente', 'governador', 'senador'].filter(id => {
+    const k = id === 'senador' ? 2 : 1;
+    const topo = d => d.cargos[id]?.candidatos.slice(0, k).map(x => x.n).sort().join();
+    return topo(antes) && topo(antes) !== topo(depois);
+  });
+  const ap = (d, id) => pf.format(d.cargos[id].apurado) + '%';
+  const resumo = `Atualizado às ${depois.cargos.presidente.hora} · Brasil ${ap(antes, 'presidente')} → ${ap(depois, 'presidente')} · Pará ${ap(antes, 'governador')} → ${ap(depois, 'governador')}`;
+  if (variante === 'D') { // painel profissional: só o aviso, com a virada escrita nele
+    aviso(viradas.length ? `${resumo} · mudou a liderança em ${viradas.map(id => ROTULO[id]).join(', ')}` : resumo);
+    return;
+  }
+  aviso(resumo);
+  for (const m of [urninha, boto]) { m.classList.remove('pula'); void m.offsetWidth; m.classList.add('pula'); }
+  if (!viradas.length || calmo) return;
+  const id = viradas[0], l = depois.cargos[id].candidatos[0];
+  urgente(id === 'senador' ? 'Mexeu no Senado!' : `Virada: ${ROTULO[id]}!`);
+  falar(urninha, id === 'senador' ? 'Égua! Mudou a dupla que leva as vagas do Senado!' : `VIRADA! ${l.nome} passou pra frente em ${ROTULO[id]}!`);
+  tocarConfete();
+  motor?.explodir();
+}
+function aviso(texto) {
+  const el = document.getElementById('aviso');
+  el.innerHTML = `<i></i>${esc(texto)}`;
+  el.classList.add('on');
+  clearTimeout(aviso.t);
+  aviso.t = setTimeout(() => el.classList.remove('on'), 6000);
+}
+function urgente(texto) {
+  const el = document.getElementById('urgente');
+  el.textContent = texto;
+  el.classList.add('on');
+  clearTimeout(urgente.t);
+  urgente.t = setTimeout(() => el.classList.remove('on'), 2600);
+}
+function falar(m, texto, ms = 5500) {
+  const f = m.querySelector('.fala');
+  f.textContent = texto;
+  f.classList.add('on');
+  clearTimeout(f.t);
+  f.t = setTimeout(() => f.classList.remove('on'), ms);
+}
+const festaEl = document.getElementById('festa'), confeteVideo = festaEl.querySelector('video');
+function tocarConfete() {
+  if (confeteVideo.error || !(confeteVideo.duration > 0)) return;
+  confeteVideo.currentTime = 0;
+  festaEl.classList.add('on');
+  confeteVideo.play().catch(() => festaEl.classList.remove('on'));
+}
+confeteVideo.addEventListener('ended', () => festaEl.classList.remove('on'));
+
+// Falas ambientes, o tempo todo.
+const FRASES_URNA = [
+  () => `Égua! Já apuraram ${pf.format(C('presidente').apurado)}% das seções do Brasil!`,
+  () => `No Pará já foram ${pf.format(C('governador').apurado)}% das seções, maninho!`,
+  () => 'Bora, TSE, manda mais voto! 🗳️',
+  () => 'Calma que urna não erra conta 😎',
+  () => `Pra Presidente, ${C('presidente').candidatos[0].nome} tá na frente por enquanto.`,
+];
+const FRASES_BOTO = ['Vai, Pará! 🐬', 'Tô de olho nas urnas do Marajó!', `Pai d'égua essa apuração!`, 'Senado do Pará: duas vagas na disputa!'];
+let vez = 0;
+setInterval(() => {
+  if (!dados?.cargos?.presidente || document.hidden) return;
+  vez++;
+  if (vez % 2) falar(urninha, FRASES_URNA[vez % FRASES_URNA.length](), 5000);
+  else falar(boto, FRASES_BOTO[vez % FRASES_BOTO.length], 4500);
+}, 7000);
+
+// ---------- motores de animação: JS (DOM/CSS) × Three.js ----------
+let motor = null;
+const PALETA = ['#009c3b', '#ffdf00', '#1e5bc6', '#ff5fa2', '#8e44ad', '#ffffff', '#ff7a00', '#00b7c3'];
+function motorJs() {
+  const fundo = document.getElementById('fundo');
+  const EMOJI = ['🗳️', '✅', '⭐', '🎉', '✨', '🎊'];
+  return {
+    iniciar() {
+      if (calmo) return;
+      fundo.innerHTML = Array.from({ length: 22 }, (_, i) =>
+        `<span style="--x:${Math.random() * 100}vw;--d:${14 + Math.random() * 16}s;--a:${-Math.random() * 30}s;--s:${0.7 + Math.random() * 1.3}">${EMOJI[i % EMOJI.length]}</span>`).join('');
+    },
+    parar() { fundo.innerHTML = ''; },
+    explodir() {
+      const chuva = document.createElement('div');
+      chuva.className = 'chuva';
+      chuva.innerHTML = Array.from({ length: 160 }, (_, i) => {
+        const lado = i % 2 ? 1 : -1;
+        return `<i style="left:${lado < 0 ? 0 : innerWidth}px;top:${innerHeight}px;--dx:${-lado * (80 + Math.random() * innerWidth * 0.45)}px;--dy:${-(innerHeight * (0.35 + Math.random() * 0.55))}px;--r:${Math.random() * 1080 - 540}deg;--c:${PALETA[i % PALETA.length]};--t:${1.8 + Math.random() * 1.2}s"></i>`;
+      }).join('');
+      document.body.append(chuva);
+      setTimeout(() => chuva.remove(), 3200);
+    },
+  };
+}
+
+let tres = null;
+async function motorThree() {
+  if (tres) return tres;
+  const THREE = await import('https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js');
+  const canvas = document.createElement('canvas');
+  canvas.id = 'palco3d';
+  document.body.prepend(canvas);
+  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  const cena = new THREE.Scene();
+  const cam = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
+  cam.position.z = 16;
+  cena.add(new THREE.AmbientLight(0xffffff, 1.5));
+  const sol = new THREE.DirectionalLight(0xffffff, 2.6);
+  sol.position.set(4, 6, 10);
+  cena.add(sol);
+
+  // Cédula desenhada num canvas 2D e usada como textura.
+  const tx = document.createElement('canvas');
+  tx.width = 128; tx.height = 170;
+  const g = tx.getContext('2d');
+  g.fillStyle = '#fffdf4'; g.fillRect(0, 0, 128, 170);
+  g.fillStyle = '#009c3b'; g.fillRect(0, 0, 128, 26);
+  g.fillStyle = '#ffdf00'; g.fillRect(0, 26, 128, 6);
+  g.strokeStyle = '#99a3b3'; g.lineWidth = 3;
+  for (let y = 50; y < 160; y += 26) { g.strokeRect(12, y, 16, 16); g.beginPath(); g.moveTo(38, y + 8); g.lineTo(114, y + 8); g.stroke(); }
+  g.strokeStyle = '#002776'; g.lineWidth = 5;
+  g.beginPath(); g.moveTo(11, 75); g.lineTo(29, 93); g.moveTo(29, 75); g.lineTo(11, 93); g.stroke();
+  const textura = new THREE.CanvasTexture(tx);
+  textura.colorSpace = THREE.SRGBColorSpace;
+
+  const dummy = new THREE.Object3D(), corT = new THREE.Color();
+  function enxame(geo, mat, n, colorir) {
+    const m = new THREE.InstancedMesh(geo, mat, n);
+    m.frustumCulled = false;
+    m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    const p = Array.from({ length: n }, () => ({ x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, rx: Math.random() * 6, ry: Math.random() * 6, sx: (Math.random() - .5) * 4, sy: (Math.random() - .5) * 4, vida: 0, fase: Math.random() * 6 }));
+    if (colorir) p.forEach((_, i) => m.setColorAt(i, corT.set(PALETA[i % PALETA.length])));
+    cena.add(m);
+    return { m, p };
+  }
+  const lado2 = { side: THREE.DoubleSide };
+  const confete = enxame(new THREE.PlaneGeometry(0.28, 0.16), new THREE.MeshLambertMaterial(lado2), calmo ? 0 : 150, true);
+  const cedulas = enxame(new THREE.PlaneGeometry(0.75, 1.0), new THREE.MeshLambertMaterial({ ...lado2, map: textura }), calmo ? 0 : 26, false);
+  const estouro = enxame(new THREE.PlaneGeometry(0.3, 0.17), new THREE.MeshLambertMaterial(lado2), 700, true);
+
+  let W = 10, H = 10;
+  function medir() {
+    renderer.setSize(innerWidth, innerHeight, false);
+    cam.aspect = innerWidth / innerHeight;
+    cam.updateProjectionMatrix();
+    H = 2 * Math.tan(THREE.MathUtils.degToRad(cam.fov / 2)) * cam.position.z;
+    W = H * cam.aspect;
+  }
+  medir();
+  addEventListener('resize', medir);
+  for (const q of [...confete.p, ...cedulas.p]) {
+    q.x = (Math.random() - .5) * W * 1.1; q.y = (Math.random() - .5) * H * 1.2; q.z = (Math.random() - .5) * 8;
+    q.vy = -(0.4 + Math.random() * 0.9);
+  }
+  for (const q of cedulas.p) q.vy *= 0.6;
+
+  let rodando = false, ultimo = 0, t = 0;
+  function pousar(m, i, q, escala) {
+    dummy.position.set(q.x, q.y, q.z);
+    dummy.rotation.set(q.rx, q.ry, 0);
+    dummy.scale.setScalar(escala);
+    dummy.updateMatrix();
+    m.setMatrixAt(i, dummy.matrix);
+  }
+  function passo(agora) {
+    if (!rodando) return;
+    const dt = Math.min(0.05, (agora - ultimo) / 1000);
+    ultimo = agora; t += dt;
+    for (const { m, p } of [confete, cedulas]) {
+      p.forEach((q, i) => {
+        q.y += q.vy * dt; q.x += Math.sin(t * 0.8 + q.fase) * 0.4 * dt;
+        q.rx += q.sx * dt; q.ry += q.sy * dt;
+        if (q.y < -H / 2 - 1) { q.y = H / 2 + 1; q.x = (Math.random() - .5) * W * 1.1; }
+        pousar(m, i, q, 1);
+      });
+      m.instanceMatrix.needsUpdate = true;
+    }
+    const arrasto = Math.pow(0.45, dt);
+    estouro.p.forEach((q, i) => {
+      if (q.vida > 0) {
+        q.vida -= dt; q.vy -= 9 * dt;
+        q.vx *= arrasto; q.vy *= arrasto; q.vz *= arrasto;
+        q.x += q.vx * dt; q.y += q.vy * dt; q.z += q.vz * dt;
+        q.rx += q.sx * dt * 3; q.ry += q.sy * dt * 3;
+      }
+      pousar(estouro.m, i, q, q.vida > 0 ? Math.min(1, q.vida) : 0);
+    });
+    estouro.m.instanceMatrix.needsUpdate = true;
+    renderer.render(cena, cam);
+    requestAnimationFrame(passo);
+  }
+
+  tres = {
+    iniciar() {
+      canvas.hidden = false;
+      if (!rodando) { rodando = true; ultimo = performance.now(); requestAnimationFrame(passo); }
+    },
+    parar() { rodando = false; canvas.hidden = true; },
+    explodir() {
+      canvas.classList.add('festa');
+      clearTimeout(tres.t);
+      tres.t = setTimeout(() => canvas.classList.remove('festa'), 4200);
+      estouro.p.forEach((q, i) => {
+        const lado = i % 2 ? 1 : -1; // dois canhões, um em cada canto de baixo
+        const ang = Math.PI / 2 + lado * (0.15 + Math.random() * 0.55);
+        const v = 9 + Math.random() * 7;
+        Object.assign(q, { x: lado * W * 0.48, y: -H * 0.5, z: (Math.random() - .5) * 4, vx: Math.cos(ang) * v, vy: Math.sin(ang) * v, vz: (Math.random() - .5) * 5, vida: 2.4 + Math.random() * 1.6 });
+      });
+    },
+  };
+  return tres;
+}
+async function trocarFx(novo) {
+  fx = novo;
+  motor?.parar();
+  motor = fx === 'three' ? await motorThree().catch(e => { console.warn('Three.js indisponível, usando JS', e); fx = 'js'; return motorJs(); }) : motorJs();
+  motor.iniciar();
+  barra();
+}
+
+// ---------- barra do protótipo ----------
+const proto = document.getElementById('proto');
+proto.hidden = !(/^(localhost|127\.|10\.|192\.168\.)/.test(location.hostname) || params.has('proto'));
+function barra() {
+  document.getElementById('proto-nome').textContent = `${variante} — ${VARIANTES[variante][0]}`;
+  proto.querySelectorAll('[data-fx]').forEach(b => b.classList.toggle('on', b.dataset.fx === fx));
+  const u = new URL(location.href);
+  u.searchParams.set('variant', variante);
+  u.searchParams.set('fx', fx);
+  if (variante === 'D') u.searchParams.set('tela', tela); else u.searchParams.delete('tela');
+  history.replaceState(null, '', u);
+}
+function trocarVariante(passo) {
+  const chaves = Object.keys(VARIANTES);
+  variante = chaves[(chaves.indexOf(variante) + passo + chaves.length) % chaves.length];
+  memoria.clear(); // ao trocar, tudo anima do zero
+  desenhar('entrada');
+  barra();
+}
+proto.addEventListener('click', e => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  if (b.dataset.ir) trocarVariante(+b.dataset.ir);
+  if (b.dataset.fx) trocarFx(b.dataset.fx);
+  if (b.id === 'simular') simular();
+});
+addEventListener('keydown', e => {
+  if (e.target.closest('input, textarea, [contenteditable]')) return;
+  if (e.key === 'ArrowLeft') trocarVariante(-1);
+  if (e.key === 'ArrowRight') trocarVariante(1);
+  if (e.key === '1' || e.key === '2') trocarTela(+e.key);
+});
+// Simula um lote novo do TSE (só no navegador); o próximo ciclo real restaura os números verdadeiros.
+function simular() {
+  if (!dados?.cargos?.presidente) return;
+  const anterior = dados, novo = structuredClone(dados);
+  for (const c of Object.values(novo.cargos)) {
+    const soma = c.candidatos.reduce((s, x) => s + x.votos, 0);
+    const fatia = c.candidatos.reduce((s, x) => s + x.pct, 0) / 100 || 1;
+    const outros = soma / fatia - soma;
+    c.candidatos.forEach(x => x.votos = Math.round(x.votos * (1.02 + Math.random() * 0.25)));
+    const total = c.candidatos.reduce((s, x) => s + x.votos, 0) + outros * 1.1;
+    c.candidatos.forEach(x => x.pct = x.votos / total * 100);
+    c.candidatos.sort((a, b) => b.votos - a.votos);
+    const ap0 = c.apurado;
+    c.apurado = Math.min(100, c.apurado + 2 + Math.random() * 5);
+    c.hora = new Date().toLocaleTimeString('pt-BR') + ' (simulado)';
+    c.totais.validos = Math.round(total);
+    c.totais.eleitoradoApurado = Math.round(c.totais.eleitoradoApurado * c.apurado / ap0);
+    if (c.agremiacoes) simularCadeiras(c);
+  }
+  simulando = true;
+  dados = novo;
+  hist.push({ t: Date.now(), sim: true, c: Object.fromEntries(Object.entries(novo.cargos).map(([id, x]) => [id, {
+    ap: x.apurado, hora: x.hora, vv: x.totais.validos, comp: x.totais.comparecimento, bra: x.totais.brancos, nul: x.totais.nulos,
+    c: Object.fromEntries(x.candidatos.map(k => [k.n, [k.votos, k.pct, k.pos]])),
+    ...(x.agremiacoes && { a: Object.fromEntries(x.agremiacoes.map(a => [a.sigla, [a.votos, a.vagas]])) }),
+  }])) });
+  desenhar();
+  festa(anterior, novo);
+}
+// Na simulação, recalcula votos por agremiação, às vezes passa uma cadeira (pra ver a transição) e refaz quem é projetado.
+function simularCadeiras(c) {
+  for (const a of c.agremiacoes) a.votos = a.legenda + c.candidatos.filter(x => x.agr === a.sigla).reduce((s, x) => s + x.votos, 0);
+  if (Math.random() < 0.6) {
+    const com = c.agremiacoes.filter(a => a.vagas > 0);
+    const perde = com.reduce((p, q) => q.votos / q.vagas < p.votos / p.vagas ? q : p);
+    const ganha = c.agremiacoes.filter(a => a !== perde).reduce((p, q) => q.votos / (q.vagas + 1) > p.votos / (p.vagas + 1) ? q : p);
+    perde.vagas--; ganha.vagas++;
+  }
+  c.agremiacoes.sort((p, q) => q.vagas - p.vagas || q.votos - p.votos);
+  c.candidatos.forEach((x, i) => { x.pos = i + 1; x.projetado = false; });
+  for (const a of c.agremiacoes) c.candidatos.filter(x => x.agr === a.sigla && x.valido).slice(0, a.vagas).forEach(x => { x.projetado = true; });
+}
+
+setInterval(tique, 1000);
+setInterval(puxar, 5000);
+barra();
+desenhar('entrada');
+puxar();
+trocarFx(fx);
+</script>
+</body>
+</html>
