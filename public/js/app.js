@@ -26,19 +26,34 @@ function horaAgora() {
 	return new Date().toLocaleTimeString("pt-BR", { hour12: false });
 }
 
+function idadeConsulta(consultadoEm) {
+	if (consultadoEm == null) return "";
+	const min = Math.floor((Date.now() - consultadoEm) / 60_000);
+	return min < 1 ? "· agora há pouco" : `· há ${min} min`;
+}
+
 function atualizarStatusVivo() {
 	const rel = document.querySelector("[data-relogio]");
 	if (rel) rel.textContent = horaAgora();
 	const cont = document.querySelector("[data-contagem]");
 	const ciclo = document.querySelector("[data-ciclo]");
+	const idade = document.querySelector("[data-idade]");
+	const vivo = document.querySelector("[data-vivo]");
 	if (!dados) return;
 	const prox = dados.proximaConsulta;
 	const cons = dados.consultadoEm;
+	if (idade) idade.textContent = idadeConsulta(cons);
+	if (vivo) {
+		vivo.classList.toggle("instavel", Boolean(dados.erro));
+		vivo.innerHTML = dados.erro
+			? "<i></i>TSE instável"
+			: "<i></i>Ao vivo";
+	}
 	if (cont) {
-		if (prox == null) cont.textContent = "próxima consulta ao TSE —";
+		if (prox == null) cont.textContent = "—";
 		else {
 			const s = Math.max(0, Math.round((prox - Date.now()) / 1000));
-			cont.textContent = `próxima consulta ao TSE em ${s}s`;
+			cont.textContent = s === 0 ? "···" : `${String(s).padStart(2, "0")}s`;
 		}
 	}
 	if (ciclo && cons != null && prox != null) {
@@ -71,9 +86,9 @@ function ligarInteracoes() {
 function pintar(animarGraf) {
 	if (!dados?.cargos || (!dados.cargos.presidente && !dados.cargos.governador)) {
 		if (dados?.erro) {
-			app.innerHTML = `<div class="db"><div class="carregando"><p class="erro" role="alert">Não foi possível consultar o TSE: ${dados.erro}. Nova tentativa em breve.</p></div></div>`;
+			app.innerHTML = `<div class="db"><div class="carregando"><b>Contando votos…</b><p class="erro" role="alert">O TSE ainda não respondeu: ${dados.erro}</p></div></div>`;
 		} else {
-			app.innerHTML = `<div class="db"><div class="carregando"><p>Aguardando a primeira leitura do TSE…</p></div></div>`;
+			app.innerHTML = `<div class="db"><div class="carregando"><b>Contando votos…</b><p>Primeira consulta ao TSE em andamento.</p></div></div>`;
 		}
 		ligarInteracoes();
 		atualizarStatusVivo();
@@ -91,14 +106,12 @@ function pintar(animarGraf) {
 		tela,
 		graficos,
 		horaTse,
+		erro: dados.erro,
 	});
 	ativar();
 	pintarGraficos(graficos, animarGraf);
 	ligarInteracoes();
 	atualizarStatusVivo();
-	if (dados.erro) {
-		aviso(`Falha na consulta: ${dados.erro}`);
-	}
 }
 
 async function puxarHistorico() {
@@ -122,33 +135,58 @@ async function atualizar() {
 		if (!res.ok) throw new Error(`API ${res.status}`);
 		const novo = await res.json();
 		const mudou = novo.versao !== versao && versao >= 0;
+		const antBr = dados?.cargos?.presidente?.apurado;
+		const antPa = dados?.cargos?.governador?.apurado;
 		dados = novo;
 		if (novo.versao !== versao) {
 			await puxarHistorico();
 			versao = novo.versao;
 			pintar(mudou);
 			if (mudou) {
-				const ap = novo.cargos?.presidente?.apurado;
-				aviso(
-					`Atualizado às ${novo.cargos?.presidente?.hora ?? "—"}` +
-						(ap != null ? ` · Brasil ${ap.toFixed?.(2) ?? ap}%` : ""),
-				);
+				const P = novo.cargos?.presidente;
+				const G = novo.cargos?.governador;
+				const br =
+					antBr != null && P
+						? ` · Brasil ${pf2(antBr)}% → ${pf2(P.apurado)}%`
+						: "";
+				const pa =
+					antPa != null && G
+						? ` · Pará ${pf2(antPa)}% → ${pf2(G.apurado)}%`
+						: "";
+				aviso(`Atualizado às ${P?.hora ?? "—"}` + br + pa);
 			}
 		} else {
-			// Só ciclo/erro mudaram.
 			atualizarStatusVivo();
-			if (novo.erro) aviso(`Falha na consulta: ${novo.erro}`);
 		}
 	} catch (erro) {
 		if (!dados) {
-			app.innerHTML = `<div class="db"><div class="carregando"><p class="erro" role="alert">Falha ao ler a API: ${erro.message}. Tentando de novo…</p></div></div>`;
-		} else {
-			aviso(`Falha ao ler a API: ${erro.message}`);
+			app.innerHTML = `<div class="db"><div class="carregando"><b>Contando votos…</b><p class="erro" role="alert">O TSE ainda não respondeu: ${erro.message}</p></div></div>`;
 		}
 	}
 }
 
-app.innerHTML = `<div class="db"><div class="carregando"><p>carregando…</p></div></div>`;
+function pf2(v) {
+	return new Intl.NumberFormat("pt-BR", {
+		minimumFractionDigits: 2,
+		maximumFractionDigits: 2,
+	}).format(v);
+}
+
+app.innerHTML = `<div class="db"><div class="carregando"><b>Contando votos…</b><p>Primeira consulta ao TSE em andamento.</p></div></div>`;
+document.addEventListener("keydown", (ev) => {
+	if (ev.target instanceof HTMLInputElement || ev.target instanceof HTMLTextAreaElement)
+		return;
+	if (ev.key === "1" || ev.key === "2") {
+		const n = Number(ev.key);
+		if (n === tela) return;
+		tela = n;
+		const url = new URL(location.href);
+		url.searchParams.set("tela", String(tela));
+		history.replaceState(null, "", url);
+		pintar(false);
+	}
+});
+
 atualizar();
 setInterval(atualizar, 5000);
 setInterval(atualizarStatusVivo, 1000);

@@ -51,23 +51,48 @@ export function anima(k, prop, v, extra = "", un = "%") {
 	return `data-anim="${prop}" data-para="${v}${un}" style="${prop}:${de}${un};${extra}"`;
 }
 
+function preferirCalmo() {
+	return (
+		typeof matchMedia === "function" &&
+		matchMedia("(prefers-reduced-motion: reduce)").matches
+	);
+}
+
+/** Continuidade da faixa DESTAQUES: 55 px/s e atraso negativo pelo relógio. */
+export function continuarTicker() {
+	const rolo = document.querySelector(".db-rolo");
+	if (!(rolo instanceof HTMLElement)) return;
+	if (preferirCalmo()) {
+		rolo.style.animation = "none";
+		rolo.style.transform = "none";
+		return;
+	}
+	const metade = rolo.scrollWidth / 2;
+	const dur = Math.max(12, metade / 55);
+	const t = (Date.now() / 1000) % dur;
+	rolo.style.animationDuration = `${dur}s`;
+	rolo.style.animationDelay = `-${t}s`;
+}
+
 export function ativar() {
+	const calmo = preferirCalmo();
 	requestAnimationFrame(() =>
 		requestAnimationFrame(() => {
 			for (const el of document.querySelectorAll("[data-anim]")) {
 				el.style[el.dataset.anim] = el.dataset.para;
 			}
+			continuarTicker();
 		}),
 	);
 	for (const el of document.querySelectorAll(".conta")) {
 		const de = +el.dataset.de;
 		const para = +el.dataset.para;
 		const t = el.dataset.t;
-		const t0 = performance.now();
-		if (de === para) {
+		if (calmo || de === para) {
 			el.textContent = fmt(para, t);
 			continue;
 		}
+		const t0 = performance.now();
 		const passo = (agora) => {
 			const k = Math.min(1, (agora - t0) / 1500);
 			el.textContent = fmt(de + (para - de) * (1 - (1 - k) ** 3), t);
@@ -159,7 +184,8 @@ export function aviso(texto) {
 	el.innerHTML = `<i></i><span>${esc(texto)}</span>`;
 	el.classList.add("on");
 	clearTimeout(aviso._t);
-	aviso._t = setTimeout(() => el.classList.remove("on"), 4500);
+	// Catálogo: resumo permanece ~7 s.
+	aviso._t = setTimeout(() => el.classList.remove("on"), 7000);
 }
 
 export function temaSalvo() {

@@ -96,27 +96,27 @@ function dbAnalise(c, hist) {
 	const nm = (x) => esc(nomeBonito(x.nome));
 	const itens = [
 		[
-			duas ? "Disputa pela 2ª vaga" : "Vantagem do líder",
+			duas ? "DISPUTA PELA 2ª VAGA" : "VANTAGEM DO LÍDER",
 			`${nf.format(L)} votos · ${pf.format(def.pct - per.pct)} p.p. ${spark(margens, 56, 18)}`,
 			`${nm(def)} sobre ${nm(per)}`,
 		],
 	];
 	if (R) {
 		itens.push([
-			"Válidos a apurar (est.)",
+			"VÁLIDOS A APURAR (EST.)",
 			`≈ ${cf.format(R)}`,
 			`${pf.format(100 - c.apurado)}% das seções ainda faltam`,
 		]);
 		const pp = (L / R) * 100;
 		itens.push([
-			duas ? "Para tomar a 2ª vaga" : "Para virar",
+			duas ? "PARA TOMAR A 2ª VAGA" : "PARA VIRAR",
 			pp > 100 ? "fora de alcance" : `+${pf.format(pp)} p.p.`,
 			`${nm(per)} precisa superar ${nm(def)} por essa margem no que falta`,
 		]);
 		if (!duas) {
 			const s = ((0.5 * (c.totais.validos + R) - a.votos) / R) * 100;
 			itens.push([
-				"Vencer no 1º turno",
+				"VENCER NO 1º TURNO",
 				s <= 0
 					? "já tem a maioria (est.)"
 					: s > 100
@@ -131,15 +131,13 @@ function dbAnalise(c, hist) {
 		.map((x) => [x, tendencia(hist, id, x.n)])
 		.filter(([, t]) => t != null);
 	itens.push([
-		"Tendência recente",
+		"TENDÊNCIA RECENTE",
 		tend.length
 			? tend
 					.map(([x, t]) => `<span class="db-tend">${nm(x)} ${deltaPp(t)}</span>`)
 					.join("")
 			: '<span class="db-vazio">aguardando mais leituras</span>',
-		tend.length
-			? "p.p. a cada 10% de seções, nas últimas leituras"
-			: "aparece a partir da 3ª leitura com avanço na apuração",
+		tend.length ? "p.p. a cada 10% de seções, nas últimas leituras" : "",
 	]);
 	return `<dl class="db-analise">${itens
 		.map(
