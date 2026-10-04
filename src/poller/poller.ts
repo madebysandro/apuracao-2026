@@ -199,6 +199,7 @@ export class PollerApuracao extends DurableObject<Env> {
 			}
 
 			// 27 UFs + exterior, em sequência; falha numa UF não derruba o ciclo (só 429).
+			// ETag de UF só entra no mapa junto com o dado correspondente (evita 304 órfão).
 			const ufs: Record<string, UfPresidente> = {
 				...(estado.ufs ?? {}),
 			};
@@ -210,17 +211,25 @@ export class PollerApuracao extends DurableObject<Env> {
 						etags[chave],
 					);
 					maxAgeCiclo = Math.max(maxAgeCiclo, maxAge);
-					if (etag) etags[chave] = etag;
-					if (!json) continue;
-					const novo = normalizarPresidenteUf(
-						uf,
-						json as DadosBrutosCargo,
-					);
-					if (ufMudou(ufs[uf], novo)) mudou = true;
-					ufs[uf] = novo;
+					if (json) {
+						const novo = normalizarPresidenteUf(
+							uf,
+							json as DadosBrutosCargo,
+						);
+						if (ufMudou(ufs[uf], novo)) mudou = true;
+						ufs[uf] = novo;
+						if (etag) etags[chave] = etag;
+						estado.ufs = ufs;
+					} else if (ufs[uf] && etag) {
+						// 304: só renova ETag se o dado dessa UF já está no estado.
+						etags[chave] = etag;
+					}
 				} catch (erroUf) {
 					const e = erroUf as ErroTse;
-					if (typeof e.espera === "number") throw e;
+					if (typeof e.espera === "number") {
+						estado.ufs = ufs;
+						throw e;
+					}
 					console.error(
 						new Date().toISOString(),
 						uf,

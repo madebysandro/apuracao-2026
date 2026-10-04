@@ -89,6 +89,41 @@ describe("GET /api/apuracao — Presidente por UF e faixa de destaques (#7)", ()
 		).toBe(true);
 	});
 
+	it("com 429 no meio do loop de UFs, o ciclo seguinte mantém as UFs já buscadas", async () => {
+		// Ordem estável: ac, al, am, ap, ba, … — 429 em ba após 4 UFs com 200.
+		tse.simular429Uf("ba", 90);
+		await forcarConsulta();
+		const apos429 = await lerApuracao();
+		expect(apos429.erro).toMatch(/429/);
+		// Dados das UFs já consultadas precisam ter sido persistidos com a ETag.
+		expect(apos429.ufs?.ac).toMatchObject({ uf: "ac", nome: "Acre" });
+		expect(apos429.ufs?.al).toMatchObject({ uf: "al", nome: "Alagoas" });
+		expect(apos429.ufs?.am).toMatchObject({ uf: "am", nome: "Amazonas" });
+		expect(apos429.ufs?.ap).toMatchObject({ uf: "ap", nome: "Amapá" });
+		expect(apos429.ufs?.ba).toBeUndefined();
+
+		const pedidosApos429 = tse.pedidos.length;
+		await forcarConsulta();
+		const depois = await lerApuracao();
+		expect(depois.erro).toBeNull();
+		// As UFs do primeiro trecho continuam presentes (não “sumiram” por 304 sem dado).
+		expect(depois.ufs?.ac).toMatchObject({ uf: "ac", nome: "Acre" });
+		expect(depois.ufs?.al).toMatchObject({ uf: "al", nome: "Alagoas" });
+		expect(depois.ufs?.am).toMatchObject({ uf: "am", nome: "Amazonas" });
+		expect(depois.ufs?.ap).toMatchObject({ uf: "ap", nome: "Amapá" });
+		expect(depois.ufs?.ba).toMatchObject({ uf: "ba", nome: "Bahia" });
+		expect(Object.keys(depois.ufs!).length).toBe(28);
+
+		// UFs já buscadas no ciclo do 429 devem ter ido com If-None-Match.
+		const pedidosSegundo = tse.pedidos.slice(pedidosApos429);
+		for (const uf of ["ac", "al", "am", "ap"] as const) {
+			const pedido = pedidosSegundo.find((p) =>
+				p.url.includes(`/dados/${uf}/`),
+			);
+			expect(pedido?.ifNoneMatch).toMatch(/^"/);
+		}
+	});
+
 	it("a partir das fixtures, a API traz placar, regiões, colégios, disputa, ritmo, exterior e intercalação 2:1 com o Pará", async () => {
 		await forcarConsulta();
 		// Segunda leitura: Presidente avança (vantagem muda) e proporcionais reais (cadeiras).

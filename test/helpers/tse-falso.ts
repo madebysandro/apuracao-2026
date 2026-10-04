@@ -143,6 +143,8 @@ export type TseFalso = {
 	simularErro: (status?: number) => void;
 	/** Próxima resposta desta UF de Presidente falha (as demais seguem). */
 	simularErroUf: (uf: string, status?: number) => void;
+	/** Próxima resposta desta UF será 429 (interrompe o ciclo). */
+	simular429Uf: (uf: string, retryAfter?: number) => void;
 	/**
 	 * Sobrescreve o Cache-Control do próximo 200/304 de todos os arquivos
 	 * (útil para testar max(30 s, max-age) com valor controlado).
@@ -167,7 +169,11 @@ export function instalarTseFalso(opcoes: OpcoesTseFalso = {}): TseFalso {
 		pedidos: [] as PedidoTse[],
 		modo: null as ModoEspecial,
 		cacheControlOverride: null as string | null,
-		erroUf: null as { uf: string; status: number } | null,
+		erroUf: null as {
+			uf: string;
+			status: number;
+			retryAfter?: number;
+		} | null,
 	};
 	const modoProp = opcoes.proporcionais ?? "real";
 	const fixturesUf = presidenteUfs as Record<string, object>;
@@ -270,9 +276,17 @@ export function instalarTseFalso(opcoes: OpcoesTseFalso = {}): TseFalso {
 				const uf = String(params[0] ?? "");
 				const ifNoneMatch = request.headers.get("if-none-match");
 				if (estado.erroUf && estado.erroUf.uf === uf) {
-					const status = estado.erroUf.status;
+					const { status, retryAfter } = estado.erroUf;
 					estado.erroUf = null;
 					estado.pedidos.push({ url: request.url, ifNoneMatch });
+					if (status === 429) {
+						return new HttpResponse("calma", {
+							status: 429,
+							headers: {
+								"retry-after": String(retryAfter ?? 120),
+							},
+						});
+					}
 					return new HttpResponse("falha uf", { status });
 				}
 				const corpo = fixturesUf[uf];
@@ -319,6 +333,9 @@ export function instalarTseFalso(opcoes: OpcoesTseFalso = {}): TseFalso {
 		},
 		simularErroUf(uf: string, status = 503) {
 			estado.erroUf = { uf, status };
+		},
+		simular429Uf(uf: string, retryAfter = 90) {
+			estado.erroUf = { uf, status: 429, retryAfter };
 		},
 		definirCacheControl(cacheControl: string) {
 			estado.cacheControlOverride = cacheControl;

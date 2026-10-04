@@ -118,19 +118,19 @@ apuracao-2026/
 │   ├── tela1-majoritarias.png   # captura do app local
 │   ├── tela2-proporcionais.png
 │   └── prototipo/               # registro de alta fidelidade (tag prototipo-painel-v1)
-├── fixtures/tse-provisorio/     # gravações reais do TSE para os testes
+├── fixtures/tse-provisorio/     # gravações reais + ufs/ sintéticas (#2 substitui)
 ├── public/                      # front estático (assets do Worker)
 │   ├── css/                     # tokens + tema
 │   ├── js/
 │   │   ├── app.js               # orquestra Telas 1/2 e o poll de 5 s
-│   │   ├── tela1-*.js           # majoritárias
+│   │   ├── tela1-*.js           # majoritárias + destaques
 │   │   ├── tela2-proporcionais.js
 │   │   └── movimento/           # tema, FLIP, barras, faixa, abas…
 │   └── index.html
 ├── src/
 │   ├── index.ts                 # Worker: /api/* + ASSETS
-│   ├── config/tse.ts            # URLs, códigos de cargo, vars
-│   ├── dominio/                 # normalização e tipos
+│   ├── config/                  # tse.ts + ufs.ts (siglas, regiões, URLs)
+│   ├── dominio/                 # cargos, majoritárias, destaques, tipos
 │   └── poller/                  # Durable Object, cliente TSE, histórico
 ├── test/                        # Vitest + pool de Workers + TSE falso (MSW)
 ├── package.json
@@ -177,7 +177,7 @@ Para sobrescrever localmente, use `.dev.vars` (esse arquivo está no `.gitignore
 
 ### Testes e tipagem
 
-- **Testes:** `npm test` — 2 arquivos (`test/apuracao.api.test.ts`, `test/proporcionais.api.test.ts`), pool `@cloudflare/vitest-pool-workers`, TSE interceptado com MSW e fixtures em `fixtures/tse-provisorio/`.
+- **Testes:** `npm test` — `test/*.api.test.ts` (apuracao, proporcionais, destaques/UFs), pool `@cloudflare/vitest-pool-workers`, TSE interceptado com MSW e fixtures em `fixtures/tse-provisorio/`.
 - **Tipagem:** TypeScript strict (`tsc --noEmit`). Tipos do Worker gerados com `npm run cf-typegen` (`wrangler types` → `worker-configuration.d.ts`).
 
 ---
