@@ -1,10 +1,6 @@
 /** Cartão da Tela 1 — Presidente. Isolado para a issue #4 expandir majoritárias. */
-
-const formatarPct = new Intl.NumberFormat("pt-BR", {
-	minimumFractionDigits: 2,
-	maximumFractionDigits: 2,
-});
-const formatarInt = new Intl.NumberFormat("pt-BR");
+import { conta } from "./movimento/conta.js";
+import { escapar } from "./movimento/formato.js";
 
 export function renderizarPresidente(cargo) {
 	if (!cargo) {
@@ -14,12 +10,12 @@ export function renderizarPresidente(cargo) {
 	const linhas = cargo.candidatos
 		.slice(0, 8)
 		.map(
-			(c) => `<li class="cand">
+			(c) => `<li class="cand" data-flip="pres-${c.n}">
         <span class="pos">${c.pos}º</span>
         <span class="nome">${escapar(c.nome)}</span>
-        <span class="pct">${formatarPct.format(c.pct)}%</span>
+        <span class="pct">${conta(`pres-${c.n}-pct`, c.pct, "p", true)}</span>
         <span class="partido">${escapar(c.partido)}</span>
-        <span class="votos">${formatarInt.format(c.votos)} votos</span>
+        <span class="votos">${conta(`pres-${c.n}-votos`, c.votos, "n")} votos</span>
       </li>`,
 		)
 		.join("");
@@ -30,16 +26,8 @@ export function renderizarPresidente(cargo) {
         <h1 id="titulo-presidente">${escapar(cargo.titulo)}</h1>
         <small>${escapar(cargo.local)} · dados oficiais do TSE</small>
       </div>
-      <div class="apurado">${formatarPct.format(cargo.apurado)}% das seções</div>
+      <div class="apurado">${conta("pres-apurado", cargo.apurado, "p")}<br><small>das seções</small></div>
     </header>
     <ol class="ranking">${linhas}</ol>
   </section>`;
-}
-
-function escapar(texto) {
-	return String(texto)
-		.replaceAll("&", "&amp;")
-		.replaceAll("<", "&lt;")
-		.replaceAll(">", "&gt;")
-		.replaceAll('"', "&quot;");
 }

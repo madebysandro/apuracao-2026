@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-tema="escuro">
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -11,19 +11,35 @@
 			rel="stylesheet"
 		/>
 		<link rel="stylesheet" href="/css/tema.css" />
+		<script type="module">
+			import { aplicarTemaSalvo } from "/js/movimento/tema.js";
+			aplicarTemaSalvo();
+		</script>
 	</head>
 	<body>
 		<main class="painel">
 			<header class="marca">
-				<b>Apuração 2026</b>
-				<span>Presidente ao vivo · dados oficiais do TSE</span>
+				<div class="marca-texto">
+					<b>Apuração 2026</b>
+					<span>Presidente ao vivo · dados oficiais do TSE</span>
+				</div>
+				<div class="status" data-status>
+					<span class="vivo"><i></i>Ao vivo</span>
+					<span>carregando…</span>
+				</div>
+				<button
+					type="button"
+					class="btn-tema"
+					data-tema-toggle
+					title="Alternar tema claro/escuro"
+					aria-label="Alternar tema claro/escuro"
+				>
+					◐
+				</button>
 			</header>
-			<div class="status" data-status>
-				<span class="vivo"><i></i>Ao vivo</span>
-				<span>carregando…</span>
-			</div>
-			<div data-app></div>
+			<div class="grade-3" data-app></div>
 		</main>
+		<div id="aviso" role="status" aria-live="polite"></div>
 		<script type="module" src="/js/app.js"></script>
 	</body>
 </html>
