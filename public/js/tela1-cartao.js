@@ -111,8 +111,7 @@ function dbAnalise(c, a) {
 		const rotuloVirar = duas ? "PARA TOMAR A 2ª VAGA" : "PARA VIRAR";
 		itens.push([
 			rotuloVirar,
-			a.foraDeAlcance ||
-			(a.margemParaVirarPp != null && a.margemParaVirarPp > 100)
+			a.foraDeAlcance
 				? "fora de alcance"
 				: `+${pf.format(a.margemParaVirarPp)} p.p.`,
 			`${nm(a.perseguidor)} precisa superar ${nm(a.defensor)} por essa margem no que falta`,
