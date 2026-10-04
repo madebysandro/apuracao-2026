@@ -215,16 +215,19 @@ body[data-tema="claro"]::before { opacity: .45; }
   gap: var(--gap); margin: 16px 0;
 }
 .db-kpi, .db-card {
+  /* entrada só na primeira carga — ver .db-entrada abaixo */
+}
+.db-entrada .db-kpi, .db-entrada .db-card {
   animation: entrada-d .5s cubic-bezier(.2, .8, .2, 1) both;
 }
-.db-kpi:nth-child(1) { animation-delay: 0ms; }
-.db-kpi:nth-child(2) { animation-delay: 60ms; }
-.db-kpi:nth-child(3) { animation-delay: 120ms; }
-.db-kpi:nth-child(4) { animation-delay: 180ms; }
-.db-kpi:nth-child(5) { animation-delay: 240ms; }
-.db-grade3 > .db-card:nth-child(1) { animation-delay: 300ms; }
-.db-grade3 > .db-card:nth-child(2) { animation-delay: 360ms; }
-.db-grade3 > .db-card:nth-child(3) { animation-delay: 420ms; }
+.db-entrada .db-kpi:nth-child(1) { animation-delay: 0ms; }
+.db-entrada .db-kpi:nth-child(2) { animation-delay: 60ms; }
+.db-entrada .db-kpi:nth-child(3) { animation-delay: 120ms; }
+.db-entrada .db-kpi:nth-child(4) { animation-delay: 180ms; }
+.db-entrada .db-kpi:nth-child(5) { animation-delay: 240ms; }
+.db-entrada .db-grade3 > .db-card:nth-child(1) { animation-delay: 300ms; }
+.db-entrada .db-grade3 > .db-card:nth-child(2) { animation-delay: 360ms; }
+.db-entrada .db-grade3 > .db-card:nth-child(3) { animation-delay: 420ms; }
 @keyframes entrada-d {
   from { opacity: 0; transform: translateY(14px); }
   to { opacity: 1; transform: none; }

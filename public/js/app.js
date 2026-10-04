@@ -1,8 +1,10 @@
+import { deslizarAba } from "./movimento/abas.js";
 import {
 	atualizarFaixaDados,
 	iniciarFaixaStatus,
 	novidadeStatus,
 } from "./movimento/faixa-status.js";
+import { capturarFlip, flip } from "./movimento/flip.js";
 import { ligarBarras } from "./movimento/fluxo-barras.js";
 import { pintarGraficos } from "./tela1-grafico.js";
 import { renderizarPainel } from "./tela1-painel.js";
@@ -27,6 +29,8 @@ let dados = null;
 let hist = [];
 let versao = -1;
 let ultimoDesde = 0;
+/** Primeira pintura completa: anima entrada; depois, continuidade. */
+let primeiraPintura = true;
 
 function horaTseAtual() {
 	return (
@@ -44,22 +48,35 @@ iniciarFaixaStatus({
 	onTema: () => alternarTema(),
 });
 
+function irPara(n) {
+	if (n !== 1 && n !== 2) return;
+	if (n === tela) return;
+	const de = tela;
+	const atual = document.querySelector(".db-tela");
+	tela = n;
+	const url = new URL(location.href);
+	if (tela === 1) url.searchParams.delete("tela");
+	else url.searchParams.set("tela", String(tela));
+	history.pushState({ tela }, "", url);
+	deslizarAba({
+		de,
+		para: n,
+		atual,
+		seletorNova: ".db-tela",
+		pintar: () => pintar(false),
+	});
+}
+
 function ligarInteracoes() {
 	for (const btn of document.querySelectorAll(".db-abas [data-tela]")) {
 		btn.addEventListener("click", () => {
-			const n = Number(btn.getAttribute("data-tela"));
-			if (n === tela) return;
-			tela = n;
-			const url = new URL(location.href);
-			if (tela === 1) url.searchParams.delete("tela");
-			else url.searchParams.set("tela", String(tela));
-			history.pushState({ tela }, "", url);
-			pintar(false);
+			irPara(Number(btn.getAttribute("data-tela")));
 		});
 	}
 }
 
 function pintar(animarGraf) {
+	const antes = capturarFlip();
 	if (
 		!dados?.cargos ||
 		(!dados.cargos.presidente &&
@@ -76,6 +93,7 @@ function pintar(animarGraf) {
 	}
 	const graficos = new Map();
 	const horaTse = horaTseAtual() ?? "—";
+	app.classList.toggle("db-entrada", primeiraPintura);
 	app.innerHTML = renderizarPainel({
 		cargos: dados.cargos,
 		analise: dados.analise,
@@ -89,6 +107,9 @@ function pintar(animarGraf) {
 	pintarGraficos(graficos, animarGraf);
 	ligarBarras();
 	ligarInteracoes();
+	flip(antes);
+	primeiraPintura = false;
+	app.classList.remove("db-entrada");
 }
 
 async function puxarHistorico() {
@@ -157,16 +178,7 @@ document.addEventListener("keydown", (ev) => {
 		ev.target instanceof HTMLTextAreaElement
 	)
 		return;
-	if (ev.key === "1" || ev.key === "2") {
-		const n = Number(ev.key);
-		if (n === tela) return;
-		tela = n;
-		const url = new URL(location.href);
-		if (tela === 1) url.searchParams.delete("tela");
-		else url.searchParams.set("tela", String(tela));
-		history.pushState({ tela }, "", url);
-		pintar(false);
-	}
+	if (ev.key === "1" || ev.key === "2") irPara(Number(ev.key));
 });
 
 addEventListener("popstate", () => {
