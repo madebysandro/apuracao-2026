@@ -2,6 +2,10 @@ import { PollerApuracao } from "./poller/poller";
 
 export { PollerApuracao };
 
+/** Cache curto na borda: muitos visitantes não viram uma chamada ao DO cada um. */
+const CACHE_API_APURACAO =
+	"public, max-age=0, s-maxage=5, must-revalidate";
+
 function poller(env: Env) {
 	return env.POLLER.getByName("singleton");
 }
@@ -13,7 +17,7 @@ export default {
 		if (url.pathname === "/api/apuracao") {
 			const estado = await poller(env).obterEstado();
 			return Response.json(estado, {
-				headers: { "cache-control": "no-store" },
+				headers: { "cache-control": CACHE_API_APURACAO },
 			});
 		}
 

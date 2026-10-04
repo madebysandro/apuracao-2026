@@ -36,6 +36,10 @@
 		"ELEICAO_FEDERAL": "6257",
 		"ELEICAO_ESTADUAL": "6259"
 	},
+	// Habilita Workers Caching para honrar Cache-Control/s-maxage de /api/apuracao.
+	"cache": {
+		"enabled": true
+	},
 	"observability": {
 		"enabled": true,
 		"traces": {

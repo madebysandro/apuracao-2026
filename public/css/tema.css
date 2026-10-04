@@ -34,9 +34,81 @@ body {
 }
 
 .painel {
-	max-width: 720px;
+	max-width: 1180px;
 	margin: 0 auto;
 	padding: 28px 20px 48px;
+}
+
+/* Barra do ciclo até a próxima consulta (#4; #8 pode animar/refinar). */
+.barra-ciclo {
+	--ciclo: 0%;
+	height: 3px;
+	margin: 0 0 22px;
+	border-radius: 999px;
+	background: rgb(255 255 255 / 0.08);
+	overflow: hidden;
+}
+
+.barra-ciclo::after {
+	content: "";
+	display: block;
+	width: var(--ciclo);
+	height: 100%;
+	background: var(--destaque);
+	transition: width 0.8s linear;
+}
+
+.indicadores {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 12px;
+	margin-bottom: 22px;
+}
+
+.indicador {
+	display: grid;
+	gap: 4px;
+	padding: 12px 0;
+	border-top: 1px solid rgb(255 255 255 / 0.08);
+}
+
+.indicador-rotulo,
+.indicador-extra {
+	color: var(--texto-suave);
+	font-size: 0.8rem;
+}
+
+.indicador-valor {
+	font-family: var(--fonte-num);
+	font-size: 1.25rem;
+	font-weight: 600;
+}
+
+.grade-tela1 {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 16px;
+	align-items: start;
+}
+
+.cartao h2 {
+	margin: 0;
+	font-family: var(--fonte-display);
+	font-size: 1.35rem;
+	font-weight: 650;
+}
+
+.vaga-marca {
+	display: inline-block;
+	margin-left: 8px;
+	color: var(--texto-suave);
+	font-size: 0.75rem;
+	font-weight: 650;
+	font-family: var(--fonte-corpo);
+}
+
+.cand-vaga .nome {
+	color: var(--texto);
 }
 
 .marca {
@@ -186,8 +258,29 @@ body {
 	color: #e66767;
 }
 
+@media (max-width: 1100px) {
+	.grade-tela1 {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.indicadores {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+@media (max-width: 640px) {
+	.grade-tela1,
+	.indicadores {
+		grid-template-columns: 1fr;
+	}
+}
+
 @media (prefers-reduced-motion: reduce) {
 	.vivo i {
 		animation: none;
+	}
+
+	.barra-ciclo::after {
+		transition: none;
 	}
 }

@@ -5,17 +5,20 @@ import {
 	urlArquivoCargo,
 	type ConfigTse,
 } from "../config/tse";
+import { normalizarGovernador } from "../dominio/cargos/governador";
 import {
 	normalizarPresidente,
 	type DadosBrutosCargo,
 } from "../dominio/cargos/presidente";
-import type { Cargo, EstadoApuracao, Leitura } from "../dominio/tipos";
+import { normalizarSenador } from "../dominio/cargos/senador";
+import type { Cargo, EstadoApuracao, Leitura, MetaCargo } from "../dominio/tipos";
 import { buscarArquivoTse, ErroTse } from "./cliente-tse";
 import { montarLeitura } from "./historico";
 
 const CHAVE_ESTADO = "estado";
 const CHAVE_ETAGS = "etags";
 const CHAVE_HISTORICO = "historico";
+const CHAVE_BACKOFF = "backoffSegundos";
 
 type Etags = Record<string, string>;
 
@@ -35,6 +38,18 @@ function cargoMudou(antes: Cargo | undefined, novo: Cargo): boolean {
 	return antes.candidatos.some(
 		(c, i) => c.votos !== novo.candidatos[i]?.votos,
 	);
+}
+
+function normalizarCargo(
+	meta: MetaCargo,
+	json: DadosBrutosCargo,
+	cfg: ConfigTse,
+): Cargo | null {
+	if (meta.id === "presidente") return normalizarPresidente(meta, json, cfg);
+	if (meta.id === "governador") return normalizarGovernador(meta, json, cfg);
+	if (meta.id === "senador") return normalizarSenador(meta, json, cfg);
+	// Proporcionais entram na issue #6.
+	return null;
 }
 
 /**
@@ -87,8 +102,12 @@ export class PollerApuracao extends DurableObject<Env> {
 		const estado = await this.lerEstado();
 		const etags =
 			(await this.ctx.storage.get<Etags>(CHAVE_ETAGS)) ?? {};
+		const backoffAnterior =
+			(await this.ctx.storage.get<number>(CHAVE_BACKOFF)) ?? null;
 
 		let esperaSegundos = 60;
+		let novoBackoff: number | null = null;
+
 		try {
 			let mudou = false;
 			for (const meta of metasCargos(cfg)) {
@@ -101,17 +120,12 @@ export class PollerApuracao extends DurableObject<Env> {
 				if (etag) etags[meta.id] = etag;
 				if (!json) continue;
 
-				let novo: Cargo;
-				if (meta.id === "presidente") {
-					novo = normalizarPresidente(
-						meta,
-						json as DadosBrutosCargo,
-						cfg,
-					);
-				} else {
-					// Outros cargos entram nas issues #4/#6.
-					continue;
-				}
+				const novo = normalizarCargo(
+					meta,
+					json as DadosBrutosCargo,
+					cfg,
+				);
+				if (!novo) continue;
 
 				if (cargoMudou(estado.cargos[meta.id], novo)) mudou = true;
 				estado.cargos[meta.id] = novo;
@@ -122,18 +136,29 @@ export class PollerApuracao extends DurableObject<Env> {
 				await this.registrarLeitura(estado);
 			}
 			estado.erro = null;
+			novoBackoff = null;
 		} catch (erro) {
 			const e = erro as ErroTse;
 			estado.erro = e.message ?? String(erro);
-			esperaSegundos =
-				e.espera ??
-				Math.min(Math.max(esperaSegundos, 60) * 2, 600);
+			if (typeof e.espera === "number") {
+				esperaSegundos = e.espera;
+				novoBackoff = null;
+			} else {
+				const base = backoffAnterior ?? 60;
+				esperaSegundos = Math.min(base * 2, 600);
+				novoBackoff = esperaSegundos;
+			}
 		}
 
 		estado.consultadoEm = Date.now();
 		estado.proximaConsulta = Date.now() + esperaSegundos * 1000;
 		await this.ctx.storage.put(CHAVE_ESTADO, estado);
 		await this.ctx.storage.put(CHAVE_ETAGS, etags);
+		if (novoBackoff == null) {
+			await this.ctx.storage.delete(CHAVE_BACKOFF);
+		} else {
+			await this.ctx.storage.put(CHAVE_BACKOFF, novoBackoff);
+		}
 		await this.ctx.storage.setAlarm(estado.proximaConsulta);
 	}
 
