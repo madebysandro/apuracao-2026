@@ -10,16 +10,24 @@ import type {
  */
 export type InstantaneoProporcional = {
 	posPorCandidato: Record<string, number>;
+	pctPorCandidato: Record<string, number>;
 	cadeirasPorAgr: Record<string, number>;
 };
 
+/** Séries de % por candidato (minilinha), acumuladas no mesmo módulo de variações. */
+export type SeriesProporcionais = Record<string, number[]>;
+
+const MAX_PONTOS_SERIE = 16;
+
 /**
  * Interface pequena que a #5 pode trocar: hoje o poller guarda primeiro/anterior
- * em chaves próprias do Durable Object; depois pode ler do histórico de Leituras.
+ * e as séries em chaves próprias do Durable Object; depois pode ler do histórico
+ * de Leituras.
  */
 export interface FonteVariacoesProporcionais {
 	obterAnterior(cargoId: string): Promise<InstantaneoProporcional | null>;
 	obterPrimeiro(cargoId: string): Promise<InstantaneoProporcional | null>;
+	obterSeries(cargoId: string): Promise<SeriesProporcionais>;
 	registrar(
 		cargoId: string,
 		atual: InstantaneoProporcional,
@@ -31,20 +39,46 @@ export function instantaneoDe(cargo: Cargo): InstantaneoProporcional {
 		posPorCandidato: Object.fromEntries(
 			cargo.candidatos.map((c) => [c.n, c.pos]),
 		),
+		pctPorCandidato: Object.fromEntries(
+			cargo.candidatos.map((c) => [c.n, c.pct]),
+		),
 		cadeirasPorAgr: Object.fromEntries(
 			(cargo.agremiacoes ?? []).map((a) => [a.sigla, a.vagas]),
 		),
 	};
 }
 
-/** Anexa deltaPos (leitura anterior) e deltaCadeiras (primeira leitura). */
+export function acumularSeries(
+	anteriores: SeriesProporcionais,
+	atual: InstantaneoProporcional,
+): SeriesProporcionais {
+	const out: SeriesProporcionais = { ...anteriores };
+	for (const [n, pct] of Object.entries(atual.pctPorCandidato)) {
+		const prev = out[n] ?? [];
+		if (prev.at(-1) === pct) {
+			out[n] = prev;
+			continue;
+		}
+		out[n] = [...prev, pct].slice(-MAX_PONTOS_SERIE);
+	}
+	return out;
+}
+
+/** Anexa deltaPos, deltaCadeiras e seriePct (minilinha). */
 export function aplicarVariacoes(
 	cargo: Cargo,
 	anterior: InstantaneoProporcional | null,
 	primeiro: InstantaneoProporcional | null,
+	series: SeriesProporcionais = {},
 ): Cargo {
 	const candidatos = cargo.candidatos.map((c) => {
 		const posAnt = anterior?.posPorCandidato[c.n];
+		const serie = series[c.n] ?? [];
+		// Inclui o ponto atual se a série ainda não o tiver (antes do registrar).
+		const seriePct =
+			serie.length && serie.at(-1) === c.pct
+				? serie
+				: [...serie, c.pct].slice(-MAX_PONTOS_SERIE);
 		return {
 			...c,
 			deltaPos:
@@ -53,6 +87,7 @@ export function aplicarVariacoes(
 					: posAnt == null
 						? null
 						: posAnt - c.pos,
+			seriePct,
 		};
 	});
 

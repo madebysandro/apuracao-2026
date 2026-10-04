@@ -4,34 +4,10 @@
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<title>Apuração 2026</title>
-		<link rel="preconnect" href="https://fonts.googleapis.com" />
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-		<link
-			href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,650;9..144,700&family=IBM+Plex+Mono:wght@500;600&family=Source+Sans+3:wght@400;650&display=swap"
-			rel="stylesheet"
-		/>
 		<link rel="stylesheet" href="/css/tema.css" />
 	</head>
 	<body>
-		<main class="painel">
-			<header class="marca">
-				<b>Apuração 2026</b>
-				<span>Presidente e Pará · dados oficiais do TSE</span>
-			</header>
-			<nav class="abas" data-abas role="tablist" aria-label="Telas do painel">
-				<button type="button" role="tab" data-tela="1" aria-selected="true">
-					<b>1</b><span>Majoritárias<small>Presidente</small></span>
-				</button>
-				<button type="button" role="tab" data-tela="2" aria-selected="false">
-					<b>2</b><span>Proporcionais<small>Deputados PA</small></span>
-				</button>
-			</nav>
-			<div class="status" data-status>
-				<span class="vivo"><i></i>Ao vivo</span>
-				<span>carregando…</span>
-			</div>
-			<div data-app></div>
-		</main>
+		<div id="app" data-app></div>
 		<script type="module" src="/js/app.js"></script>
 	</body>
 </html>

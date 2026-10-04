@@ -144,10 +144,12 @@ export class PollerApuracao extends DurableObject<Env> {
 					);
 					const anterior = await variacoes.obterAnterior(meta.id);
 					const primeiro = await variacoes.obterPrimeiro(meta.id);
+					const series = await variacoes.obterSeries(meta.id);
 					const enriquecido = aplicarVariacoes(
 						novo,
 						anterior,
 						primeiro,
+						series,
 					);
 					analiseProp[meta.id] = analiseProporcional(enriquecido);
 					if (cargoMudou(estado.cargos[meta.id], novo)) {

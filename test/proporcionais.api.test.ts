@@ -18,6 +18,7 @@ type CandApi = {
 	projetado?: boolean;
 	fila?: boolean;
 	deltaPos?: number | null;
+	seriePct?: number[];
 };
 
 type AgrApi = {
@@ -196,6 +197,11 @@ describe("GET /api/apuracao — Deputados proporcionais do Pará", () => {
 		expect(fed.candidatos.find((c) => c.n === "5500")?.projetado).toBeFalsy();
 		expect(fed.candidatos.find((c) => c.n === "4010")?.projetado).toBe(true);
 		expect(fed.candidatos.find((c) => c.n === "2299")).toBeUndefined();
+
+		// Com o inválido sintético sumindo, o líder do PL sobe uma posição.
+		const caveira = fed.candidatos.find((c) => c.n === "2200");
+		expect(caveira?.deltaPos).toBe(1);
+		expect(caveira?.seriePct?.length).toBeGreaterThanOrEqual(1);
 	});
 
 	it("disputa interna vem ordenada pela menor diferença", async () => {

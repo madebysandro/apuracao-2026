@@ -27,6 +27,8 @@ export type Candidato = {
 	fila?: boolean;
 	/** Variação de posição desde a leitura anterior (positivo = subiu). */
 	deltaPos?: number | null;
+	/** Evolução do % (minilinha), acumulada no módulo de variações proporcionais. */
+	seriePct?: number[];
 };
 
 export type Agremiacao = {
