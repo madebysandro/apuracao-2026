@@ -15,6 +15,7 @@ import {
 	normalizarProporcional,
 } from "../dominio/cargos/proporcional";
 import { normalizarSenador } from "../dominio/cargos/senador";
+import { analisarMajoritarias } from "../dominio/majoritarias/analise";
 import {
 	analiseProporcional,
 	aplicarVariacoes,
@@ -45,7 +46,7 @@ function estadoVazio(): EstadoApuracao {
 		proximaConsulta: null,
 		erro: null,
 		cargos: {},
-		analise: { proporcionais: {} },
+		analise: { majoritarias: {}, proporcionais: {} },
 	};
 }
 
@@ -189,12 +190,17 @@ export class PollerApuracao extends DurableObject<Env> {
 				estado.cargos[meta.id] = novo;
 			}
 
-			estado.analise = { proporcionais: analiseProp };
-
 			if (mudou) {
 				estado.versao += 1;
 				await this.registrarLeitura(estado);
 			}
+
+			const historico =
+				(await this.ctx.storage.get<Leitura[]>(CHAVE_HISTORICO)) ?? [];
+			estado.analise = {
+				majoritarias: analisarMajoritarias(estado.cargos, historico),
+				proporcionais: analiseProp,
+			};
 			estado.erro = null;
 			novoBackoff = null;
 		} catch (erro) {

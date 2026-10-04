@@ -177,25 +177,6 @@ export function serieCand(hist, id, n) {
 		.map((p) => [p.c[id].ap, p.c[id].c[n][1], p.c[id].hora]);
 }
 
-const media = (v) => v.reduce((a, b) => a + b, 0) / v.length;
-
-export function tendencia(hist, id, n) {
-	const s = serieCand(hist, id, n).slice(-8);
-	if (s.length < 3) return null;
-	const mx = media(s.map((p) => p[0]));
-	const my = media(s.map((p) => p[1]));
-	const sxx = s.reduce((a, p) => a + (p[0] - mx) ** 2, 0);
-	if (sxx < 0.25) return null;
-	return (
-		(s.reduce((a, p) => a + (p[0] - mx) * (p[1] - my), 0) / sxx) * 10
-	);
-}
-
-export function restante(c) {
-	const f = c.totais.eleitoradoApurado / c.totais.eleitorado;
-	return f > 0 && f < 1 ? c.totais.validos / f - c.totais.validos : null;
-}
-
 export function aviso(texto) {
 	const el = document.getElementById("aviso");
 	if (!el) return;
