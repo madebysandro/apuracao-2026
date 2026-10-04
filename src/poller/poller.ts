@@ -9,9 +9,24 @@ import {
 	normalizarPresidente,
 	type DadosBrutosCargo,
 } from "../dominio/cargos/presidente";
-import type { Cargo, EstadoApuracao, Leitura } from "../dominio/tipos";
+import {
+	ehCargoProporcional,
+	normalizarProporcional,
+} from "../dominio/cargos/proporcional";
+import {
+	analiseProporcional,
+	aplicarVariacoes,
+	instantaneoDe,
+} from "../dominio/proporcionais/variacoes";
+import type {
+	AnaliseApuracao,
+	Cargo,
+	EstadoApuracao,
+	Leitura,
+} from "../dominio/tipos";
 import { buscarArquivoTse, ErroTse } from "./cliente-tse";
 import { montarLeitura } from "./historico";
+import { fonteVariacoesDo } from "./variacoes-do";
 
 const CHAVE_ESTADO = "estado";
 const CHAVE_ETAGS = "etags";
@@ -26,15 +41,24 @@ function estadoVazio(): EstadoApuracao {
 		proximaConsulta: null,
 		erro: null,
 		cargos: {},
+		analise: { proporcionais: {} },
 	};
 }
 
 function cargoMudou(antes: Cargo | undefined, novo: Cargo): boolean {
 	if (!antes) return true;
 	if (antes.apurado !== novo.apurado) return true;
-	return antes.candidatos.some(
-		(c, i) => c.votos !== novo.candidatos[i]?.votos,
-	);
+	if (
+		antes.candidatos.some((c, i) => c.votos !== novo.candidatos[i]?.votos)
+	) {
+		return true;
+	}
+	// Proporcionais: a dança de cadeiras pode mudar só o `vag`.
+	const agrAntes = antes.agremiacoes ?? [];
+	const agrNovo = novo.agremiacoes ?? [];
+	if (agrAntes.length !== agrNovo.length) return true;
+	const mapa = new Map(agrAntes.map((a) => [a.sigla, a.vagas]));
+	return agrNovo.some((a) => mapa.get(a.sigla) !== a.vagas);
 }
 
 /**
@@ -87,6 +111,10 @@ export class PollerApuracao extends DurableObject<Env> {
 		const estado = await this.lerEstado();
 		const etags =
 			(await this.ctx.storage.get<Etags>(CHAVE_ETAGS)) ?? {};
+		const variacoes = fonteVariacoesDo(this.ctx.storage);
+		const analiseProp: NonNullable<AnaliseApuracao["proporcionais"]> = {
+			...(estado.analise?.proporcionais ?? {}),
+		};
 
 		let esperaSegundos = 60;
 		try {
@@ -108,14 +136,37 @@ export class PollerApuracao extends DurableObject<Env> {
 						json as DadosBrutosCargo,
 						cfg,
 					);
+				} else if (ehCargoProporcional(meta.id)) {
+					novo = normalizarProporcional(
+						meta,
+						json as DadosBrutosCargo,
+						cfg,
+					);
+					const anterior = await variacoes.obterAnterior(meta.id);
+					const primeiro = await variacoes.obterPrimeiro(meta.id);
+					const enriquecido = aplicarVariacoes(
+						novo,
+						anterior,
+						primeiro,
+					);
+					analiseProp[meta.id] = analiseProporcional(enriquecido);
+					if (cargoMudou(estado.cargos[meta.id], novo)) {
+						await variacoes.registrar(
+							meta.id,
+							instantaneoDe(novo),
+						);
+					}
+					novo = enriquecido;
 				} else {
-					// Outros cargos entram nas issues #4/#6.
+					// Governador/Senado entram na issue #4.
 					continue;
 				}
 
 				if (cargoMudou(estado.cargos[meta.id], novo)) mudou = true;
 				estado.cargos[meta.id] = novo;
 			}
+
+			estado.analise = { proporcionais: analiseProp };
 
 			if (mudou) {
 				estado.versao += 1;

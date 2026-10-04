@@ -12,6 +12,18 @@
 	--fonte-display: "Fraunces", "Palatino Linotype", Palatino, serif;
 	--fonte-corpo: "Source Sans 3", "Segoe UI", sans-serif;
 	--fonte-num: "IBM Plex Mono", "Source Code Pro", monospace;
+	/* Paleta categórica (até 8; 9ª+ = --outros). Issue #8 pode refinar. */
+	--s1: #3987e5;
+	--s2: #d95926;
+	--s3: #199e70;
+	--s4: #c98500;
+	--s5: #d55181;
+	--s6: #008300;
+	--s7: #9085e9;
+	--s8: #e66767;
+	--outros: #6b7280;
+	--sobe: #3ecf8e;
+	--desce: #e66767;
 }
 
 * {
@@ -34,9 +46,54 @@ body {
 }
 
 .painel {
-	max-width: 720px;
+	max-width: 1100px;
 	margin: 0 auto;
 	padding: 28px 20px 48px;
+}
+
+.abas {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin: 0 0 18px;
+}
+
+.abas button {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	padding: 8px 14px;
+	border: 1px solid rgb(255 255 255 / 0.08);
+	border-radius: 12px;
+	background: rgb(30 36 48 / 0.55);
+	color: var(--texto-suave);
+	font: inherit;
+	cursor: pointer;
+}
+
+.abas button b {
+	font-family: var(--fonte-num);
+	font-size: 1.1rem;
+	color: var(--texto);
+}
+
+.abas button span {
+	display: grid;
+	gap: 2px;
+	text-align: left;
+	font-weight: 650;
+}
+
+.abas button small {
+	font-weight: 400;
+	font-size: 0.75rem;
+	color: var(--texto-suave);
+}
+
+.abas button[aria-selected="true"] {
+	border-color: rgb(57 135 229 / 0.45);
+	background: rgb(57 135 229 / 0.12);
+	color: var(--texto);
 }
 
 .marca {
@@ -184,6 +241,139 @@ body {
 
 .erro {
 	color: #e66767;
+}
+
+.grade2 {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 18px;
+}
+
+.prop .mini {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 10px 14px;
+	margin: 0 0 16px;
+	padding: 0;
+}
+
+.prop .mini div {
+	min-width: 0;
+}
+
+.prop .mini dt {
+	color: var(--texto-suave);
+	font-size: 0.72rem;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+
+.prop .mini dd {
+	margin: 2px 0 0;
+	font-family: var(--fonte-num);
+	font-size: 0.95rem;
+	font-weight: 600;
+}
+
+.prop .sec {
+	margin-top: 18px;
+	padding-top: 14px;
+	border-top: 1px solid rgb(255 255 255 / 0.06);
+}
+
+.prop .sec h2 {
+	margin: 0 0 10px;
+	font-size: 1rem;
+	font-weight: 650;
+}
+
+.prop .sec h2 small {
+	display: block;
+	margin-top: 2px;
+	color: var(--texto-suave);
+	font-weight: 400;
+	font-size: 0.8rem;
+}
+
+.waffle {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+	margin-bottom: 12px;
+}
+
+.seat {
+	width: 18px;
+	height: 18px;
+	border-radius: 3px;
+}
+
+.rolagem {
+	overflow-x: auto;
+}
+
+.tab {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 0.85rem;
+	font-variant-numeric: tabular-nums;
+}
+
+.tab th,
+.tab td {
+	padding: 7px 6px;
+	border-top: 1px solid rgb(255 255 255 / 0.06);
+	text-align: left;
+	vertical-align: middle;
+}
+
+.tab th {
+	color: var(--texto-suave);
+	font-weight: 650;
+	font-size: 0.75rem;
+}
+
+.tab .n {
+	text-align: right;
+	font-family: var(--fonte-num);
+}
+
+.sw {
+	display: inline-block;
+	width: 10px;
+	height: 10px;
+	margin-right: 6px;
+	border-radius: 2px;
+	vertical-align: middle;
+}
+
+.d {
+	color: var(--texto-suave);
+	white-space: nowrap;
+}
+
+.d.sobe {
+	color: var(--sobe);
+}
+
+.d.desce {
+	color: var(--desce);
+}
+
+@media (max-width: 1100px) {
+	.grade2 {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+@media (max-width: 640px) {
+	.oculta-mob {
+		display: none;
+	}
+
+	.painel {
+		padding: 20px 14px 40px;
+	}
 }
 
 @media (prefers-reduced-motion: reduce) {

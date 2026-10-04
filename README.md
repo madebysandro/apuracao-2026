@@ -52,4 +52,4 @@ Conectar o repositório para deploy a cada merge na `main`:
 
 ## Fixtures provisórias
 
-`fixtures/tse-provisorio/` contém a gravação real do TSE da noite de 04/10/2026, reduzida a Presidente (Brasil). Formato: pastas por ciclo + `indice.jsonl` + `ele-c.json`. A issue #2 deve substituir/estender esse conjunto após o fim da apuração, mantendo o formato.
+`fixtures/tse-provisorio/` contém a gravação real do TSE da noite de 04/10/2026, inclui Presidente (Brasil) e Deputados do Pará (federal/estadual; a pasta `*-derivada-antes` é sintética). Formato: pastas por ciclo + `indice.jsonl` + `ele-c.json`. A issue #2 deve substituir/estender esse conjunto após o fim da apuração, mantendo o formato.

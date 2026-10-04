@@ -18,7 +18,10 @@ export function configTseDeEnv(env: {
 	};
 }
 
-/** Metas dos cargos monitorados. A issue #3 só consulta Presidente; #4/#6 ampliam. */
+/**
+ * Metas dos cargos monitorados.
+ * #3: Presidente; #6: Deputados PA (aditivo); #4 acrescenta Governador/Senado.
+ */
 export function metasCargos(cfg: ConfigTse): MetaCargo[] {
 	return [
 		{
@@ -28,6 +31,22 @@ export function metasCargos(cfg: ConfigTse): MetaCargo[] {
 			ele: cfg.eleicaoFederal,
 			uf: "br",
 			cd: "0001",
+		},
+		{
+			id: "depfed",
+			titulo: "Deputado Federal",
+			local: "Pará",
+			ele: cfg.eleicaoEstadual,
+			uf: "pa",
+			cd: "0006",
+		},
+		{
+			id: "depest",
+			titulo: "Deputado Estadual",
+			local: "Pará",
+			ele: cfg.eleicaoEstadual,
+			uf: "pa",
+			cd: "0007",
 		},
 	];
 }
