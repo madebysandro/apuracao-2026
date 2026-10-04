@@ -1,0 +1,193 @@
+/* Tema do painel — arquivo isolado para a issue #8 evoluir visual sem tocar na lógica. */
+:root {
+	--fundo: #161b24;
+	--superficie: #1e2430;
+	--texto: #e6e9f0;
+	--texto-suave: #a8b0c0;
+	--marca: #e6e9f0;
+	--vivo: #3ecf8e;
+	--destaque: #3987e5;
+	--aurora-a: #1a2740;
+	--aurora-b: #243048;
+	--fonte-display: "Fraunces", "Palatino Linotype", Palatino, serif;
+	--fonte-corpo: "Source Sans 3", "Segoe UI", sans-serif;
+	--fonte-num: "IBM Plex Mono", "Source Code Pro", monospace;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+html,
+body {
+	margin: 0;
+	min-height: 100%;
+}
+
+body {
+	color: var(--texto);
+	font-family: var(--fonte-corpo);
+	background:
+		radial-gradient(1200px 600px at 10% -10%, var(--aurora-a), transparent 60%),
+		radial-gradient(900px 500px at 90% 0%, var(--aurora-b), transparent 55%),
+		var(--fundo);
+}
+
+.painel {
+	max-width: 720px;
+	margin: 0 auto;
+	padding: 28px 20px 48px;
+}
+
+.marca {
+	display: grid;
+	gap: 4px;
+	margin-bottom: 28px;
+}
+
+.marca b {
+	font-family: var(--fonte-display);
+	font-size: clamp(2rem, 6vw, 3rem);
+	font-weight: 700;
+	letter-spacing: -0.03em;
+	line-height: 1;
+	color: var(--marca);
+}
+
+.marca span {
+	color: var(--texto-suave);
+	font-size: 0.95rem;
+}
+
+.status {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px 18px;
+	align-items: center;
+	margin-bottom: 22px;
+	color: var(--texto-suave);
+	font-size: 0.9rem;
+}
+
+.vivo {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	color: var(--vivo);
+	font-weight: 600;
+}
+
+.vivo i {
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: var(--vivo);
+	animation: pulso 1.8s ease-in-out infinite;
+}
+
+@keyframes pulso {
+	50% {
+		opacity: 0.35;
+		transform: scale(0.85);
+	}
+}
+
+.cartao {
+	padding: 22px 20px 18px;
+	border: 1px solid rgb(255 255 255 / 0.06);
+	border-radius: 18px;
+	background: rgb(30 36 48 / 0.72);
+	backdrop-filter: blur(8px);
+}
+
+.cartao header {
+	display: flex;
+	justify-content: space-between;
+	gap: 12px;
+	align-items: baseline;
+	margin-bottom: 14px;
+}
+
+.cartao h1 {
+	margin: 0;
+	font-family: var(--fonte-display);
+	font-size: 1.55rem;
+	font-weight: 650;
+}
+
+.cartao header small {
+	color: var(--texto-suave);
+}
+
+.apurado {
+	font-family: var(--fonte-num);
+	font-size: 0.95rem;
+	color: var(--texto-suave);
+}
+
+.ranking {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: grid;
+	gap: 10px;
+}
+
+.cand {
+	display: grid;
+	grid-template-columns: 28px 1fr auto;
+	gap: 4px 12px;
+	align-items: center;
+	padding: 10px 0;
+	border-top: 1px solid rgb(255 255 255 / 0.06);
+}
+
+.cand:first-child {
+	border-top: 0;
+}
+
+.pos {
+	font-family: var(--fonte-num);
+	color: var(--texto-suave);
+	font-size: 0.9rem;
+}
+
+.nome {
+	font-weight: 650;
+}
+
+.partido {
+	grid-column: 2;
+	color: var(--texto-suave);
+	font-size: 0.85rem;
+}
+
+.votos {
+	grid-column: 2;
+	font-family: var(--fonte-num);
+	font-size: 0.82rem;
+	color: var(--texto-suave);
+}
+
+.pct {
+	grid-row: span 3;
+	font-family: var(--fonte-num);
+	font-size: 1.35rem;
+	font-weight: 600;
+	color: var(--destaque);
+}
+
+.vazio,
+.erro {
+	color: var(--texto-suave);
+}
+
+.erro {
+	color: #e66767;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.vivo i {
+		animation: none;
+	}
+}

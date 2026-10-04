@@ -1,0 +1,45 @@
+{
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "apuracao-2026",
+	"main": "src/index.ts",
+	// Teto do workerd embutido em @cloudflare/vitest-pool-workers@0.22 (testes locais).
+	"compatibility_date": "2026-08-22",
+	// Mantém o subdomínio workers.dev além do domínio próprio.
+	"workers_dev": true,
+	"routes": [
+		{
+			"pattern": "apuracao.madebysandro.app",
+			"custom_domain": true
+		}
+	],
+	"assets": {
+		"directory": "./public",
+		"binding": "ASSETS",
+		"run_worker_first": ["/api/*"]
+	},
+	"durable_objects": {
+		"bindings": [
+			{
+				"name": "POLLER",
+				"class_name": "PollerApuracao"
+			}
+		]
+	},
+	"migrations": [
+		{
+			"tag": "v1",
+			"new_sqlite_classes": ["PollerApuracao"]
+		}
+	],
+	"vars": {
+		"TSE_BASE": "https://resultados.tse.jus.br/oficial",
+		"ELEICAO_FEDERAL": "6257",
+		"ELEICAO_ESTADUAL": "6259"
+	},
+	"observability": {
+		"enabled": true,
+		"traces": {
+			"enabled": true
+		}
+	}
+}
