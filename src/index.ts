@@ -21,6 +21,14 @@ export default {
 			});
 		}
 
+		if (url.pathname === "/api/historico") {
+			const desde = Number(url.searchParams.get("desde")) || 0;
+			const hist = await poller(env).obterHistorico(desde);
+			return Response.json(hist, {
+				headers: { "cache-control": "no-store" },
+			});
+		}
+
 		if (url.pathname.startsWith("/api/")) {
 			return new Response("não achei", { status: 404 });
 		}

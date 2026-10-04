@@ -1,38 +1,18 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-tema="escuro">
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<title>Apuração 2026</title>
-		<link rel="preconnect" href="https://fonts.googleapis.com" />
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-		<link
-			href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,650;9..144,700&family=IBM+Plex+Mono:wght@500;600&family=Source+Sans+3:wght@400;650&display=swap"
-			rel="stylesheet"
-		/>
 		<link rel="stylesheet" href="/css/tema.css" />
+		<script type="module">
+			import { aplicarTema, temaSalvo } from "/js/tela1-util.js";
+			aplicarTema(temaSalvo());
+		</script>
 	</head>
-	<body>
-		<main class="painel">
-			<header class="marca">
-				<b>Apuração 2026</b>
-				<span>Majoritárias ao vivo · Presidente, Governador e Senado do Pará</span>
-			</header>
-			<div class="status" data-status>
-				<span class="vivo"><i></i>Ao vivo</span>
-				<span>carregando…</span>
-			</div>
-			<div
-				class="barra-ciclo"
-				data-barra-ciclo
-				role="progressbar"
-				aria-label="Ciclo até a próxima consulta ao TSE"
-				aria-valuemin="0"
-				aria-valuemax="100"
-				aria-valuenow="0"
-			></div>
-			<div data-app></div>
-		</main>
+	<body data-tema="escuro">
+		<div id="app"></div>
+		<div id="aviso" role="status" aria-live="polite"></div>
 		<script type="module" src="/js/app.js"></script>
 	</body>
 </html>

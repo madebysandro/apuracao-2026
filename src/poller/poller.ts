@@ -74,6 +74,13 @@ export class PollerApuracao extends DurableObject<Env> {
 		return this.lerEstado();
 	}
 
+	/** Leituras posteriores a `desde` (para tendência e minigráficos na Tela 1). */
+	async obterHistorico(desde = 0): Promise<Leitura[]> {
+		const historico =
+			(await this.ctx.storage.get<Leitura[]>(CHAVE_HISTORICO)) ?? [];
+		return historico.filter((p) => p.t > desde);
+	}
+
 	/** Força um ciclo de consulta (usado nos testes e no primeiro aquecimento). */
 	async consultarAgora(): Promise<EstadoApuracao> {
 		await this.consultar();
