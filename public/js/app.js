@@ -5,6 +5,7 @@ import {
 	aplicarTema,
 	ativar,
 	aviso,
+	pf,
 	temaSalvo,
 } from "./tela1-util.js";
 
@@ -26,10 +27,26 @@ function horaAgora() {
 	return new Date().toLocaleTimeString("pt-BR", { hour12: false });
 }
 
-function idadeConsulta(consultadoEm) {
-	if (consultadoEm == null) return "";
-	const min = Math.floor((Date.now() - consultadoEm) / 60_000);
+/** Idade relativa à hora dos dados do TSE (HH:MM:SS de hoje), não ao poll. */
+function idadeDadosTse(horaTse) {
+	if (!horaTse || !/^\d{2}:\d{2}:\d{2}$/.test(horaTse)) return "";
+	const [h, m, s] = horaTse.split(":").map(Number);
+	const tse = new Date();
+	tse.setHours(h, m, s, 0);
+	let diff = Date.now() - tse.getTime();
+	if (diff < -60_000) diff += 86_400_000; // virada de dia
+	if (diff < 0) diff = 0;
+	const min = Math.floor(diff / 60_000);
 	return min < 1 ? "· agora há pouco" : `· há ${min} min`;
+}
+
+function horaTseAtual() {
+	return (
+		dados?.cargos?.presidente?.hora ??
+		dados?.cargos?.governador?.hora ??
+		dados?.cargos?.senador?.hora ??
+		null
+	);
 }
 
 function atualizarStatusVivo() {
@@ -42,7 +59,7 @@ function atualizarStatusVivo() {
 	if (!dados) return;
 	const prox = dados.proximaConsulta;
 	const cons = dados.consultadoEm;
-	if (idade) idade.textContent = idadeConsulta(cons);
+	if (idade) idade.textContent = idadeDadosTse(horaTseAtual());
 	if (vivo) {
 		vivo.classList.toggle("instavel", Boolean(dados.erro));
 		vivo.innerHTML = dados.erro
@@ -137,6 +154,7 @@ async function atualizar() {
 		const mudou = novo.versao !== versao && versao >= 0;
 		const antBr = dados?.cargos?.presidente?.apurado;
 		const antPa = dados?.cargos?.governador?.apurado;
+		const liderAnt = dados?.cargos?.presidente?.candidatos?.[0]?.n;
 		dados = novo;
 		if (novo.versao !== versao) {
 			await puxarHistorico();
@@ -147,29 +165,31 @@ async function atualizar() {
 				const G = novo.cargos?.governador;
 				const br =
 					antBr != null && P
-						? ` · Brasil ${pf2(antBr)}% → ${pf2(P.apurado)}%`
+						? ` · Brasil ${pf.format(antBr)}% → ${pf.format(P.apurado)}%`
 						: "";
 				const pa =
 					antPa != null && G
-						? ` · Pará ${pf2(antPa)}% → ${pf2(G.apurado)}%`
+						? ` · Pará ${pf.format(antPa)}% → ${pf.format(G.apurado)}%`
 						: "";
-				aviso(`Atualizado às ${P?.hora ?? "—"}` + br + pa);
+				const virada =
+					liderAnt != null &&
+					P?.candidatos?.[0]?.n != null &&
+					liderAnt !== P.candidatos[0].n
+						? " · mudou a liderança em Presidente"
+						: "";
+				aviso(`Atualizado às ${P?.hora ?? "—"}` + br + pa + virada);
 			}
 		} else {
 			atualizarStatusVivo();
+			if (novo.erro) aviso(`TSE instável: ${novo.erro}`);
 		}
 	} catch (erro) {
 		if (!dados) {
 			app.innerHTML = `<div class="db"><div class="carregando"><b>Contando votos…</b><p class="erro" role="alert">O TSE ainda não respondeu: ${erro.message}</p></div></div>`;
+		} else {
+			aviso(`Falha ao ler a API: ${erro.message}`);
 		}
 	}
-}
-
-function pf2(v) {
-	return new Intl.NumberFormat("pt-BR", {
-		minimumFractionDigits: 2,
-		maximumFractionDigits: 2,
-	}).format(v);
 }
 
 app.innerHTML = `<div class="db"><div class="carregando"><b>Contando votos…</b><p>Primeira consulta ao TSE em andamento.</p></div></div>`;
