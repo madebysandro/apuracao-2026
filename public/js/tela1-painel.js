@@ -2,12 +2,11 @@
 
 import { destaques } from "./tela1-destaques.js";
 import { renderizarCartaoMajoritario } from "./tela1-cartao.js";
+import { barraViva } from "./movimento/fluxo-barras.js";
 import { renderizarTela2 } from "./tela2-proporcionais.js";
 import {
-	anima,
 	conta,
 	deltaPp,
-	esc,
 	pf,
 	pontos,
 	spark,
@@ -43,8 +42,12 @@ export function renderizarPainel(ctx) {
 		}
 		const serie = pontos(hist, id).map((p) => p.c[id][campo]);
 		const ant = serie.length > 1 ? serie.at(-2) : null;
+		const ritmoAp =
+			campo === "ap" && ant != null
+				? Math.min(1, Math.max(0, (valor - ant) / 4))
+				: 0;
 		return `<div class="db-kpi"><span class="db-kpi-rot">${rot}</span><b class="db-kpi-val">${conta("d-kpi-" + rot, valor, "p")}</b>
-      ${campo === "ap" ? `<div class="db-prog" style="--atraso:${rot.length % 3}s"><i ${anima("d-kpi-prog-" + rot, "width", valor)}></i></div>` : ""}
+      ${campo === "ap" ? barraViva("kpi-" + id, valor, ant, ritmoAp, "var(--acento)") : ""}
       <span class="db-kpi-sub">${ant == null ? "" : deltaPp(valor - ant, neutro) + " p.p. na última leitura"}${sub ? (ant == null ? sub.replace(/^ · /, "") : sub) : ""}</span>${spark(serie, 72, 22, true)}</div>`;
 	};
 
@@ -78,15 +81,7 @@ export function renderizarPainel(ctx) {
 					)
 					.join("")}
       </nav>
-      <div class="db-status">
-        <span class="db-vivo${ctx.erro ? " instavel" : ""}" data-vivo><i></i>${ctx.erro ? "TSE instável" : "Ao vivo"}</span>
-        <span data-relogio aria-hidden="true"></span>
-        <span><span class="sd-rot">Dados do TSE</span> <b data-tse-hora>${esc(ctx.horaTse || P?.hora || "—")}</b> <span data-idade></span></span>
-        <span><span class="sd-rot">Próxima consulta</span> <b data-contagem></b></span>
-        <button type="button" class="db-tema" data-tema-toggle title="Alternar tema claro/escuro" aria-label="Alternar tema claro/escuro">◐</button>
-      </div>
     </header>
-    <div class="db-ciclo" title="Tempo até a próxima consulta ao TSE"><i data-ciclo></i></div>
     <div class="db-ticker" aria-label="Destaques ao vivo"><b><i></i>DESTAQUES</b>
       <div class="db-janela"><div class="db-rolo">${tickerHtml}</div></div></div>
     <section class="db-kpis">

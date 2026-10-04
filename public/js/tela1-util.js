@@ -25,6 +25,24 @@ export function nomeBonito(s) {
 		.replace(/ (Da|De|Do|Dos|Das|E) /g, (w) => w.toLowerCase());
 }
 
+/** Iniciais para fallback do rosto (protótipo #13). */
+export function iniciais(nome) {
+	return String(nome)
+		.split(/\s+/)
+		.filter((p) => p.length > 2)
+		.slice(0, 2)
+		.map((p) => p[0])
+		.join("");
+}
+
+/** Rosto oficial do TSE com anel; foto quebrada/ausente vira iniciais. */
+export function foto(x, cls = "") {
+	const img = x.foto
+		? `<img src="${esc(x.foto)}" alt="" loading="lazy" onerror="this.remove()">`
+		: "";
+	return `<span class="foto ${cls}" data-ini="${esc(iniciais(x.nome))}">${img}</span>`;
+}
+
 export function fmt(v, t = "n") {
 	return t === "p" ? `${pf.format(v)}%` : nf.format(Math.round(v));
 }

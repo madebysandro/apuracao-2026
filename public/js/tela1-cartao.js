@@ -1,13 +1,14 @@
 /** Cartão majoritário da Tela 1 (marcação .db-* do protótipo, variante D). */
 
+import { barraViva } from "./movimento/fluxo-barras.js";
 import {
-	anima,
 	anteriorD,
 	cf,
 	conta,
 	corD,
 	deltaPp,
 	esc,
+	foto,
 	nf,
 	nomeBonito,
 	pf,
@@ -34,15 +35,17 @@ export function renderizarCartaoMajoritario(id, cargo, hist, graficos) {
 	const noGrafico = c.candidatos.slice(0, duas ? 4 : 2);
 	noGrafico.forEach((x) => corD(id, x.n));
 	const ant = anteriorD(hist, id);
-	const linhas = c.candidatos
-		.slice(0, duas ? 6 : 5)
+	const lista = c.candidatos.slice(0, duas ? 6 : 5);
+	const ganho = (x) => Math.max(0, x.votos - (ant?.c[x.n]?.[0] ?? x.votos));
+	const maior = Math.max(1, ...lista.map(ganho));
+	const linhas = lista
 		.map((x) => {
 			const corX = noGrafico.includes(x) ? corD(id, x.n) : "var(--outros)";
 			const pa = ant?.c[x.n]?.[1];
-			return `<li class="db-cand" data-flip="${id}-${x.n}" style="--atraso:${(c.candidatos.indexOf(x) * 0.35).toFixed(2)}s">
-      <span class="db-sw" style="background:${corX}"></span>
-      <span class="db-nome"><b>${esc(nomeBonito(x.nome))}</b><small>${esc(x.partido)} · ${conta(`d-${id}-${x.n}-v`, x.votos)} votos</small></span>
-      <span class="db-barra" aria-hidden="true"><i ${anima(`d-${id}-${x.n}-b`, "width", x.pct, `background:${corX}`)}></i>${duas ? "" : "<em></em>"}</span>
+			return `<li class="db-cand" data-flip="${id}-${x.n}" style="--c:${corX}">
+      ${foto(x, "db-rosto")}
+      <span class="db-nome"><b>${esc(nomeBonito(x.nome))}</b><small>${esc(x.partido)} · ${conta(`d-${id}-${x.n}-v`, x.votos)} votos</small>
+        ${barraViva(`${id}-${x.n}`, x.pct, pa, ganho(x) / maior, corX, duas ? "" : "<em></em>")}</span>
       <span class="db-pct">${conta(`d-${id}-${x.n}-p`, x.pct, "p")}</span>
       <span class="db-delta">${pa == null ? "" : deltaPp(x.pct - pa)}</span>
     </li>`;

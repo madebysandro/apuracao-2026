@@ -12,8 +12,40 @@
 		</script>
 	</head>
 	<body data-tema="escuro">
+		<!-- Faixa fixa fora de #app: odômetro/anel/ciclo não reiniciam no redesenho (#13). -->
+		<div id="status-d" hidden>
+			<div class="sd-esq">
+				<span class="sd-vivo"><i></i><span class="sd-vivo-txt">Ao vivo</span></span>
+				<b class="sd-relogio" aria-hidden="true"></b>
+			</div>
+			<div class="sd-meio">
+				<div class="sd-base">
+					<span class="sd-rot">Dados do TSE</span>
+					<b class="sd-tse"></b>
+					<span class="sd-idade"></span>
+				</div>
+				<div class="sd-novidade" hidden aria-live="polite"></div>
+			</div>
+			<div class="sd-dir">
+				<span class="sd-rot">Próxima consulta</span>
+				<svg class="sd-anel" viewBox="0 0 20 20" aria-hidden="true">
+					<circle class="sd-trilha" cx="10" cy="10" r="8"></circle>
+					<circle class="sd-arco" cx="10" cy="10" r="8"></circle>
+				</svg>
+				<b class="sd-seg"></b>
+				<button
+					type="button"
+					class="db-tema"
+					data-tema-toggle
+					title="Alternar tema claro/escuro"
+					aria-label="Alternar tema claro/escuro"
+				>
+					◐
+				</button>
+			</div>
+			<i class="sd-ciclo"></i>
+		</div>
 		<div id="app"></div>
-		<div id="aviso" role="status" aria-live="polite"></div>
 		<script type="module" src="/js/app.js"></script>
 	</body>
 </html>

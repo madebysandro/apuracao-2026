@@ -33,3 +33,10 @@ export {
 	alternarTema,
 	ligarSeletorTema,
 } from "./tema.js";
+export { barraViva, ligarBarras } from "./fluxo-barras.js";
+export {
+	iniciarFaixaStatus,
+	atualizarFaixaDados,
+	novidadeStatus,
+	idadeTse,
+} from "./faixa-status.js";

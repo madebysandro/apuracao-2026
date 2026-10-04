@@ -3,6 +3,8 @@
  * Marcação e classes `db-*` copiadas quase literalmente de dbProp / dbTela2.
  */
 
+import { foto } from "./tela1-util.js";
+
 const pf = new Intl.NumberFormat("pt-BR", {
 	minimumFractionDigits: 2,
 	maximumFractionDigits: 2,
@@ -122,10 +124,14 @@ function dbProp(id, cargo, disputa) {
 	const linhasCand = proj
 		.map((x) => {
 			const pa = x.deltaPos;
-			return `<tr data-flip="${id}-${x.n}">
+			const pessoa = {
+				nome: x.nome,
+				foto: x.foto,
+			};
+			return `<tr data-flip="${id}-${x.n}" style="--c:${corAgr(x.agr)}">
       <td class="n">${x.pos}º</td>
       <td class="n">${pa == null ? "" : deltaInt(pa)}</td>
-      <td><span class="db-sw" style="background:${corAgr(x.agr)}"></span><b>${esc(nomeBonito(x.nome))}</b> <small>${esc(x.partido)}</small>${x.eleito ? ' <span class="db-ok">✓ eleito</span>' : ""}</td>
+      <td><div class="db-pessoa">${foto(pessoa, "db-rosto p")}<span><b>${esc(nomeBonito(x.nome))}</b> <small>${esc(x.partido)}</small>${x.eleito ? ' <span class="db-ok">✓ eleito</span>' : ""}</span></div></td>
       <td class="n">${nf.format(x.votos)}</td>
       <td class="n db-oculta-mob">${pf.format(x.pct)}%</td>
       <td class="db-oculta-mob">${spark(x.seriePct, 64, 18)}</td>
@@ -135,6 +141,8 @@ function dbProp(id, cargo, disputa) {
 
 	const nm = (x) => esc(nomeBonito(x.nome));
 	const fila = disputa ?? [];
+	const fotoDe = (n) =>
+		cargo.candidatos.find((c) => c.n === n)?.foto ?? "";
 
 	return `<article class="db-card">
     <header class="db-card-topo">
@@ -167,13 +175,15 @@ function dbProp(id, cargo, disputa) {
       <div class="db-rolagem"><table class="db-tab">
         <thead><tr><th>Agremiação</th><th>Último que entra</th><th>1º da fila</th><th class="n">Diferença</th></tr></thead>
         <tbody>${fila
-					.map(
-						(f) => `<tr data-flip="${id}-fila-${f.sigla}">
+					.map((f) => {
+						const u = { nome: f.ultimo.nome, foto: fotoDe(f.ultimo.n) };
+						const p = { nome: f.proximo.nome, foto: fotoDe(f.proximo.n) };
+						return `<tr data-flip="${id}-fila-${f.sigla}" style="--c:${corAgr(f.sigla)}">
           <td><span class="db-sw" style="background:${corAgr(f.sigla)}"></span>${esc(f.sigla)}</td>
-          <td>${nm(f.ultimo)} <small>${nf.format(f.ultimo.votos)}</small></td>
-          <td>${nm(f.proximo)} <small>${nf.format(f.proximo.votos)}</small></td>
-          <td class="n"><b>${nf.format(f.diferenca)}</b></td></tr>`,
-					)
+          <td><div class="db-pessoa">${foto(u, "db-rosto p")}<span>${nm(f.ultimo)} <small>${nf.format(f.ultimo.votos)}</small></span></div></td>
+          <td><div class="db-pessoa">${foto(p, "db-rosto p")}<span>${nm(f.proximo)} <small>${nf.format(f.proximo.votos)}</small></span></div></td>
+          <td class="n"><b>${nf.format(f.diferenca)}</b></td></tr>`;
+					})
 					.join("")}</tbody>
       </table></div>
     </section>

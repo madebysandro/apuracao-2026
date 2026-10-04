@@ -110,6 +110,8 @@ describe("GET /api/apuracao — Tela 1 (Presidente, Governador, Senado)", () => 
 			partido: "PL",
 			votos: 18644760,
 			pos: 1,
+			// Issue #13: foto oficial do TSE (cache ~40 dias) para o anel no ranking.
+			foto: "https://resultados.tse.jus.br/oficial/ele2026/6257/fotos/br/280002551544.jpeg",
 		});
 		expect(p!.candidatos[0].pct).toBeCloseTo(50.743547465, 6);
 
