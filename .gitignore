@@ -1,0 +1,6 @@
+.DS_Store
+node_modules/
+.playwright-mcp/
+# dados gerados em execução e mídia bruta do Grok
+*.PROTOTIPO-apagar.json
+prototipo-apuracao/public/media/raw/
