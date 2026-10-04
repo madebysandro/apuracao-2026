@@ -52,7 +52,7 @@ export function renderizarPainel(ctx) {
 	};
 
 	const tickerHtml = (() => {
-		const items = destaques(cargos)
+		const items = destaques({ cargos, analise })
 			.map((d) => `<span>${d}</span>`)
 			.join("");
 		return items + items;

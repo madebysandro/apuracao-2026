@@ -67,8 +67,30 @@ export type AnaliseProporcional = {
 	disputaInterna: DisputaInterna[];
 };
 
+export type CandidatoUf = {
+	n: string;
+	nome: string;
+	votos: number;
+	pct: number;
+};
+
+/** Presidente numa UF (ou exterior) — modelo da spec. */
+export type UfPresidente = {
+	uf: string;
+	nome: string;
+	hora: string;
+	apurado: number;
+	secoes: number;
+	secoesApuradas: number;
+	eleitorado: number;
+	validos: number;
+	candidatos: CandidatoUf[];
+};
+
 export type AnaliseApuracao = {
 	proporcionais?: Record<string, AnaliseProporcional>;
+	/** Frases HTML da faixa DESTAQUES (intercalação 2 Brasil : 1 Pará). */
+	destaques?: string[];
 };
 
 export type EstadoApuracao = {
@@ -77,6 +99,7 @@ export type EstadoApuracao = {
 	proximaConsulta: number | null;
 	erro: string | null;
 	cargos: Record<string, Cargo>;
+	ufs?: Record<string, UfPresidente>;
 	analise?: AnaliseApuracao;
 };
 

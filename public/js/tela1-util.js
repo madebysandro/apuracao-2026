@@ -76,7 +76,7 @@ function preferirCalmo() {
 	);
 }
 
-/** Continuidade da faixa DESTAQUES: 55 px/s e atraso negativo pelo relógio. */
+/** Continuidade da faixa DESTAQUES: 55 px/s e atraso negativo pelo relógio (protótipo). */
 export function continuarTicker() {
 	const rolo = document.querySelector(".db-rolo");
 	if (!(rolo instanceof HTMLElement)) return;
@@ -85,11 +85,9 @@ export function continuarTicker() {
 		rolo.style.transform = "none";
 		return;
 	}
-	const metade = rolo.scrollWidth / 2;
-	const dur = Math.max(12, metade / 55);
-	const t = (Date.now() / 1000) % dur;
+	const dur = Math.max(30, rolo.scrollWidth / 2 / 55);
 	rolo.style.animationDuration = `${dur}s`;
-	rolo.style.animationDelay = `-${t}s`;
+	rolo.style.animationDelay = `-${(performance.now() / 1000) % dur}s`;
 }
 
 export function ativar() {

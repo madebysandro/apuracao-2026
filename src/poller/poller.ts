@@ -5,16 +5,22 @@ import {
 	urlArquivoCargo,
 	type ConfigTse,
 } from "../config/tse";
+import { SIGLAS_UF, urlPresidenteUf } from "../config/ufs";
 import { normalizarGovernador } from "../dominio/cargos/governador";
 import {
 	normalizarPresidente,
 	type DadosBrutosCargo,
 } from "../dominio/cargos/presidente";
 import {
+	normalizarPresidenteUf,
+	ufMudou,
+} from "../dominio/cargos/presidente-uf";
+import {
 	ehCargoProporcional,
 	normalizarProporcional,
 } from "../dominio/cargos/proporcional";
 import { normalizarSenador } from "../dominio/cargos/senador";
+import { montarDestaques } from "../dominio/destaques";
 import {
 	analiseProporcional,
 	aplicarVariacoes,
@@ -26,6 +32,7 @@ import type {
 	EstadoApuracao,
 	Leitura,
 	MetaCargo,
+	UfPresidente,
 } from "../dominio/tipos";
 import { buscarArquivoTse, ErroTse } from "./cliente-tse";
 import { montarLeitura } from "./historico";
@@ -45,7 +52,8 @@ function estadoVazio(): EstadoApuracao {
 		proximaConsulta: null,
 		erro: null,
 		cargos: {},
-		analise: { proporcionais: {} },
+		ufs: {},
+		analise: { proporcionais: {}, destaques: [] },
 	};
 }
 
@@ -189,12 +197,54 @@ export class PollerApuracao extends DurableObject<Env> {
 				estado.cargos[meta.id] = novo;
 			}
 
-			estado.analise = { proporcionais: analiseProp };
+			// 27 UFs + exterior, em sequência; falha numa UF não derruba o ciclo (só 429).
+			const ufs: Record<string, UfPresidente> = {
+				...(estado.ufs ?? {}),
+			};
+			for (const uf of SIGLAS_UF) {
+				const chave = `pres-${uf}`;
+				try {
+					const { maxAge, json, etag } = await buscarArquivoTse(
+						urlPresidenteUf(cfg, uf),
+						etags[chave],
+					);
+					maxAgeCiclo = Math.max(maxAgeCiclo, maxAge);
+					if (etag) etags[chave] = etag;
+					if (!json) continue;
+					const novo = normalizarPresidenteUf(
+						uf,
+						json as DadosBrutosCargo,
+					);
+					if (ufMudou(ufs[uf], novo)) mudou = true;
+					ufs[uf] = novo;
+				} catch (erroUf) {
+					const e = erroUf as ErroTse;
+					if (typeof e.espera === "number") throw e;
+					console.error(
+						new Date().toISOString(),
+						uf,
+						e.message ?? String(erroUf),
+					);
+				}
+			}
+			estado.ufs = ufs;
 
 			if (mudou) {
 				estado.versao += 1;
 				await this.registrarLeitura(estado);
 			}
+
+			const historico =
+				(await this.ctx.storage.get<Leitura[]>(CHAVE_HISTORICO)) ?? [];
+			estado.analise = {
+				proporcionais: analiseProp,
+				destaques: montarDestaques(
+					estado.cargos,
+					ufs,
+					historico,
+					analiseProp,
+				),
+			};
 			estado.erro = null;
 			novoBackoff = null;
 		} catch (erro) {
