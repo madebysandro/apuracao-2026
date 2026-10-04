@@ -369,17 +369,10 @@ body[data-v=D] .foto { background: var(--superficie-2); color: var(--tinta-2); }
 .db-nome { display: grid; min-width: 0; }
 .db-nome b { overflow: hidden; font-size: 14px; font-weight: 600; white-space: nowrap; text-overflow: ellipsis; }
 .db-nome small { overflow: hidden; color: var(--tinta-3); font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; text-overflow: ellipsis; }
-/* barras vivas (motor em JS): o motor injeta os filhos conforme a variante de ?barra= */
-.bv { position: relative; display: block; height: 6px; margin-top: 7px; overflow: hidden; border-radius: 3px; background: var(--superficie-2); }
-.bv > i { position: absolute; top: 0; bottom: 0; left: 0; }
-.bv-fill { border-radius: 3px; background: var(--c); }
-.bv-ganho { z-index: 1; background: rgb(255 255 255/.55); }
-.bv-ganho.perda { z-index: 0; background: var(--desce); }
-.bv-luz { z-index: 2; width: 40px; margin-left: -40px; background: linear-gradient(90deg, transparent, rgb(255 255 255/.8), transparent); }
-.bv.seg { -webkit-mask-image: repeating-linear-gradient(90deg, #000 0 1.5%, transparent 1.5% 2%); mask-image: repeating-linear-gradient(90deg, #000 0 1.5%, transparent 1.5% 2%); }
-.bv.seg .bv-fill { border-radius: 0; }
+/* barras vivas: fluxo de votos em canvas, desenhado por um laço em JS */
+.bv { position: relative; display: block; height: 8px; margin-top: 7px; overflow: hidden; border-radius: 4px; background: var(--superficie-2); }
 .bv canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
-.bv em { position: absolute; top: 0; bottom: 0; left: 50%; z-index: 3; width: 2px; background: var(--tinta-2); opacity: .7; }
+.bv em { position: absolute; top: 0; bottom: 0; left: 50%; z-index: 1; width: 2px; background: var(--tinta-2); opacity: .7; }
 .db-kpi .bv { margin-top: 6px; }
 .db-pct { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
 .db-delta { text-align: right; font-size: 12px; font-variant-numeric: tabular-nums; }
@@ -502,10 +495,7 @@ body[data-v=D] .foto { background: var(--superficie-2); color: var(--tinta-2); }
   <button data-fx="three">Three.js</button>
   <span class="sep"></span>
   <button id="simular">⚡ simular atualização</button>
-  <span class="sep proto-barra"></span>
-  <button class="proto-barra" data-barra-ir="-1" title="Movimento anterior (←)">‹</button>
-  <span class="proto-barra" id="proto-barra"></span>
-  <button class="proto-barra" data-barra-ir="1" title="Próximo movimento (→)">›</button>
+
 </nav>
 
 <script type="module">
@@ -892,31 +882,22 @@ function dbRanking(c, noGrafico, ant) {
 }
 
 // ---------- barras vivas ----------
-// PROTÓTIPO (pergunta: como as barras de progresso devem se mover?): 3 movimentos em JS, ?barra=1|2|3 ou ← → no Painel.
+// Veredito do protótipo de barras: variante 2, "fluxo de votos", com 8 px. As variantes 1 e 3 ficam no commit 1e9d1f6.
 // Um laço único de requestAnimationFrame; o estado de cada barra (valor exibido, velocidade, energia) sobrevive aos redesenhos.
-const BARRAS = { 1: 'Mola e cometa', 2: 'Fluxo de votos', 3: 'Medidor segmentado' };
-let barraModo = BARRAS[params.get('barra')] ? params.get('barra') : '1';
 const estadoBarras = new Map();
 let barrasVivas = [], laco = null, ultimoQuadro = 0;
-// alvo e ant em % da largura; ritmo 0..1 = quanto chegou na última leitura (dirige a velocidade do movimento)
+// alvo em % da largura; ritmo 0..1 = quanto chegou na última leitura (dirige a taxa de pontos)
 const barraViva = (k, alvo, ant, ritmo, cor, extra = '') =>
-  `<span class="bv" data-barra="${k}" data-alvo="${alvo}" data-ant="${ant ?? alvo}" data-ritmo="${ritmo}" style="--c:${cor}">${extra}</span>`;
+  `<span class="bv" data-barra="${k}" data-alvo="${alvo}" data-ritmo="${ritmo}" style="--c:${cor}"><canvas></canvas>${extra}</span>`;
 function ligarBarras() {
   barrasVivas = [...document.querySelectorAll('[data-barra]')].map(el => {
     const k = el.dataset.barra, alvo = +el.dataset.alvo;
     let st = estadoBarras.get(k);
-    if (!st) estadoBarras.set(k, st = { v: 0, vel: 0, energia: 1, fase: Math.random(), parts: [], acum: 0 });
+    if (!st) estadoBarras.set(k, st = { v: 0, vel: 0, energia: 1, parts: [], acum: 0 });
     else if (Math.abs(alvo - st.alvo) > 1e-6) st.energia = 1; // chegou dado novo
-    Object.assign(st, { alvo, ant: +el.dataset.ant, ritmo: +el.dataset.ritmo });
-    if (barraModo === '2') {
-      el.insertAdjacentHTML('afterbegin', '<canvas></canvas>');
-      el._cv = el.firstChild;
-      el._cor = getComputedStyle(el).getPropertyValue('--c').trim();
-    } else {
-      el.insertAdjacentHTML('afterbegin', '<i class="bv-ganho"></i><i class="bv-fill"></i><i class="bv-luz"></i>');
-      [el._ganho, el._fill, el._luz] = el.children;
-      el.classList.toggle('seg', barraModo === '3');
-    }
+    Object.assign(st, { alvo, ritmo: +el.dataset.ritmo });
+    el._cv = el.querySelector('canvas');
+    el._cor = getComputedStyle(el).getPropertyValue('--c').trim();
     return { el, st };
   });
   if (!laco && barrasVivas.length) laco = requestAnimationFrame(quadroBarras);
@@ -932,27 +913,12 @@ function quadroBarras(t) {
       st.vel += (90 * (st.alvo - st.v) - 13 * st.vel) * dt;
       st.v += st.vel * dt;
       st.energia *= Math.exp(-dt / 2.5);
-      st.fase += dt * (0.18 + st.ritmo * 0.9);
     }
-    barraModo === '2' ? quadroFluxo(el, st, dt) : quadroFaixa(el, st, t);
+    quadroFluxo(el, st, dt);
   }
   laco = requestAnimationFrame(quadroBarras);
 }
-// Variantes 1 e 3: preenchimento + trecho que mudou desde a leitura anterior + luz correndo.
-function quadroFaixa(el, st, t) {
-  const seg = barraModo === '3', passo = v => seg ? Math.floor(v / 2) * 2 : v; // segmentos de 2 p.p.
-  const v = passo(Math.max(0, Math.min(100, st.v))), ant = passo(Math.max(0, Math.min(100, st.ant)));
-  el._fill.style.width = v + '%';
-  const perda = ant > v;
-  el._ganho.classList.toggle('perda', perda);
-  el._ganho.style.left = Math.min(ant, v) + '%';
-  el._ganho.style.width = Math.abs(v - ant) + '%';
-  el._ganho.style.opacity = seg ? 0.3 + 0.7 * st.energia * (0.5 + 0.5 * Math.sin(t / 110)) : (perda ? 0.45 : 0.3) + 0.6 * st.energia;
-  const p = st.fase % 1.6; // 0..1 corre pela parte preenchida, 1..1.6 descansa
-  el._luz.style.opacity = p < 1 && v > 0 ? (seg ? 0.95 : 0.7) : 0;
-  el._luz.style.left = (seg ? passo(p * v) + 2 : p * v + 6) + '%';
-}
-// Variante 2: votos chegando como pontos que correm até a ponta; a taxa acompanha o ganho da última leitura.
+// Votos chegando: pontos que correm até a ponta; a taxa acompanha o ganho da última leitura.
 function quadroFluxo(el, st, dt) {
   const cv = el._cv, w = el.clientWidth, h = el.clientHeight, dpr = devicePixelRatio || 1;
   if (cv.width !== Math.round(w * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
@@ -964,17 +930,17 @@ function quadroFluxo(el, st, dt) {
   ctx.beginPath(); ctx.roundRect(0, 0, ponta, h, h / 2); ctx.fill();
   if (!calmo) {
     st.acum += dt * (1.2 + st.ritmo * 14 + st.energia * 10);
-    for (; st.acum >= 1; st.acum--) st.parts.push({ x: 0, vx: (0.3 + Math.random() * 0.4) * w, y: 1.5 + Math.random() * (h - 3) });
+    for (; st.acum >= 1; st.acum--) st.parts.push({ x: 0, vx: (0.3 + Math.random() * 0.4) * w, y: 2 + Math.random() * (h - 4) });
   }
   st.parts = st.parts.filter(q => (q.x += q.vx * dt) < ponta - 2);
   ctx.fillStyle = 'rgba(255,255,255,.8)';
-  for (const q of st.parts) { ctx.beginPath(); ctx.arc(q.x, q.y, 1.1, 0, 7); ctx.fill(); }
+  for (const q of st.parts) { ctx.beginPath(); ctx.arc(q.x, q.y, 1.4, 0, 7); ctx.fill(); }
   if (ponta > 0) {
-    const g = ctx.createRadialGradient(ponta, h / 2, 0, ponta, h / 2, 9);
+    const g = ctx.createRadialGradient(ponta, h / 2, 0, ponta, h / 2, 11);
     g.addColorStop(0, `rgba(255,255,255,${0.35 + 0.5 * st.energia})`);
     g.addColorStop(1, 'rgba(255,255,255,0)');
     ctx.fillStyle = g;
-    ctx.fillRect(ponta - 9, 0, 18, h);
+    ctx.fillRect(ponta - 11, 0, 22, h);
   }
 }
 
@@ -1587,14 +1553,13 @@ const proto = document.getElementById('proto');
 proto.hidden = !(/^(localhost|127\.|10\.|192\.168\.)/.test(location.hostname) || params.has('proto'));
 function barra() {
   document.getElementById('proto-nome').textContent = `${variante} — ${VARIANTES[variante][0]}`;
-  document.getElementById('proto-barra').textContent = `Barra ${barraModo} — ${BARRAS[barraModo]}`;
-  proto.querySelectorAll('.proto-barra').forEach(el => { el.hidden = variante !== 'D'; });
   proto.querySelectorAll('[data-fx]').forEach(b => b.classList.toggle('on', b.dataset.fx === fx));
   const u = new URL(location.href);
   u.searchParams.set('variant', variante);
   u.searchParams.set('fx', fx);
   u.searchParams.delete('rosto');
-  if (variante === 'D') { u.searchParams.set('tela', tela); u.searchParams.set('barra', barraModo); } else { u.searchParams.delete('tela'); u.searchParams.delete('barra'); }
+  u.searchParams.delete('barra');
+  if (variante === 'D') u.searchParams.set('tela', tela); else u.searchParams.delete('tela');
   history.replaceState(null, '', u);
 }
 function trocarVariante(passo) {
@@ -1604,26 +1569,17 @@ function trocarVariante(passo) {
   desenhar('entrada');
   barra();
 }
-function trocarBarra(passo) {
-  const chaves = Object.keys(BARRAS);
-  barraModo = chaves[(chaves.indexOf(barraModo) + passo + chaves.length) % chaves.length];
-  memoria.clear();
-  estadoBarras.clear(); // ao trocar, as barras crescem do zero
-  desenhar('entrada');
-  barra();
-}
 proto.addEventListener('click', e => {
   const b = e.target.closest('button');
   if (!b) return;
   if (b.dataset.ir) trocarVariante(+b.dataset.ir);
   if (b.dataset.fx) trocarFx(b.dataset.fx);
   if (b.id === 'simular') simular();
-  if (b.dataset.barraIr) trocarBarra(+b.dataset.barraIr);
 });
 addEventListener('keydown', e => {
   if (e.target.closest('input, textarea, [contenteditable]')) return;
-  if (e.key === 'ArrowLeft') variante === 'D' ? trocarBarra(-1) : trocarVariante(-1);
-  if (e.key === 'ArrowRight') variante === 'D' ? trocarBarra(1) : trocarVariante(1);
+  if (e.key === 'ArrowLeft') trocarVariante(-1);
+  if (e.key === 'ArrowRight') trocarVariante(1);
   if (e.key === '1' || e.key === '2') trocarTela(+e.key);
 });
 // Simula um lote novo do TSE (só no navegador); o próximo ciclo real restaura os números verdadeiros.
