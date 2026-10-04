@@ -332,9 +332,35 @@ body[data-v=D] #aviso.on { transform: none; }
 .db-abas small { font-size: 11px; font-weight: 400; color: var(--tinta-3); }
 .db-abas button[aria-selected=true] { background: var(--superficie-2); color: var(--tinta); }
 .db-abas button[aria-selected=true] > b { background: var(--acento); color: #fff; }
-.db-status { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin-left: auto; color: var(--tinta-2); font-size: 12px; font-variant-numeric: tabular-nums; }
-.db-vivo { display: flex; align-items: center; gap: 6px; color: var(--tinta); font-weight: 600; }
-.db-vivo i { width: 8px; height: 8px; border-radius: 50%; background: #0ca30c; animation: vivo-d 2s infinite; }
+/* faixa de status fixa no topo (só no Painel); relógio, hora do TSE e contagem rolam como odômetro, em JS */
+body[data-v=D] { padding-top: 44px; }
+#status-d { position: fixed; top: 0; left: 0; right: 0; z-index: 60; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; height: 44px; padding: 0 16px;
+  border-bottom: 1px solid var(--borda); background: color-mix(in srgb, var(--pagina) 82%, transparent); backdrop-filter: blur(14px); color: var(--tinta-2); font-size: 13px; font-variant-numeric: tabular-nums; }
+#status-d[hidden] { display: none; }
+.sd-esq { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.sd-dir { display: flex; justify-content: flex-end; align-items: center; gap: 8px; }
+.sd-vivo { display: flex; align-items: center; gap: 6px; color: var(--tinta); font-weight: 600; white-space: nowrap; }
+.sd-vivo i { width: 8px; height: 8px; border-radius: 50%; background: #0ca30c; animation: vivo-d 2s infinite; }
+#status-d.erro .sd-vivo i { background: #fab219; animation: none; }
+.sd-rot { color: var(--tinta-3); white-space: nowrap; }
+.sd-relogio, .sd-tse, .sd-seg { color: var(--tinta); font-weight: 600; white-space: nowrap; }
+.sd-seg { min-width: 2.4em; }
+.sd-meio { display: grid; align-content: center; justify-items: center; height: 44px; min-width: 0; overflow: hidden; }
+.sd-base, .sd-novidade { grid-area: 1 / 1; max-width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.sd-novidade { display: flex; align-items: center; gap: 8px; color: var(--tinta); font-weight: 600; }
+.sd-novidade[hidden] { display: none; }
+.sd-novidade i { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--acento); animation: vivo-d 1.4s infinite; }
+.sd-meio.flash .sd-tse { border-radius: 4px; animation: realce-d 2.4s ease-out; }
+.sd-anel { flex: none; width: 20px; height: 20px; transform: rotate(-90deg); }
+.sd-anel circle { fill: none; stroke-width: 2.5; }
+.sd-trilha { stroke: var(--grade); }
+.sd-arco { stroke: var(--acento); stroke-linecap: round; stroke-dasharray: 50.27; }
+.sd-anel.girando { animation: gira-d .9s linear infinite; }
+.sd-anel.girando .sd-arco { stroke-dashoffset: 36 !important; }
+@keyframes gira-d { from { transform: rotate(-90deg); } to { transform: rotate(270deg); } }
+.sd-ciclo { position: absolute; bottom: -1px; left: 0; width: 100%; height: 2px; background: linear-gradient(90deg, transparent, var(--acento)); transform: scaleX(0); transform-origin: left; }
+.od { position: relative; display: inline-block; overflow: hidden; vertical-align: bottom; }
+.od-velho { position: absolute; inset: 0; }
 .db-tema { all: unset; display: grid; place-items: center; width: 30px; height: 30px; border: 1px solid var(--borda); border-radius: 8px; cursor: pointer; }
 .db-tema:focus-visible { outline: 2px solid var(--acento); }
 .db-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin: 16px 0; }
@@ -423,8 +449,6 @@ body[data-v=D] .foto { background: var(--superficie-2); color: var(--tinta-2); }
 .db-tab small { color: var(--tinta-3); }
 .db-ok { color: var(--sobe); font-size: 11px; font-weight: 600; }
 /* movimento contínuo, sempre ligado a dado ou estado ao vivo */
-.db-ciclo { height: 2px; margin-top: -1px; background: var(--grade); overflow: hidden; }
-.db-ciclo i { display: block; width: 0; height: 100%; background: linear-gradient(90deg, transparent, var(--acento)); transition: width 1s linear; }
 .db-ticker { display: flex; align-items: center; gap: 12px; height: 40px; margin-top: 14px; padding-left: 14px; overflow: hidden; border: 1px solid var(--borda); border-radius: 12px; color: var(--tinta-2); font-size: 13px; }
 .db-ticker > b { display: flex; flex: none; align-items: center; gap: 8px; color: var(--tinta); font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
 .db-ticker > b i { width: 6px; height: 6px; border-radius: 50%; background: var(--acento); animation: vivo-d 2s infinite; }
@@ -449,7 +473,9 @@ body[data-v=D] .foto { background: var(--superficie-2); color: var(--tinta-2); }
 @media (max-width: 1100px) { .db-grade2 { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 760px) {
   .db-grade3 { grid-template-columns: minmax(0, 1fr); }
-  .db-abas, .db-status { width: 100%; margin-left: 0; }
+  .db-abas { width: 100%; }
+  #status-d { grid-template-columns: auto minmax(0, 1fr) auto; gap: 8px; padding: 0 10px; font-size: 12px; }
+  .sd-rot, .sd-vivo-txt { display: none; }
   .db-abas button { flex: 1; }
   .db-abas small { display: none; }
   .db-cand { grid-template-columns: 44px minmax(0, 1fr) 60px 56px; gap: 10px; }
@@ -472,6 +498,20 @@ body[data-v=D] .foto { background: var(--superficie-2); color: var(--tinta-2); }
 </head>
 <body data-v="A">
 <div id="fundo" aria-hidden="true"></div>
+<div id="status-d" hidden>
+  <div class="sd-esq"><span class="sd-vivo"><i></i><span class="sd-vivo-txt">Ao vivo</span></span><b class="sd-relogio"></b></div>
+  <div class="sd-meio">
+    <div class="sd-base"><span class="sd-rot">Dados do TSE</span> <b class="sd-tse"></b> <span class="sd-idade"></span></div>
+    <div class="sd-novidade" hidden aria-live="polite"></div>
+  </div>
+  <div class="sd-dir">
+    <span class="sd-rot">Próxima consulta</span>
+    <svg class="sd-anel" viewBox="0 0 20 20" aria-hidden="true"><circle class="sd-trilha" cx="10" cy="10" r="8"/><circle class="sd-arco" cx="10" cy="10" r="8"/></svg>
+    <b class="sd-seg"></b>
+    <button class="db-tema" data-tema-toggle title="Alternar tema claro/escuro" aria-label="Alternar tema claro/escuro">◐</button>
+  </div>
+  <i class="sd-ciclo"></i>
+</div>
 <main id="app"></main>
 
 <div class="mascote" id="urninha" aria-hidden="true">
@@ -841,15 +881,7 @@ function painel() {
         ${[[1, 'Majoritárias', 'Presidente · Governador · Senado'], [2, 'Proporcionais', 'Deputados federais e estaduais']].map(([n, t, sub]) =>
           `<button role="tab" aria-selected="${tela === n}" data-tela="${n}"><b>${n}</b><span>${t}<small>${sub}</small></span></button>`).join('')}
       </nav>
-      <div class="db-status">
-        <span class="db-vivo"><i></i>Ao vivo</span>
-        <span data-relogio></span>
-        <span>TSE ${esc(P.hora)}</span>
-        <span data-contagem></span>
-        <button class="db-tema" data-tema-toggle title="Alternar tema claro/escuro" aria-label="Alternar tema claro/escuro">◐</button>
-      </div>
     </header>
-    <div class="db-ciclo" title="Tempo até a próxima consulta ao TSE"><i data-ciclo></i></div>
     <div class="db-ticker" aria-label="Destaques ao vivo"><b><i></i>Destaques</b>
       <div class="db-janela"><div class="db-rolo">${(t => t + t)(destaques().map(d => `<span>${d}</span>`).join(''))}</div></div></div>
     <section class="db-kpis">
@@ -1263,12 +1295,13 @@ async function trocarTela(n) {
 app.addEventListener('click', e => {
   const aba = e.target.closest('[data-tela]');
   if (aba) trocarTela(+aba.dataset.tela);
-  if (e.target.closest('[data-tema-toggle]')) {
-    document.body.dataset.tema = document.body.dataset.tema === 'claro' ? '' : 'claro';
-    try { localStorage.setItem('tema', document.body.dataset.tema); } catch {}
-    desenhar('tela');
-  }
 });
+function alternarTema() {
+  document.body.dataset.tema = document.body.dataset.tema === 'claro' ? '' : 'claro';
+  try { localStorage.setItem('tema', document.body.dataset.tema); } catch {}
+  desenhar('tela');
+}
+document.getElementById('status-d').addEventListener('click', e => e.target.closest('[data-tema-toggle]') && alternarTema());
 try { document.body.dataset.tema = localStorage.getItem('tema') ?? ''; } catch {}
 
 async function puxarHist() {
@@ -1336,8 +1369,8 @@ function festa(antes, depois) {
   });
   const ap = (d, id) => pf.format(d.cargos[id].apurado) + '%';
   const resumo = `Atualizado às ${depois.cargos.presidente.hora} · Brasil ${ap(antes, 'presidente')} → ${ap(depois, 'presidente')} · Pará ${ap(antes, 'governador')} → ${ap(depois, 'governador')}`;
-  if (variante === 'D') { // painel profissional: só o aviso, com a virada escrita nele
-    aviso(viradas.length ? `${resumo} · mudou a liderança em ${viradas.map(id => ROTULO[id]).join(', ')}` : resumo);
+  if (variante === 'D') { // painel profissional: o resumo sobe na faixa do topo, com a virada escrita nele
+    novidadeStatus(viradas.length ? `${resumo} · mudou a liderança em ${viradas.map(id => ROTULO[id]).join(', ')}` : resumo);
     return;
   }
   aviso(resumo);
@@ -1349,6 +1382,74 @@ function festa(antes, depois) {
   tocarConfete();
   motor?.explodir();
 }
+// ---------- faixa de status fixa no topo (Painel) ----------
+const sd = document.getElementById('status-d'), sdEl = sel => sd.querySelector(sel);
+// Odômetro: só os caracteres que mudaram rolam; o antigo sobe e sai, o novo entra por baixo.
+function odometro(el, texto) {
+  const antigo = el._txt;
+  if (antigo === texto) return;
+  el._txt = texto;
+  el.innerHTML = [...texto].map(ch => `<span class="od"><span>${ch === ' ' ? '&nbsp;' : esc(ch)}</span></span>`).join('');
+  if (calmo || antigo == null || antigo.length !== texto.length) return;
+  const opts = { duration: 420, easing: 'cubic-bezier(.2,.8,.2,1)' };
+  [...el.children].forEach((cel, i) => {
+    if (antigo[i] === texto[i]) return;
+    const velho = document.createElement('span');
+    velho.className = 'od-velho';
+    velho.textContent = antigo[i];
+    cel.append(velho);
+    cel.firstChild.animate([{ transform: 'translateY(90%)', opacity: 0 }, { transform: 'none', opacity: 1 }], opts);
+    velho.animate([{ transform: 'none', opacity: 1 }, { transform: 'translateY(-90%)', opacity: 0 }], opts).onfinish = () => velho.remove();
+  });
+}
+// Há quanto tempo o TSE gerou o dado na tela (o horário vem no fuso de Brasília, igual ao do relógio aqui).
+function idadeTse(hora) {
+  const m = /^(\d\d):(\d\d):(\d\d)/.exec(hora ?? '');
+  if (!m) return '';
+  const d = new Date();
+  d.setHours(+m[1], +m[2], +m[3], 0);
+  const min = Math.floor((Date.now() - d) / 60000);
+  return min < 1 ? '· agora há pouco' : `· há ${min} min`;
+}
+function quadroStatus() {
+  requestAnimationFrame(quadroStatus);
+  const ativo = variante === 'D' && !!dados?.cargos?.presidente;
+  if (sd.hidden === ativo) sd.hidden = !ativo;
+  if (!ativo) return;
+  const a = dados.consultadoEm, b = dados.proximaConsulta, agora = Date.now();
+  const frac = a && b > a ? Math.min(1, (agora - a) / (b - a)) : 1;
+  const s = b ? Math.max(0, Math.ceil((b - agora) / 1000)) : 0;
+  sdEl('.sd-arco').style.strokeDashoffset = (50.27 * frac).toFixed(2); // o anel esvazia até a próxima consulta
+  sdEl('.sd-ciclo').style.transform = `scaleX(${frac.toFixed(4)})`;
+  sdEl('.sd-anel').classList.toggle('girando', s === 0);
+  odometro(sdEl('.sd-seg'), s ? `${String(s).padStart(2, '0')}s` : '···');
+  odometro(sdEl('.sd-relogio'), new Date().toLocaleTimeString('pt-BR'));
+  odometro(sdEl('.sd-tse'), C('presidente').hora);
+  const idade = idadeTse(C('presidente').hora);
+  if (sdEl('.sd-idade').textContent !== idade) sdEl('.sd-idade').textContent = idade;
+  const txt = dados.erro ? 'TSE instável' : 'Ao vivo';
+  if (sdEl('.sd-vivo-txt').textContent !== txt) { sdEl('.sd-vivo-txt').textContent = txt; sd.classList.toggle('erro', !!dados.erro); }
+}
+requestAnimationFrame(quadroStatus);
+// Chegou leitura nova: a hora do TSE some pra cima e o resumo entra por baixo; 7 s depois, volta.
+function novidadeStatus(texto) {
+  const base = sdEl('.sd-base'), nov = sdEl('.sd-novidade'), meio = sdEl('.sd-meio');
+  nov.innerHTML = `<i></i>${esc(texto)}`;
+  nov.hidden = false;
+  meio.classList.remove('flash'); void meio.offsetWidth; meio.classList.add('flash');
+  const opts = { duration: calmo ? 0 : 450, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'forwards' };
+  const sai = [{ transform: 'none', opacity: 1 }, { transform: 'translateY(-100%)', opacity: 0 }];
+  const entra = [{ transform: 'translateY(100%)', opacity: 0 }, { transform: 'none', opacity: 1 }];
+  for (const el of [base, nov]) el.getAnimations().forEach(x => x.cancel());
+  base.animate(sai, opts);
+  nov.animate(entra, opts);
+  clearTimeout(novidadeStatus.t);
+  novidadeStatus.t = setTimeout(() => {
+    base.animate(entra, opts);
+    nov.animate(sai, opts).onfinish = () => { nov.hidden = true; };
+  }, 7000);
+}
+
 function aviso(texto) {
   const el = document.getElementById('aviso');
   el.innerHTML = `<i></i>${esc(texto)}`;
