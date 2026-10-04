@@ -88,6 +88,7 @@ body[data-v=B] #urninha .fala { top: 40%; bottom: auto; transform-origin: right 
 #proto button.on { background: #ff3d7f; }
 #proto .sep { width: 1px; align-self: stretch; background: #444; margin: 0 2px; }
 #proto-nome { min-width: 120px; text-align: center; }
+#proto [hidden] { display: none !important; }
 
 /* ======================= A — TELÃO ======================= */
 body[data-v=A] { background: radial-gradient(1200px 640px at 50% -10%, #1d2c70, #070b1d 62%) fixed; color: #f4f6ff; }
@@ -358,12 +359,41 @@ body[data-v=D] #aviso.on { transform: none; }
 .db-heroi.menor { font-size: 30px; }
 .db-manchete > span { color: var(--tinta-2); font-size: 13px; }
 .db-cands { list-style: none; }
-.db-cand { display: grid; grid-template-columns: 10px minmax(0, 1fr) minmax(60px, 96px) 64px 62px; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--grade); }
+.db-cand { display: grid; grid-template-columns: 44px minmax(0, 1fr) 64px 62px; align-items: center; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--grade); }
+/* rosto oficial do TSE com anel na cor da série (separado por um respiro da cor da superfície) */
+.db-rosto { width: 40px; height: 40px; margin: 2px; font-size: 13px; box-shadow: 0 0 0 2px var(--superficie), 0 0 0 4px var(--c, var(--outros)); }
+.db-rosto.p { width: 28px; height: 28px; font-size: 10px; }
+body[data-v=D] .foto { background: var(--superficie-2); color: var(--tinta-2); }
+.db-pessoa { display: flex; align-items: center; gap: 10px; }
+.db-cand.mini { grid-template-columns: 32px minmax(0, 1fr) 64px 62px; padding: 6px 0; }
+.db-cand.mini .db-rosto { width: 26px; height: 26px; font-size: 10px; }
+.db-cand.mini .db-barra { display: none; }
+.db-retratos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.db-retrato { position: relative; display: grid; justify-items: center; align-content: start; gap: 2px; min-width: 0; padding: 14px 12px 12px; border-top: 3px solid var(--c); border-radius: 12px; background: var(--superficie-2); text-align: center; }
+.db-retrato > .foto { width: 72px; height: 96px; margin-bottom: 6px; border-radius: 10px; font-size: 22px; }
+.db-retrato b { display: -webkit-box; overflow: hidden; font-size: 15px; font-weight: 650; line-height: 1.2; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.db-retrato small { max-width: 100%; overflow: hidden; color: var(--tinta-3); font-size: 12px; white-space: nowrap; text-overflow: ellipsis; }
+.db-retrato .db-pct { display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; gap: 2px 8px; margin-top: 4px; font-size: 26px; letter-spacing: -.02em; }
+.db-retrato .db-pct .d { font-size: 12px; letter-spacing: 0; }
+.db-retrato .db-barra { width: 100%; }
+.db-rot-vaga { position: absolute; top: 10px; left: 10px; color: var(--tinta-3); font-size: 10px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+.db-c3 { padding: 10px 0 8px; border-bottom: 1px solid var(--grade); }
+.db-c3-topo { display: grid; grid-template-columns: minmax(0, 1fr) auto 62px; align-items: baseline; gap: 10px; }
+.db-c3-nome { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.db-c3-nome b { font-size: 14px; font-weight: 600; }
+.db-c3-nome small { color: var(--tinta-3); font-size: 12px; font-variant-numeric: tabular-nums; }
+.db-c3-pista { position: relative; height: 38px; margin: 0 20px; }
+.db-c3-pista::before { content: ''; position: absolute; top: 50%; left: 0; right: 0; height: 4px; border-radius: 2px; background: var(--superficie-2); transform: translateY(-50%); }
+.db-c3-barra { position: absolute; top: 50%; left: 0; height: 4px; border-radius: 2px; transform: translateY(-50%); overflow: hidden; }
+.db-c3-barra::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgb(255 255 255/.4), transparent); transform: translateX(-100%); animation: brilho-d 5s ease-in-out infinite; animation-delay: var(--atraso, 0s); }
+.db-c3-rosto { position: absolute; top: 50%; z-index: 1; transform: translate(-50%, -50%); }
+.db-c3-rosto .db-rosto { width: 30px; height: 30px; margin: 0; font-size: 11px; }
+.db-c3-pista em { position: absolute; top: 6px; bottom: 6px; width: 1px; background: var(--tinta-3); }
 .db-sw { display: inline-block; flex: none; width: 10px; height: 10px; border-radius: 3px; vertical-align: baseline; }
 .db-nome { display: grid; min-width: 0; }
 .db-nome b { overflow: hidden; font-size: 14px; font-weight: 600; white-space: nowrap; text-overflow: ellipsis; }
-.db-nome small { color: var(--tinta-3); font-size: 12px; font-variant-numeric: tabular-nums; }
-.db-barra { position: relative; height: 6px; border-radius: 3px; background: var(--superficie-2); }
+.db-nome small { overflow: hidden; color: var(--tinta-3); font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; text-overflow: ellipsis; }
+.db-barra { position: relative; height: 4px; margin-top: 7px; border-radius: 2px; background: var(--superficie-2); }
 .db-barra i { display: block; height: 100%; border-radius: 0 3px 3px 0; }
 .db-barra em { position: absolute; top: -4px; bottom: -4px; left: 50%; width: 1px; background: var(--tinta-3); }
 .db-pct { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
@@ -448,8 +478,9 @@ body[data-v=D] #aviso.on { transform: none; }
   .db-abas, .db-status { width: 100%; margin-left: 0; }
   .db-abas button { flex: 1; }
   .db-abas small { display: none; }
-  .db-cand { grid-template-columns: 10px minmax(0, 1fr) 60px 56px; }
-  .db-cand .db-barra { display: none; }
+  .db-cand { grid-template-columns: 44px minmax(0, 1fr) 60px 56px; gap: 10px; }
+  .db-retratos { gap: 8px; }
+  .db-retrato .db-pct { font-size: 22px; }
   .db-analise { grid-template-columns: minmax(0, 1fr); }
   .db-heroi { font-size: 40px; }
   .db-oculta-mob { display: none; }
@@ -492,6 +523,10 @@ body[data-v=D] #aviso.on { transform: none; }
   <button data-fx="three">Three.js</button>
   <span class="sep"></span>
   <button id="simular">⚡ simular atualização</button>
+  <span class="sep proto-rosto"></span>
+  <button class="proto-rosto" data-rosto-ir="-1" title="Forma anterior de rosto (←)">‹</button>
+  <span class="proto-rosto" id="proto-rosto"></span>
+  <button class="proto-rosto" data-rosto-ir="1" title="Próxima forma de rosto (→)">›</button>
 </nav>
 
 <script type="module">
@@ -861,23 +896,55 @@ function painel() {
   </div>`;
 }
 
+// PROTÓTIPO (pergunta: como mostrar o rosto ao lado do nome?): 3 formas, trocadas com ?rosto=1|2|3 ou ← → no Painel.
+const ROSTOS = { 1: 'Anel na lista', 2: 'Retratos dos líderes', 3: 'Rosto na barra' };
+let rosto = ROSTOS[params.get('rosto')] ? params.get('rosto') : '1';
+function dbRanking(c, noGrafico, ant) {
+  const id = c.id, duas = c.vagas === 2, lista = c.candidatos.slice(0, duas ? 6 : 5);
+  const corX = x => noGrafico.includes(x) ? corD(id, x.n) : 'var(--outros)';
+  const delta = x => { const pa = ant?.c[x.n]?.[1]; return pa == null ? '' : deltaPp(x.pct - pa); };
+  const estilo = x => `--atraso:${(c.candidatos.indexOf(x) * 0.35).toFixed(2)}s;--c:${corX(x)}`;
+  const votos = x => `${conta(`d-${id}-${x.n}-v`, x.votos)} votos`;
+  const pct = x => conta(`d-${id}-${x.n}-p`, x.pct, 'p');
+  const barra = x => `<span class="db-barra" aria-hidden="true"><i ${anima(`d-${id}-${x.n}-b`, 'width', x.pct, `background:${corX(x)}`)}></i>${duas ? '' : '<em></em>'}</span>`;
+  const linha = (x, mini = false) => `<li class="db-cand ${mini ? 'mini' : ''}" data-flip="${id}-${x.n}" style="${estilo(x)}">
+      ${foto(x, 'db-rosto')}
+      <span class="db-nome"><b>${esc(nomeBonito(x.nome))}</b><small>${esc(x.partido)} · ${votos(x)}</small>${barra(x)}</span>
+      <span class="db-pct">${pct(x)}</span>
+      <span class="db-delta">${delta(x)}</span>
+    </li>`;
+  if (rosto === '2') { // dois retratos grandes (o duelo, ou as 2 vagas do Senado) + o resto compacto
+    return `<div class="db-retratos">${lista.slice(0, 2).map((x, i) => `<div class="db-retrato" data-flip="${id}-${x.n}" style="${estilo(x)}">
+        ${foto(x)}
+        <span class="db-rot-vaga">${duas ? `${i + 1}ª vaga` : `${i + 1}º lugar`}</span>
+        <b>${esc(nomeBonito(x.nome))}</b>
+        <small>${esc(x.partido)} · ${votos(x)}</small>
+        <span class="db-pct">${pct(x)} ${delta(x)}</span>
+        ${barra(x)}
+      </div>`).join('')}</div>
+      <ol class="db-cands">${lista.slice(2).map(x => linha(x, true)).join('')}</ol>`;
+  }
+  if (rosto === '3') { // o rosto é a ponta da barra e desliza quando o percentual muda
+    const escala = duas ? c.candidatos[0].pct * 1.15 : Math.max(55, c.candidatos[0].pct * 1.1);
+    const pos = v => Math.min(100, v / escala * 100);
+    return `<ol class="db-cands">${lista.map(x => `<li class="db-c3" data-flip="${id}-${x.n}" style="${estilo(x)}">
+        <div class="db-c3-topo"><span class="db-c3-nome"><b>${esc(nomeBonito(x.nome))}</b> <small>${esc(x.partido)} · ${votos(x)}</small></span>
+          <span class="db-pct">${pct(x)}</span><span class="db-delta">${delta(x)}</span></div>
+        <div class="db-c3-pista" aria-hidden="true">
+          ${duas ? '' : `<em style="left:${pos(50)}%" title="50%"></em>`}
+          <i class="db-c3-barra" ${anima(`d-${id}-${x.n}-b3`, 'width', pos(x.pct), `background:${corX(x)}`)}></i>
+          <span class="db-c3-rosto" ${anima(`d-${id}-${x.n}-r3`, 'left', pos(x.pct))}>${foto(x, 'db-rosto')}</span>
+        </div>
+      </li>`).join('')}</ol>`;
+  }
+  return `<ol class="db-cands">${lista.map(x => linha(x)).join('')}</ol>`;
+}
 const dbTela1 = () => `<div class="db-grade3">${['presidente', 'governador', 'senador'].map(dbMaj).join('')}</div>`;
 function dbMaj(id) {
   const c = C(id), [a, b, d3] = c.candidatos, duas = c.vagas === 2;
   const noGrafico = c.candidatos.slice(0, duas ? 4 : 2);
   noGrafico.forEach(x => corD(id, x.n));
-  const ant = anteriorD(id);
-  const linhas = c.candidatos.slice(0, duas ? 6 : 5).map(x => {
-    const corX = noGrafico.includes(x) ? corD(id, x.n) : 'var(--outros)';
-    const pa = ant?.c[x.n]?.[1];
-    return `<li class="db-cand" data-flip="${id}-${x.n}" style="--atraso:${(c.candidatos.indexOf(x) * 0.35).toFixed(2)}s">
-      <span class="db-sw" style="background:${corX}"></span>
-      <span class="db-nome"><b>${esc(nomeBonito(x.nome))}</b><small>${esc(x.partido)} · ${conta(`d-${id}-${x.n}-v`, x.votos)} votos</small></span>
-      <span class="db-barra" aria-hidden="true"><i ${anima(`d-${id}-${x.n}-b`, 'width', x.pct, `background:${corX}`)}></i>${duas ? '' : '<em></em>'}</span>
-      <span class="db-pct">${conta(`d-${id}-${x.n}-p`, x.pct, 'p')}</span>
-      <span class="db-delta">${pa == null ? '' : deltaPp(x.pct - pa)}</span>
-    </li>`;
-  }).join('');
+  const linhas = dbRanking(c, noGrafico, anteriorD(id));
   graficos.set(id, {
     rotulo: `Evolução do percentual de votos válidos de ${c.titulo}`,
     ref: duas ? null : 50,
@@ -892,7 +959,7 @@ function dbMaj(id) {
       <div class="db-apu">${conta(`d-${id}-ap`, c.apurado, 'p')}<small>das seções apuradas</small></div>
     </header>
     <div class="db-manchete">${manchete}</div>
-    <ol class="db-cands">${linhas}</ol>
+    ${linhas}
     <figure class="db-fig">
       <figcaption><span>% dos votos válidos conforme as seções são apuradas</span>
         <span class="db-leg">${noGrafico.map(x => `<span><i class="db-sw" style="background:${corD(id, x.n)}"></i>${esc(nomeBonito(x.nome))}</span>`).join('')}</span></figcaption>
@@ -1022,10 +1089,10 @@ function dbProp(id) {
   const linhasCand = proj.map(x => {
     const pa = ant?.c[x.n]?.[2];
     const serie = ps.map(p => p.c[id].c[x.n]?.[1]).filter(v => v != null);
-    return `<tr data-flip="${id}-${x.n}">
+    return `<tr data-flip="${id}-${x.n}" style="--c:${corAgr(x.agr)}">
       <td class="n">${x.pos}º</td>
       <td class="n">${pa == null ? (ant ? '<span class="d">novo</span>' : '') : deltaInt(pa - x.pos)}</td>
-      <td><span class="db-sw" style="background:${corAgr(x.agr)}"></span><b>${esc(nomeBonito(x.nome))}</b> <small>${esc(x.partido)}</small>${x.eleito ? ' <span class="db-ok">✓ eleito</span>' : ''}</td>
+      <td><div class="db-pessoa">${foto(x, 'db-rosto p')}<span><b>${esc(nomeBonito(x.nome))}</b> <small>${esc(x.partido)}</small>${x.eleito ? ' <span class="db-ok">✓ eleito</span>' : ''}</span></div></td>
       <td class="n">${conta(`d-${id}-${x.n}-v`, x.votos)}</td>
       <td class="n db-oculta-mob">${pf.format(x.pct)}%</td>
       <td class="db-oculta-mob">${spark(serie, 64, 18)}</td>
@@ -1063,10 +1130,10 @@ function dbProp(id) {
       <h3>Disputa interna <small>1º da fila × último que entra, na mesma agremiação</small></h3>
       <div class="db-rolagem"><table class="db-tab">
         <thead><tr><th>Agremiação</th><th>Último que entra</th><th>1º da fila</th><th class="n">Diferença</th></tr></thead>
-        <tbody>${fila.map(f => `<tr data-flip="${id}-fila-${f.a.sigla}">
+        <tbody>${fila.map(f => `<tr data-flip="${id}-fila-${f.a.sigla}" style="--c:${corAgr(f.a.sigla)}">
           <td><span class="db-sw" style="background:${corAgr(f.a.sigla)}"></span>${esc(f.a.sigla)}</td>
-          <td>${nm(f.ultimo)} <small>${nf.format(f.ultimo.votos)}</small></td>
-          <td>${nm(f.prox)} <small>${nf.format(f.prox.votos)}</small></td>
+          <td><div class="db-pessoa">${foto(f.ultimo, 'db-rosto p')}<span>${nm(f.ultimo)} <small>${nf.format(f.ultimo.votos)}</small></span></div></td>
+          <td><div class="db-pessoa">${foto(f.prox, 'db-rosto p')}<span>${nm(f.prox)} <small>${nf.format(f.prox.votos)}</small></span></div></td>
           <td class="n"><b>${conta(`d-${id}-fila-${f.a.sigla}`, f.gap)}</b></td></tr>`).join('')}</tbody>
       </table></div>
     </section>
@@ -1479,11 +1546,13 @@ const proto = document.getElementById('proto');
 proto.hidden = !(/^(localhost|127\.|10\.|192\.168\.)/.test(location.hostname) || params.has('proto'));
 function barra() {
   document.getElementById('proto-nome').textContent = `${variante} — ${VARIANTES[variante][0]}`;
+  document.getElementById('proto-rosto').textContent = `Rosto ${rosto} — ${ROSTOS[rosto]}`;
+  proto.querySelectorAll('.proto-rosto').forEach(el => { el.hidden = variante !== 'D'; });
   proto.querySelectorAll('[data-fx]').forEach(b => b.classList.toggle('on', b.dataset.fx === fx));
   const u = new URL(location.href);
   u.searchParams.set('variant', variante);
   u.searchParams.set('fx', fx);
-  if (variante === 'D') u.searchParams.set('tela', tela); else u.searchParams.delete('tela');
+  if (variante === 'D') { u.searchParams.set('tela', tela); u.searchParams.set('rosto', rosto); } else { u.searchParams.delete('tela'); u.searchParams.delete('rosto'); }
   history.replaceState(null, '', u);
 }
 function trocarVariante(passo) {
@@ -1493,17 +1562,25 @@ function trocarVariante(passo) {
   desenhar('entrada');
   barra();
 }
+function trocarRosto(passo) {
+  const chaves = Object.keys(ROSTOS);
+  rosto = chaves[(chaves.indexOf(rosto) + passo + chaves.length) % chaves.length];
+  memoria.clear();
+  desenhar('entrada');
+  barra();
+}
 proto.addEventListener('click', e => {
   const b = e.target.closest('button');
   if (!b) return;
   if (b.dataset.ir) trocarVariante(+b.dataset.ir);
   if (b.dataset.fx) trocarFx(b.dataset.fx);
   if (b.id === 'simular') simular();
+  if (b.dataset.rostoIr) trocarRosto(+b.dataset.rostoIr);
 });
 addEventListener('keydown', e => {
   if (e.target.closest('input, textarea, [contenteditable]')) return;
-  if (e.key === 'ArrowLeft') trocarVariante(-1);
-  if (e.key === 'ArrowRight') trocarVariante(1);
+  if (e.key === 'ArrowLeft') variante === 'D' ? trocarRosto(-1) : trocarVariante(-1);
+  if (e.key === 'ArrowRight') variante === 'D' ? trocarRosto(1) : trocarVariante(1);
   if (e.key === '1' || e.key === '2') trocarTela(+e.key);
 });
 // Simula um lote novo do TSE (só no navegador); o próximo ciclo real restaura os números verdadeiros.
