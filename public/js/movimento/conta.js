@@ -11,9 +11,10 @@ import { fmt } from "./formato.js";
  * @param {boolean} [delta=false] mostrar variação
  */
 export function conta(k, v, t = "n", delta = false) {
-	const de = memoria.get(k) ?? 0;
+	const tinha = memoria.has(k);
+	const de = tinha ? memoria.get(k) : v;
 	memoria.set(k, v);
-	const mudou = de > 0 && fmt(de, t) !== fmt(v, t);
+	const mudou = tinha && fmt(de, t) !== fmt(v, t);
 	const dif = Math.abs(v - de);
 	const num = t === "p" ? fmt(dif, "p").replace("%", "") : fmt(dif, "n");
 	return (

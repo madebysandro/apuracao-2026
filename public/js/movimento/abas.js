@@ -1,4 +1,4 @@
-import { calmo } from "./calmo.js";
+import { preferirCalmo } from "./calmo.js";
 
 /**
  * Desliza a troca entre telas (abas).
@@ -13,7 +13,7 @@ import { calmo } from "./calmo.js";
 export async function deslizarAba({ de, para, atual, pintar, seletorNova = ".tela" }) {
 	if (para === de) return;
 	const dir = para > de ? 1 : -1;
-	if (atual && !calmo) {
+	if (atual && !preferirCalmo()) {
 		await atual
 			.animate(
 				[
@@ -26,7 +26,7 @@ export async function deslizarAba({ de, para, atual, pintar, seletorNova = ".tel
 	}
 	pintar();
 	const nova = document.querySelector(seletorNova);
-	if (nova && !calmo) {
+	if (nova && !preferirCalmo()) {
 		nova.animate(
 			[
 				{ opacity: 0, transform: `translateX(${24 * dir}px)` },

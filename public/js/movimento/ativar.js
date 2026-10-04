@@ -1,4 +1,4 @@
-import { calmo } from "./calmo.js";
+import { preferirCalmo } from "./calmo.js";
 import { fmt } from "./formato.js";
 
 /**
@@ -14,7 +14,7 @@ export function ativar() {
 		}),
 	);
 
-	if (calmo) {
+	if (preferirCalmo()) {
 		for (const el of document.querySelectorAll(".conta")) {
 			const para = +el.dataset.para;
 			const t = el.dataset.t;

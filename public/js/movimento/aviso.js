@@ -1,4 +1,4 @@
-import { escapar } from "./formato.js";
+import { escapar, fmt } from "./formato.js";
 
 let timer;
 
@@ -29,15 +29,11 @@ export function aviso(texto, ms = 6000) {
  * }} opts
  */
 export function resumoAtualizacao(opts) {
-	const pf = new Intl.NumberFormat("pt-BR", {
-		minimumFractionDigits: 2,
-		maximumFractionDigits: 2,
-	});
 	const partes = [];
 	if (opts.hora) partes.push(`Atualizado às ${opts.hora}`);
 	if (opts.apuradoAntes != null && opts.apuradoDepois != null) {
 		partes.push(
-			`Brasil ${pf.format(opts.apuradoAntes)}% → ${pf.format(opts.apuradoDepois)}%`,
+			`Brasil ${fmt(opts.apuradoAntes, "p")} → ${fmt(opts.apuradoDepois, "p")}`,
 		);
 	}
 	let texto = partes.join(" · ");

@@ -12,9 +12,10 @@
  * 7. Abas: `deslizarAba({ de, para, atual, pintar })`.
  * 8. Tema: `ligarSeletorTema()` uma vez no boot; botão `[data-tema-toggle]`.
  * 9. Aviso: `aviso(resumoAtualizacao({…}))` quando a versão da API muda.
+ * 10. Movimento: consulte `preferirCalmo()` antes de `Element.animate`.
  */
 
-export { calmo } from "./calmo.js";
+export { preferirCalmo } from "./calmo.js";
 export { memoria } from "./memoria.js";
 export { fmt, escapar, deltaPp, deltaInt } from "./formato.js";
 export { conta, animaProp } from "./conta.js";

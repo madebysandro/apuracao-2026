@@ -1,4 +1,4 @@
-import { calmo } from "./calmo.js";
+import { preferirCalmo } from "./calmo.js";
 import { memoria } from "./memoria.js";
 
 /**
@@ -24,7 +24,7 @@ export function clipRevelacao(
 	const chave = `graf-${id}`;
 	const apAnt = memoria.get(chave);
 	const de =
-		!animar || calmo
+		!animar || preferirCalmo()
 			? larguraSvg
 			: apAnt == null
 				? margemEsq
@@ -38,7 +38,7 @@ export function clipRevelacao(
  * Chamar após inserir o SVG no DOM.
  */
 export function animarRevelacao(raiz = document) {
-	if (calmo) {
+	if (preferirCalmo()) {
 		for (const r of raiz.querySelectorAll("[data-tw]")) {
 			r.setAttribute(r.dataset.tw, r.dataset.para);
 		}

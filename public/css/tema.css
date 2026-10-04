@@ -25,6 +25,7 @@
 	--s8: #e66767;
 	--sobe: #0ca30c;
 	--desce: #d03b3b;
+	--erro: #e66767;
 	--vivo: #0ca30c;
 	--aurora-a: rgb(57 135 229 / 0.16);
 	--aurora-b: rgb(25 158 112 / 0.11);
@@ -58,6 +59,7 @@
 	--s8: #e34948;
 	--sobe: #006300;
 	--desce: #d03b3b;
+	--erro: #c62828;
 	--vivo: #006300;
 	--aurora-a: rgb(42 120 214 / 0.12);
 	--aurora-b: rgb(27 175 122 / 0.1);
@@ -111,7 +113,7 @@ body::before {
 	animation: aurora 38s ease-in-out infinite alternate;
 }
 
-[data-tema="claro"]::before {
+html[data-tema="claro"] body::before {
 	opacity: 0.45;
 }
 
@@ -303,11 +305,26 @@ body::before {
 }
 
 .apurado {
+	display: grid;
+	gap: 4px;
+	justify-items: end;
+	min-width: 7.5rem;
 	font-family: var(--fonte-num);
 	font-size: 0.95rem;
 	color: var(--tinta-2);
 	font-variant-numeric: tabular-nums;
 	text-align: right;
+}
+
+.apurado .prog {
+	width: 100%;
+	margin-top: 2px;
+}
+
+.cand-barra {
+	grid-column: 2 / -1;
+	height: 3px;
+	margin-top: 2px;
 }
 
 /* ---------- Ranking (Presidente / majoritárias) ---------- */
@@ -377,7 +394,7 @@ body::before {
 }
 
 .erro {
-	color: var(--s8);
+	color: var(--erro);
 }
 
 /* ---------- Contagem + realce + delta ---------- */

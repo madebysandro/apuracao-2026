@@ -1,4 +1,4 @@
-import { calmo } from "./calmo.js";
+import { preferirCalmo } from "./calmo.js";
 
 /**
  * Captura a posição Y de elementos com `data-flip` antes do re-render.
@@ -17,7 +17,7 @@ export function capturarFlip() {
  * @param {Map<string, number>} antes
  */
 export function flip(antes) {
-	if (calmo || !antes?.size) return;
+	if (preferirCalmo() || !antes?.size) return;
 	for (const el of document.querySelectorAll("[data-flip]")) {
 		const y0 = antes.get(el.dataset.flip);
 		if (y0 == null) {
