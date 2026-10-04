@@ -11,6 +11,7 @@ import depfedReal from "../../fixtures/tse-provisorio/2026-10-04T21-56-47-000Z/d
 import depestReal from "../../fixtures/tse-provisorio/2026-10-04T21-56-47-000Z/depest.json";
 import depfedDerivada from "../../fixtures/tse-provisorio/2026-10-04T21-56-47-000Z-derivada-antes/depfed.json";
 import depestDerivada from "../../fixtures/tse-provisorio/2026-10-04T21-56-47-000Z-derivada-antes/depest.json";
+import presidenteUfs from "../../fixtures/tse-provisorio/ufs/presidente-ufs.json";
 
 /**
  * Sequência provisória gravada em 04/10/2026.
@@ -140,6 +141,10 @@ export type TseFalso = {
 	simular429: (retryAfter: number) => void;
 	/** Próxima resposta do Presidente será erro HTTP genérico. */
 	simularErro: (status?: number) => void;
+	/** Próxima resposta desta UF de Presidente falha (as demais seguem). */
+	simularErroUf: (uf: string, status?: number) => void;
+	/** Próxima resposta desta UF será 429 (interrompe o ciclo). */
+	simular429Uf: (uf: string, retryAfter?: number) => void;
 	/**
 	 * Sobrescreve o Cache-Control do próximo 200/304 de todos os arquivos
 	 * (útil para testar max(30 s, max-age) com valor controlado).
@@ -164,8 +169,14 @@ export function instalarTseFalso(opcoes: OpcoesTseFalso = {}): TseFalso {
 		pedidos: [] as PedidoTse[],
 		modo: null as ModoEspecial,
 		cacheControlOverride: null as string | null,
+		erroUf: null as {
+			uf: string;
+			status: number;
+			retryAfter?: number;
+		} | null,
 	};
 	const modoProp = opcoes.proporcionais ?? "real";
+	const fixturesUf = presidenteUfs as Record<string, object>;
 
 	const propAtual = () => {
 		if (modoProp === "cadeiras") {
@@ -258,6 +269,38 @@ export function instalarTseFalso(opcoes: OpcoesTseFalso = {}): TseFalso {
 				propAtual().depest,
 			),
 		),
+		// Presidente por UF / exterior: …/dados/{uf}/{uf}-c0001-e006257-u.json
+		http.get(
+			/https:\/\/resultados\.tse\.jus\.br\/oficial\/ele2026\/6257\/dados\/([a-z]{2})\/\1-c0001-e006257-u\.json/,
+			({ request, params }) => {
+				const uf = String(params[0] ?? "");
+				const ifNoneMatch = request.headers.get("if-none-match");
+				if (estado.erroUf && estado.erroUf.uf === uf) {
+					const { status, retryAfter } = estado.erroUf;
+					estado.erroUf = null;
+					estado.pedidos.push({ url: request.url, ifNoneMatch });
+					if (status === 429) {
+						return new HttpResponse("calma", {
+							status: 429,
+							headers: {
+								"retry-after": String(retryAfter ?? 120),
+							},
+						});
+					}
+					return new HttpResponse("falha uf", { status });
+				}
+				const corpo = fixturesUf[uf];
+				if (!corpo) {
+					estado.pedidos.push({ url: request.url, ifNoneMatch });
+					return new HttpResponse("uf desconhecida", { status: 404 });
+				}
+				return responderArquivo(request.url, ifNoneMatch, {
+					etag: `"pres-uf-${uf}-v1"`,
+					cacheControl: "max-age=55",
+					corpo,
+				});
+			},
+		),
 	);
 
 	return {
@@ -287,6 +330,12 @@ export function instalarTseFalso(opcoes: OpcoesTseFalso = {}): TseFalso {
 		},
 		simularErro(status = 503) {
 			estado.modo = { tipo: "erro", status };
+		},
+		simularErroUf(uf: string, status = 503) {
+			estado.erroUf = { uf, status };
+		},
+		simular429Uf(uf: string, retryAfter = 90) {
+			estado.erroUf = { uf, status: 429, retryAfter };
 		},
 		definirCacheControl(cacheControl: string) {
 			estado.cacheControlOverride = cacheControl;

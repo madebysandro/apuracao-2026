@@ -5,16 +5,22 @@ import {
 	urlArquivoCargo,
 	type ConfigTse,
 } from "../config/tse";
+import { SIGLAS_UF, urlPresidenteUf } from "../config/ufs";
 import { normalizarGovernador } from "../dominio/cargos/governador";
 import {
 	normalizarPresidente,
 	type DadosBrutosCargo,
 } from "../dominio/cargos/presidente";
 import {
+	normalizarPresidenteUf,
+	ufMudou,
+} from "../dominio/cargos/presidente-uf";
+import {
 	ehCargoProporcional,
 	normalizarProporcional,
 } from "../dominio/cargos/proporcional";
 import { normalizarSenador } from "../dominio/cargos/senador";
+import { montarDestaques } from "../dominio/destaques";
 import { analisarMajoritarias } from "../dominio/majoritarias/analise";
 import {
 	analiseProporcional,
@@ -27,6 +33,7 @@ import type {
 	EstadoApuracao,
 	Leitura,
 	MetaCargo,
+	UfPresidente,
 } from "../dominio/tipos";
 import { buscarArquivoTse, ErroTse } from "./cliente-tse";
 import { montarLeitura } from "./historico";
@@ -46,7 +53,8 @@ function estadoVazio(): EstadoApuracao {
 		proximaConsulta: null,
 		erro: null,
 		cargos: {},
-		analise: { majoritarias: {}, proporcionais: {} },
+		ufs: {},
+		analise: { majoritarias: {}, proporcionais: {}, destaques: [] },
 	};
 }
 
@@ -190,6 +198,47 @@ export class PollerApuracao extends DurableObject<Env> {
 				estado.cargos[meta.id] = novo;
 			}
 
+			// 27 UFs + exterior, em sequência; falha numa UF não derruba o ciclo (só 429).
+			// ETag de UF só entra no mapa junto com o dado correspondente (evita 304 órfão).
+			const ufs: Record<string, UfPresidente> = {
+				...(estado.ufs ?? {}),
+			};
+			for (const uf of SIGLAS_UF) {
+				const chave = `pres-${uf}`;
+				try {
+					const { maxAge, json, etag } = await buscarArquivoTse(
+						urlPresidenteUf(cfg, uf),
+						etags[chave],
+					);
+					maxAgeCiclo = Math.max(maxAgeCiclo, maxAge);
+					if (json) {
+						const novo = normalizarPresidenteUf(
+							uf,
+							json as DadosBrutosCargo,
+						);
+						if (ufMudou(ufs[uf], novo)) mudou = true;
+						ufs[uf] = novo;
+						if (etag) etags[chave] = etag;
+						estado.ufs = ufs;
+					} else if (ufs[uf] && etag) {
+						// 304: só renova ETag se o dado dessa UF já está no estado.
+						etags[chave] = etag;
+					}
+				} catch (erroUf) {
+					const e = erroUf as ErroTse;
+					if (typeof e.espera === "number") {
+						estado.ufs = ufs;
+						throw e;
+					}
+					console.error(
+						new Date().toISOString(),
+						uf,
+						e.message ?? String(erroUf),
+					);
+				}
+			}
+			estado.ufs = ufs;
+
 			if (mudou) {
 				estado.versao += 1;
 				await this.registrarLeitura(estado);
@@ -200,6 +249,12 @@ export class PollerApuracao extends DurableObject<Env> {
 			estado.analise = {
 				majoritarias: analisarMajoritarias(estado.cargos, historico),
 				proporcionais: analiseProp,
+				destaques: montarDestaques(
+					estado.cargos,
+					ufs,
+					historico,
+					analiseProp,
+				),
 			};
 			estado.erro = null;
 			novoBackoff = null;

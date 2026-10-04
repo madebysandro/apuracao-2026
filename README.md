@@ -100,10 +100,11 @@ Fotos: `{TSE_BASE}/ele2026/{ELEICAO}/fotos/{uf}/{sqcand}.jpeg`.
 ### Fluxo dos dados
 
 1. A primeira visita a `/api/apuracao` acorda o DO e dispara a consulta.
-2. O poller busca os cinco arquivos (com ETag), normaliza em `src/dominio/cargos/` e guarda o estado no storage.
-3. Se algum cargo mudou, incrementa `versao` e registra uma **Leitura** no histórico.
-4. Nos proporcionais, um storage próprio guarda o instantâneo anterior/primeiro e as séries para Δ de posição e cadeiras.
-5. O Worker devolve o estado em JSON; o front em `public/js/` pinta as Telas 1 e 2 e anima com `public/js/movimento/`.
+2. O poller busca os cinco arquivos de cargo e, em seguida, Presidente nas 27 UFs + exterior (com ETag); normaliza em `src/dominio/cargos/` e guarda o estado no storage.
+3. Se algum cargo ou UF mudou, incrementa `versao` e registra uma **Leitura** no histórico.
+4. O servidor monta `analise.majoritarias`, `analise.proporcionais` e `analise.destaques` (faixa 2:1 Brasil/Pará).
+5. Nos proporcionais, um storage próprio guarda o instantâneo anterior/primeiro e as séries para Δ de posição e cadeiras.
+6. O Worker devolve o estado em JSON; o front em `public/js/` pinta as Telas 1 e 2 e anima com `public/js/movimento/`.
 
 O intervalo entre consultas ao TSE vem do **alarme do Durable Object**, não de Cron Trigger.
 
@@ -117,19 +118,19 @@ apuracao-2026/
 │   ├── tela1-majoritarias.png   # captura do app local
 │   ├── tela2-proporcionais.png
 │   └── prototipo/               # registro de alta fidelidade (tag prototipo-painel-v1)
-├── fixtures/tse-provisorio/     # gravações reais do TSE para os testes
+├── fixtures/tse-provisorio/     # gravações reais + ufs/ sintéticas (#2 substitui)
 ├── public/                      # front estático (assets do Worker)
 │   ├── css/                     # tokens + tema
 │   ├── js/
 │   │   ├── app.js               # orquestra Telas 1/2 e o poll de 5 s
-│   │   ├── tela1-*.js           # majoritárias
+│   │   ├── tela1-*.js           # majoritárias + destaques
 │   │   ├── tela2-proporcionais.js
 │   │   └── movimento/           # tema, FLIP, barras, faixa, abas…
 │   └── index.html
 ├── src/
 │   ├── index.ts                 # Worker: /api/* + ASSETS
-│   ├── config/tse.ts            # URLs, códigos de cargo, vars
-│   ├── dominio/                 # normalização e tipos
+│   ├── config/                  # tse.ts + ufs.ts (siglas, regiões, URLs)
+│   ├── dominio/                 # cargos, majoritárias, destaques, tipos
 │   └── poller/                  # Durable Object, cliente TSE, histórico
 ├── test/                        # Vitest + pool de Workers + TSE falso (MSW)
 ├── package.json
@@ -176,7 +177,7 @@ Para sobrescrever localmente, use `.dev.vars` (esse arquivo está no `.gitignore
 
 ### Testes e tipagem
 
-- **Testes:** `npm test` — 2 arquivos (`test/apuracao.api.test.ts`, `test/proporcionais.api.test.ts`), pool `@cloudflare/vitest-pool-workers`, TSE interceptado com MSW e fixtures em `fixtures/tse-provisorio/`.
+- **Testes:** `npm test` — `test/*.api.test.ts` (apuracao, proporcionais, destaques/UFs), pool `@cloudflare/vitest-pool-workers`, TSE interceptado com MSW e fixtures em `fixtures/tse-provisorio/`.
 - **Tipagem:** TypeScript strict (`tsc --noEmit`). Tipos do Worker gerados com `npm run cf-typegen` (`wrangler types` → `worker-configuration.d.ts`).
 
 ---
