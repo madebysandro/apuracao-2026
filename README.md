@@ -46,13 +46,13 @@ Conectar o repositório para deploy a cada merge na `main`:
 | Normalização por cargo | `src/dominio/cargos/` (um arquivo por cargo) | #4 / #6 |
 | Config TSE (base e códigos) | `src/config/tse.ts` | — |
 | Front Tela 1 (majoritárias) | `public/js/tela1-*.js`, `public/js/app.js` | #4 |
-| Front Tela 2 (proporcionais) | `public/js/tela2-*.js` (a criar) | #6 |
+| Front Tela 2 (proporcionais) | `public/js/tela2-proporcionais.js` | #6 |
 | Tema / CSS | `public/css/tema.css` | #8 |
 | Fixtures TSE | `fixtures/tse-provisorio/` (provisórias; #2 substitui) | #2 |
 
 ## Fixtures provisórias
 
-`fixtures/tse-provisorio/` contém a gravação real do TSE da noite de 04/10/2026 (Presidente BR e, na issue #4, Governador/Senado do Pará). Formato: pastas por ciclo + `indice.jsonl` + `ele-c.json`. A issue #2 deve substituir/estender esse conjunto após o fim da apuração, mantendo o formato.
+`fixtures/tse-provisorio/` contém a gravação real do TSE da noite de 04/10/2026: Presidente (Brasil), Governador/Senado do Pará e Deputados do Pará (federal/estadual; a pasta `*-derivada-antes` é sintética). Formato: pastas por ciclo + `indice.jsonl` + `ele-c.json`. A issue #2 deve substituir/estender esse conjunto após o fim da apuração, mantendo o formato.
 
 ## Registro de fidelidade do protótipo
 

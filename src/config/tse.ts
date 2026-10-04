@@ -18,7 +18,7 @@ export function configTseDeEnv(env: {
 	};
 }
 
-/** Metas dos cargos monitorados. #4 acrescenta Governador e Senado; #6, proporcionais. */
+/** Metas dos cargos monitorados: majoritários (#4) e proporcionais (#6). */
 export function metasCargos(cfg: ConfigTse): MetaCargo[] {
 	return [
 		{
@@ -44,6 +44,22 @@ export function metasCargos(cfg: ConfigTse): MetaCargo[] {
 			ele: cfg.eleicaoEstadual,
 			uf: "pa",
 			cd: "0005",
+		},
+		{
+			id: "depfed",
+			titulo: "Deputado Federal",
+			local: "Pará",
+			ele: cfg.eleicaoEstadual,
+			uf: "pa",
+			cd: "0006",
+		},
+		{
+			id: "depest",
+			titulo: "Deputado Estadual",
+			local: "Pará",
+			ele: cfg.eleicaoEstadual,
+			uf: "pa",
+			cd: "0007",
 		},
 	];
 }

@@ -2,6 +2,7 @@
 
 import { destaques } from "./tela1-destaques.js";
 import { renderizarCartaoMajoritario } from "./tela1-cartao.js";
+import { renderizarTela2 } from "./tela2-proporcionais.js";
 import {
 	anima,
 	conta,
@@ -15,6 +16,7 @@ import {
 /**
  * @param {{
  *   cargos: Record<string, any>,
+ *   analise?: any,
  *   hist: any[],
  *   tela: 1|2,
  *   graficos: Map,
@@ -23,7 +25,7 @@ import {
  * }} ctx
  */
 export function renderizarPainel(ctx) {
-	const { cargos, hist, tela, graficos } = ctx;
+	const { cargos, analise, hist, tela, graficos } = ctx;
 	const P = cargos.presidente;
 	const G = cargos.governador;
 	const leituras = pontos(hist, "presidente");
@@ -60,7 +62,7 @@ export function renderizarPainel(ctx) {
 						renderizarCartaoMajoritario(id, cargos[id], hist, graficos),
 					)
 					.join("")}</div>`
-			: `<article class="db-card"><p class="db-vazio">Tela 2 (proporcionais) entra na issue #6.</p></article>`;
+			: renderizarTela2({ cargos, analise });
 
 	return `<div class="db">
     <header class="db-topo">

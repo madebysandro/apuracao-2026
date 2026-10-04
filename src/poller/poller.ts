@@ -10,10 +10,26 @@ import {
 	normalizarPresidente,
 	type DadosBrutosCargo,
 } from "../dominio/cargos/presidente";
+import {
+	ehCargoProporcional,
+	normalizarProporcional,
+} from "../dominio/cargos/proporcional";
 import { normalizarSenador } from "../dominio/cargos/senador";
-import type { Cargo, EstadoApuracao, Leitura, MetaCargo } from "../dominio/tipos";
+import {
+	analiseProporcional,
+	aplicarVariacoes,
+	instantaneoDe,
+} from "../dominio/proporcionais/variacoes";
+import type {
+	AnaliseApuracao,
+	Cargo,
+	EstadoApuracao,
+	Leitura,
+	MetaCargo,
+} from "../dominio/tipos";
 import { buscarArquivoTse, ErroTse } from "./cliente-tse";
 import { montarLeitura } from "./historico";
+import { fonteVariacoesDo } from "./variacoes-do";
 
 const CHAVE_ESTADO = "estado";
 const CHAVE_ETAGS = "etags";
@@ -29,15 +45,24 @@ function estadoVazio(): EstadoApuracao {
 		proximaConsulta: null,
 		erro: null,
 		cargos: {},
+		analise: { proporcionais: {} },
 	};
 }
 
 function cargoMudou(antes: Cargo | undefined, novo: Cargo): boolean {
 	if (!antes) return true;
 	if (antes.apurado !== novo.apurado) return true;
-	return antes.candidatos.some(
-		(c, i) => c.votos !== novo.candidatos[i]?.votos,
-	);
+	if (
+		antes.candidatos.some((c, i) => c.votos !== novo.candidatos[i]?.votos)
+	) {
+		return true;
+	}
+	// Proporcionais: a dança de cadeiras pode mudar só o `vag`.
+	const agrAntes = antes.agremiacoes ?? [];
+	const agrNovo = novo.agremiacoes ?? [];
+	if (agrAntes.length !== agrNovo.length) return true;
+	const mapa = new Map(agrAntes.map((a) => [a.sigla, a.vagas]));
+	return agrNovo.some((a) => mapa.get(a.sigla) !== a.vagas);
 }
 
 function normalizarCargo(
@@ -48,7 +73,9 @@ function normalizarCargo(
 	if (meta.id === "presidente") return normalizarPresidente(meta, json, cfg);
 	if (meta.id === "governador") return normalizarGovernador(meta, json, cfg);
 	if (meta.id === "senador") return normalizarSenador(meta, json, cfg);
-	// Proporcionais entram na issue #6.
+	if (ehCargoProporcional(meta.id)) {
+		return normalizarProporcional(meta, json, cfg);
+	}
 	return null;
 }
 
@@ -111,6 +138,10 @@ export class PollerApuracao extends DurableObject<Env> {
 			(await this.ctx.storage.get<Etags>(CHAVE_ETAGS)) ?? {};
 		const backoffAnterior =
 			(await this.ctx.storage.get<number>(CHAVE_BACKOFF)) ?? null;
+		const variacoes = fonteVariacoesDo(this.ctx.storage);
+		const analiseProp: NonNullable<AnaliseApuracao["proporcionais"]> = {
+			...(estado.analise?.proporcionais ?? {}),
+		};
 
 		let maxAgeCiclo = 0;
 		let novoBackoff: number | null = null;
@@ -127,16 +158,38 @@ export class PollerApuracao extends DurableObject<Env> {
 				if (etag) etags[meta.id] = etag;
 				if (!json) continue;
 
-				const novo = normalizarCargo(
+				let novo = normalizarCargo(
 					meta,
 					json as DadosBrutosCargo,
 					cfg,
 				);
 				if (!novo) continue;
 
+				if (ehCargoProporcional(meta.id)) {
+					const anterior = await variacoes.obterAnterior(meta.id);
+					const primeiro = await variacoes.obterPrimeiro(meta.id);
+					const series = await variacoes.obterSeries(meta.id);
+					const enriquecido = aplicarVariacoes(
+						novo,
+						anterior,
+						primeiro,
+						series,
+					);
+					analiseProp[meta.id] = analiseProporcional(enriquecido);
+					if (cargoMudou(estado.cargos[meta.id], novo)) {
+						await variacoes.registrar(
+							meta.id,
+							instantaneoDe(novo),
+						);
+					}
+					novo = enriquecido;
+				}
+
 				if (cargoMudou(estado.cargos[meta.id], novo)) mudou = true;
 				estado.cargos[meta.id] = novo;
 			}
+
+			estado.analise = { proporcionais: analiseProp };
 
 			if (mudou) {
 				estado.versao += 1;

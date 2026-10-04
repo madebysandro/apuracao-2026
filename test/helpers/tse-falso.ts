@@ -5,6 +5,10 @@ import cicloA from "../../fixtures/tse-provisorio/2026-10-04T21-36-05-598Z/presi
 import cicloB from "../../fixtures/tse-provisorio/2026-10-04T21-39-46-908Z/presidente.json";
 import governador from "../../fixtures/tse-provisorio/2026-10-04T21-57-01-000Z/governador.json";
 import senador from "../../fixtures/tse-provisorio/2026-10-04T21-57-01-000Z/senador.json";
+import depfedReal from "../../fixtures/tse-provisorio/2026-10-04T21-56-47-000Z/depfed.json";
+import depestReal from "../../fixtures/tse-provisorio/2026-10-04T21-56-47-000Z/depest.json";
+import depfedDerivada from "../../fixtures/tse-provisorio/2026-10-04T21-56-47-000Z-derivada-antes/depfed.json";
+import depestDerivada from "../../fixtures/tse-provisorio/2026-10-04T21-56-47-000Z-derivada-antes/depest.json";
 
 /**
  * Sequência provisória gravada em 04/10/2026.
@@ -39,6 +43,46 @@ const FIXTURES_PA = {
 	},
 } as const;
 
+/** Gravação real atual dos deputados do Pará (04/10/2026 ~18:55). */
+const PROP_REAL = {
+	ciclo: "2026-10-04T21-56-47-000Z",
+	depfed: {
+		etag: '"408b0e6ec49d9ef2de83ae5577967534"',
+		cacheControl: "max-age=57",
+		corpo: depfedReal,
+	},
+	depest: {
+		etag: '"0b19a78dc50f02abfe1f5928406cb6de"',
+		cacheControl: "max-age=59",
+		corpo: depestReal,
+	},
+} as const;
+
+/**
+ * Sequência para troca de cadeira: primeiro um JSON DERIVADO da gravação real
+ * (PSD +1 / PSB −1 e um inválido sintético no PL), depois a gravação real.
+ */
+const PROP_CADEIRAS = [
+	{
+		ciclo: "2026-10-04T21-56-47-000Z-derivada-antes",
+		depfed: {
+			etag: '"derivada-depfed-antes-psd3-psb0"',
+			cacheControl: "max-age=57",
+			corpo: depfedDerivada,
+		},
+		depest: {
+			etag: '"derivada-depest-antes"',
+			cacheControl: "max-age=59",
+			corpo: depestDerivada,
+		},
+	},
+	{
+		ciclo: PROP_REAL.ciclo,
+		depfed: PROP_REAL.depfed,
+		depest: PROP_REAL.depest,
+	},
+] as const;
+
 export const URLS_TSE = {
 	presidente:
 		"https://resultados.tse.jus.br/oficial/ele2026/6257/dados/br/br-c0001-e006257-u.json",
@@ -46,6 +90,10 @@ export const URLS_TSE = {
 		"https://resultados.tse.jus.br/oficial/ele2026/6259/dados/pa/pa-c0003-e006259-u.json",
 	senador:
 		"https://resultados.tse.jus.br/oficial/ele2026/6259/dados/pa/pa-c0005-e006259-u.json",
+	depfed:
+		"https://resultados.tse.jus.br/oficial/ele2026/6259/dados/pa/pa-c0006-e006259-u.json",
+	depest:
+		"https://resultados.tse.jus.br/oficial/ele2026/6259/dados/pa/pa-c0007-e006259-u.json",
 } as const;
 
 export type PedidoTse = {
@@ -53,10 +101,19 @@ export type PedidoTse = {
 	ifNoneMatch: string | null;
 };
 
+export type ModoProporcionais = "real" | "cadeiras";
+
+export type OpcoesTseFalso = {
+	/** Padrão: "real" (gravação atual). "cadeiras" começa na derivada e avança para a real. */
+	proporcionais?: ModoProporcionais;
+};
+
 export type TseFalso = {
 	indice: number;
+	indiceProp: number;
 	pedidos: PedidoTse[];
 	avancar: () => void;
+	avancarProporcionais: () => void;
 	/** Próxima resposta do Presidente será 429 com este Retry-After (segundos). */
 	simular429: (retryAfter: number) => void;
 	/** Próxima resposta do Presidente será erro HTTP genérico. */
@@ -67,6 +124,8 @@ export type TseFalso = {
 	 */
 	definirCacheControl: (cacheControl: string) => void;
 	urlPresidente: string;
+	urlDepfed: string;
+	urlDepest: string;
 };
 
 type ModoEspecial =
@@ -75,12 +134,25 @@ type ModoEspecial =
 	| null;
 
 /** Instala o handler MSW que serve a sequência atual do TSE falso. */
-export function instalarTseFalso(): TseFalso {
+export function instalarTseFalso(opcoes: OpcoesTseFalso = {}): TseFalso {
 	const estado = {
 		indice: 0,
+		indiceProp: 0,
 		pedidos: [] as PedidoTse[],
 		modo: null as ModoEspecial,
 		cacheControlOverride: null as string | null,
+	};
+	const modoProp = opcoes.proporcionais ?? "real";
+
+	const propAtual = () => {
+		if (modoProp === "cadeiras") {
+			return PROP_CADEIRAS[estado.indiceProp] ?? PROP_CADEIRAS.at(-1)!;
+		}
+		return {
+			ciclo: PROP_REAL.ciclo,
+			depfed: PROP_REAL.depfed,
+			depest: PROP_REAL.depest,
+		};
 	};
 
 	const responderArquivo = (
@@ -146,17 +218,37 @@ export function instalarTseFalso(): TseFalso {
 				FIXTURES_PA.senador,
 			),
 		),
+		http.get(URLS_TSE.depfed, ({ request }) =>
+			responderArquivo(
+				request.url,
+				request.headers.get("if-none-match"),
+				propAtual().depfed,
+			),
+		),
+		http.get(URLS_TSE.depest, ({ request }) =>
+			responderArquivo(
+				request.url,
+				request.headers.get("if-none-match"),
+				propAtual().depest,
+			),
+		),
 	);
 
 	return {
 		get indice() {
 			return estado.indice;
 		},
+		get indiceProp() {
+			return estado.indiceProp;
+		},
 		get pedidos() {
 			return estado.pedidos;
 		},
 		avancar() {
 			estado.indice += 1;
+		},
+		avancarProporcionais() {
+			estado.indiceProp += 1;
 		},
 		simular429(retryAfter: number) {
 			estado.modo = { tipo: "429", retryAfter };
@@ -168,5 +260,7 @@ export function instalarTseFalso(): TseFalso {
 			estado.cacheControlOverride = cacheControl;
 		},
 		urlPresidente: URLS_TSE.presidente,
+		urlDepfed: URLS_TSE.depfed,
+		urlDepest: URLS_TSE.depest,
 	};
 }

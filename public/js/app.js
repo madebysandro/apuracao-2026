@@ -45,6 +45,8 @@ function horaTseAtual() {
 		dados?.cargos?.presidente?.hora ??
 		dados?.cargos?.governador?.hora ??
 		dados?.cargos?.senador?.hora ??
+		dados?.cargos?.depfed?.hora ??
+		dados?.cargos?.depest?.hora ??
 		null
 	);
 }
@@ -87,8 +89,9 @@ function ligarInteracoes() {
 			if (n === tela) return;
 			tela = n;
 			const url = new URL(location.href);
-			url.searchParams.set("tela", String(tela));
-			history.replaceState(null, "", url);
+			if (tela === 1) url.searchParams.delete("tela");
+			else url.searchParams.set("tela", String(tela));
+			history.pushState({ tela }, "", url);
 			pintar(false);
 		});
 	}
@@ -101,7 +104,7 @@ function ligarInteracoes() {
 }
 
 function pintar(animarGraf) {
-	if (!dados?.cargos || (!dados.cargos.presidente && !dados.cargos.governador)) {
+	if (!dados?.cargos || (!dados.cargos.presidente && !dados.cargos.governador && !dados.cargos.depfed)) {
 		if (dados?.erro) {
 			app.innerHTML = `<div class="db"><div class="carregando"><b>Contando votos…</b><p class="erro" role="alert">O TSE ainda não respondeu: ${dados.erro}</p></div></div>`;
 		} else {
@@ -112,13 +115,10 @@ function pintar(animarGraf) {
 		return;
 	}
 	const graficos = new Map();
-	const horaTse =
-		dados.cargos.presidente?.hora ??
-		dados.cargos.governador?.hora ??
-		dados.cargos.senador?.hora ??
-		"—";
+	const horaTse = horaTseAtual() ?? "—";
 	app.innerHTML = renderizarPainel({
 		cargos: dados.cargos,
+		analise: dados.analise,
 		hist,
 		tela,
 		graficos,
@@ -201,10 +201,17 @@ document.addEventListener("keydown", (ev) => {
 		if (n === tela) return;
 		tela = n;
 		const url = new URL(location.href);
-		url.searchParams.set("tela", String(tela));
-		history.replaceState(null, "", url);
+		if (tela === 1) url.searchParams.delete("tela");
+		else url.searchParams.set("tela", String(tela));
+		history.pushState({ tela }, "", url);
 		pintar(false);
 	}
+});
+
+addEventListener("popstate", () => {
+	tela = Number(new URLSearchParams(location.search).get("tela")) || 1;
+	if (tela !== 1 && tela !== 2) tela = 1;
+	pintar(false);
 });
 
 atualizar();
