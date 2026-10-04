@@ -87,7 +87,17 @@ export type UfPresidente = {
 	candidatos: CandidatoUf[];
 };
 
+export type {
+	AnaliseMajoritaria,
+	TendenciaCandidato,
+	PrimeiroTurnoAnalise,
+	RefCandidatoAnalise,
+} from "./majoritarias/analise";
+
+import type { AnaliseMajoritaria } from "./majoritarias/analise";
+
 export type AnaliseApuracao = {
+	majoritarias?: Record<string, AnaliseMajoritaria>;
 	proporcionais?: Record<string, AnaliseProporcional>;
 	/** Frases HTML da faixa DESTAQUES (intercalação 2 Brasil : 1 Pará). */
 	destaques?: string[];

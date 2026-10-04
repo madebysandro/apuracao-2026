@@ -12,11 +12,8 @@ import {
 	nf,
 	nomeBonito,
 	pf,
-	pontos,
-	restante,
 	serieCand,
 	spark,
-	tendencia,
 } from "./tela1-util.js";
 
 /**
@@ -24,8 +21,15 @@ import {
  * @param {object} cargo
  * @param {any[]} hist
  * @param {Map} graficos
+ * @param {object|null|undefined} analiseMaj análise do servidor (issue #5)
  */
-export function renderizarCartaoMajoritario(id, cargo, hist, graficos) {
+export function renderizarCartaoMajoritario(
+	id,
+	cargo,
+	hist,
+	graficos,
+	analiseMaj,
+) {
 	if (!cargo?.candidatos?.length) {
 		return `<article class="db-card"><p class="db-vazio">Aguardando dados de ${esc(id)}…</p></article>`;
 	}
@@ -78,69 +82,69 @@ export function renderizarCartaoMajoritario(id, cargo, hist, graficos) {
         <span class="db-leg">${noGrafico.map((x) => `<span><i class="db-sw" style="background:${corD(id, x.n)}"></i>${esc(nomeBonito(x.nome))}</span>`).join("")}</span></figcaption>
       <div class="db-graf" data-graf="${id}"></div>
     </figure>
-    ${dbAnalise(c, hist)}
+    ${dbAnalise(c, analiseMaj)}
   </article>`;
 }
 
-function dbAnalise(c, hist) {
-	const id = c.id;
-	const [a, b, d3] = c.candidatos;
+/**
+ * Painel de análise — números vêm do servidor (`analise.majoritarias`).
+ * @param {object} c
+ * @param {object|null|undefined} a
+ */
+function dbAnalise(c, a) {
+	if (!a?.defensor || !a?.perseguidor) return "";
 	const duas = c.vagas === 2;
-	const [def, per] = duas ? [b, d3] : [a, b];
-	if (!def || !per) return "";
-	const L = def.votos - per.votos;
-	const R = restante(c);
-	const margens = pontos(hist, id)
-		.map(
-			(p) =>
-				(p.c[id].c[def.n]?.[1] ?? NaN) - (p.c[id].c[per.n]?.[1] ?? NaN),
-		)
-		.filter((v) => !Number.isNaN(v));
 	const nm = (x) => esc(nomeBonito(x.nome));
 	const itens = [
 		[
 			duas ? "DISPUTA PELA 2ª VAGA" : "VANTAGEM DO LÍDER",
-			`${nf.format(L)} votos · ${pf.format(def.pct - per.pct)} p.p. ${spark(margens, 56, 18)}`,
-			`${nm(def)} sobre ${nm(per)}`,
+			`${nf.format(a.vantagemVotos)} votos · ${pf.format(a.vantagemPp)} p.p. ${spark(a.evolucaoVantagemPp ?? [], 56, 18)}`,
+			`${nm(a.defensor)} sobre ${nm(a.perseguidor)}`,
 		],
 	];
-	if (R) {
+	if (a.validosAApurar != null) {
 		itens.push([
 			"VÁLIDOS A APURAR (EST.)",
-			`≈ ${cf.format(R)}`,
+			`≈ ${cf.format(a.validosAApurar)}`,
 			`${pf.format(100 - c.apurado)}% das seções ainda faltam`,
 		]);
-		const pp = (L / R) * 100;
+		const rotuloVirar = duas ? "PARA TOMAR A 2ª VAGA" : "PARA VIRAR";
 		itens.push([
-			duas ? "PARA TOMAR A 2ª VAGA" : "PARA VIRAR",
-			pp > 100 ? "fora de alcance" : `+${pf.format(pp)} p.p.`,
-			`${nm(per)} precisa superar ${nm(def)} por essa margem no que falta`,
+			rotuloVirar,
+			a.foraDeAlcance
+				? "fora de alcance"
+				: `+${pf.format(a.margemParaVirarPp)} p.p.`,
+			`${nm(a.perseguidor)} precisa superar ${nm(a.defensor)} por essa margem no que falta`,
 		]);
-		if (!duas) {
-			const s = ((0.5 * (c.totais.validos + R) - a.votos) / R) * 100;
+		if (!duas && a.primeiroTurno) {
+			const s = a.primeiroTurno;
+			const texto =
+				s.status === "maioria"
+					? "já tem a maioria (est.)"
+					: s.status === "fora"
+						? "fora de alcance (est.)"
+						: `${pf.format(s.fatiaPct)}% do que falta`;
 			itens.push([
 				"VENCER NO 1º TURNO",
-				s <= 0
-					? "já tem a maioria (est.)"
-					: s > 100
-						? "fora de alcance (est.)"
-						: `${pf.format(s)}% do que falta`,
-				`${nm(a)} tem ${pf.format(a.pct)}% dos válidos até agora`,
+				texto,
+				`${nm(c.candidatos[0])} tem ${pf.format(c.candidatos[0].pct)}% dos válidos até agora`,
 			]);
 		}
 	}
-	const tend = c.candidatos
-		.slice(0, duas ? 4 : 2)
-		.map((x) => [x, tendencia(hist, id, x.n)])
-		.filter(([, t]) => t != null);
+	const tend = a.tendencias ?? [];
 	itens.push([
 		"TENDÊNCIA RECENTE",
 		tend.length
 			? tend
-					.map(([x, t]) => `<span class="db-tend">${nm(x)} ${deltaPp(t)}</span>`)
+					.map(
+						(t) =>
+							`<span class="db-tend">${esc(nomeBonito(t.nome))} ${deltaPp(t.ppPor10pct)}</span>`,
+					)
 					.join("")
 			: '<span class="db-vazio">aguardando mais leituras</span>',
-		tend.length ? "p.p. a cada 10% de seções, nas últimas leituras" : "",
+		tend.length
+			? "p.p. a cada 10% de seções, nas últimas leituras"
+			: "aparece a partir da 3ª leitura com avanço na apuração",
 	]);
 	return `<dl class="db-analise">${itens
 		.map(

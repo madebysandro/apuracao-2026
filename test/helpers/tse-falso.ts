@@ -3,7 +3,9 @@ import { network } from "./rede";
 
 import cicloA from "../../fixtures/tse-provisorio/2026-10-04T21-36-05-598Z/presidente.json";
 import cicloB from "../../fixtures/tse-provisorio/2026-10-04T21-39-46-908Z/presidente.json";
+import cicloC from "../../fixtures/tse-provisorio/2026-10-04T21-44-49-070Z/presidente.json";
 import governador from "../../fixtures/tse-provisorio/2026-10-04T21-57-01-000Z/governador.json";
+import governadorQuaseFim from "../../fixtures/tse-provisorio/sintetica-quase-fim/governador.json";
 import senador from "../../fixtures/tse-provisorio/2026-10-04T21-57-01-000Z/senador.json";
 import depfedReal from "../../fixtures/tse-provisorio/2026-10-04T21-56-47-000Z/depfed.json";
 import depestReal from "../../fixtures/tse-provisorio/2026-10-04T21-56-47-000Z/depest.json";
@@ -14,7 +16,7 @@ import presidenteUfs from "../../fixtures/tse-provisorio/ufs/presidente-ufs.json
 /**
  * Sequência provisória gravada em 04/10/2026.
  * A issue #2 substituirá/estenderá estas fixtures; o mecanismo (índice + avanço)
- * permanece.
+ * permanece. Três ciclos de Presidente permitem tendência (≥ 3 leituras).
  */
 export const SEQUENCIA_PRESIDENTE = [
 	{
@@ -29,14 +31,31 @@ export const SEQUENCIA_PRESIDENTE = [
 		cacheControl: "max-age=58",
 		corpo: cicloB,
 	},
+	{
+		ciclo: "2026-10-04T21-44-49-070Z",
+		etag: '"cfcfdb324035e3866fcc731be644e4e4"',
+		cacheControl: "max-age=56",
+		corpo: cicloC,
+	},
 ] as const;
 
-const FIXTURES_PA = {
-	governador: {
+/** Governador: real → sintético quase no fim (fora de alcance / maioria). */
+export const SEQUENCIA_GOVERNADOR = [
+	{
+		ciclo: "2026-10-04T21-57-01-000Z",
 		etag: '"7b3afcbce1289c6f7258c539ff158bd1"',
 		cacheControl: "max-age=50",
 		corpo: governador,
 	},
+	{
+		ciclo: "sintetica-quase-fim",
+		etag: '"sintetica-governador-quase-fim"',
+		cacheControl: "max-age=50",
+		corpo: governadorQuaseFim,
+	},
+] as const;
+
+const FIXTURES_PA = {
 	senador: {
 		etag: '"fc182858b3f6823b19fb155edb20e63d"',
 		cacheControl: "max-age=58",
@@ -112,9 +131,12 @@ export type OpcoesTseFalso = {
 export type TseFalso = {
 	indice: number;
 	indiceProp: number;
+	indiceGov: number;
 	pedidos: PedidoTse[];
 	avancar: () => void;
 	avancarProporcionais: () => void;
+	/** Avança a sequência do Governador (real → quase-fim). */
+	avancarGovernador: () => void;
 	/** Próxima resposta do Presidente será 429 com este Retry-After (segundos). */
 	simular429: (retryAfter: number) => void;
 	/** Próxima resposta do Presidente será erro HTTP genérico. */
@@ -141,6 +163,7 @@ export function instalarTseFalso(opcoes: OpcoesTseFalso = {}): TseFalso {
 	const estado = {
 		indice: 0,
 		indiceProp: 0,
+		indiceGov: 0,
 		pedidos: [] as PedidoTse[],
 		modo: null as ModoEspecial,
 		cacheControlOverride: null as string | null,
@@ -209,13 +232,16 @@ export function instalarTseFalso(opcoes: OpcoesTseFalso = {}): TseFalso {
 			}
 			return responderArquivo(request.url, ifNoneMatch, atual);
 		}),
-		http.get(URLS_TSE.governador, ({ request }) =>
-			responderArquivo(
+		http.get(URLS_TSE.governador, ({ request }) => {
+			const atual =
+				SEQUENCIA_GOVERNADOR[estado.indiceGov] ??
+				SEQUENCIA_GOVERNADOR.at(-1)!;
+			return responderArquivo(
 				request.url,
 				request.headers.get("if-none-match"),
-				FIXTURES_PA.governador,
-			),
-		),
+				atual,
+			);
+		}),
 		http.get(URLS_TSE.senador, ({ request }) =>
 			responderArquivo(
 				request.url,
@@ -270,6 +296,9 @@ export function instalarTseFalso(opcoes: OpcoesTseFalso = {}): TseFalso {
 		get indiceProp() {
 			return estado.indiceProp;
 		},
+		get indiceGov() {
+			return estado.indiceGov;
+		},
 		get pedidos() {
 			return estado.pedidos;
 		},
@@ -278,6 +307,9 @@ export function instalarTseFalso(opcoes: OpcoesTseFalso = {}): TseFalso {
 		},
 		avancarProporcionais() {
 			estado.indiceProp += 1;
+		},
+		avancarGovernador() {
+			estado.indiceGov += 1;
 		},
 		simular429(retryAfter: number) {
 			estado.modo = { tipo: "429", retryAfter };
