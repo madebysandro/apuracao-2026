@@ -88,7 +88,7 @@ body[data-v=B] #urninha .fala { top: 40%; bottom: auto; transform-origin: right 
 #proto button.on { background: #ff3d7f; }
 #proto .sep { width: 1px; align-self: stretch; background: #444; margin: 0 2px; }
 #proto-nome { min-width: 120px; text-align: center; }
-#proto [hidden] { display: none !important; }
+#proto [hidden], #proto[hidden] { display: none !important; }
 
 /* ======================= A — TELÃO ======================= */
 body[data-v=A] { background: radial-gradient(1200px 640px at 50% -10%, #1d2c70, #070b1d 62%) fixed; color: #f4f6ff; }
@@ -314,6 +314,9 @@ body[data-v=D][data-tema=claro]::before { opacity: .45; }
 body[data-v=D] .db-card, body[data-v=D] .db-kpi, body[data-v=D] .db-abas, body[data-v=D] .db-ticker { background: color-mix(in srgb, var(--superficie) 86%, transparent); backdrop-filter: blur(14px); }
 body[data-v=D] .mascote, body[data-v=D] #fundo, body[data-v=D] #palco3d, body[data-v=D] #festa, body[data-v=D] #urgente { display: none; }
 body[data-v=D] .conta.mudou { animation-name: realce-d; }
+body[data-v=D] .carregando .urna { width: 32px; height: 32px; margin: 0 auto 6px; border: 3px solid var(--grade); border-top-color: var(--acento); border-radius: 50%; font-size: 0; animation: gira-d .9s linear infinite; }
+body[data-v=D] .carregando h1 { font: 600 22px/1.2 system-ui, -apple-system, 'Segoe UI', sans-serif; }
+body[data-v=D] .carregando p { color: var(--tinta-2); font-size: 14px; }
 body[data-v=D] #aviso { top: auto; bottom: 24px; left: 24px; transform: translateY(8px); background: var(--superficie-2); color: var(--tinta); border-color: var(--borda); font-family: inherit; }
 body[data-v=D] #aviso.on { transform: none; }
 @media (max-width: 760px) { body[data-v=D] #aviso { bottom: 72px; left: 16px; } }
