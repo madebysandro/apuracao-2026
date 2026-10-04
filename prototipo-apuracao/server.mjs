@@ -162,32 +162,36 @@ async function consultar() {
 const TIPOS = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.mp4': 'video/mp4', '.jpg': 'image/jpeg', '.png': 'image/png', '.svg': 'image/svg+xml' };
 
 createServer(async (req, res) => {
-  const { pathname } = new URL(req.url, 'http://x');
-  if (pathname === '/api/historico') {
-    const desde = Number(new URL(req.url, 'http://x').searchParams.get('desde')) || 0;
-    res.writeHead(200, { 'content-type': 'application/json', 'cache-control': 'no-store' });
-    return res.end(JSON.stringify(historico.filter(p => p.t > desde)));
-  }
-  if (pathname === '/api/apuracao') {
-    res.writeHead(200, { 'content-type': 'application/json', 'cache-control': 'no-store' });
-    return res.end(JSON.stringify(estado));
-  }
-  const arquivo = join(PUBLIC, normalize(pathname === '/' ? '/index.html' : decodeURIComponent(pathname)));
-  if (!arquivo.startsWith(PUBLIC)) return res.writeHead(403).end();
   try {
-    const { size } = await stat(arquivo);
-    const tipo = TIPOS[extname(arquivo)] ?? 'application/octet-stream';
+    const url = new URL(req.url, 'http://x'), { pathname } = url;
+    if (pathname === '/api/historico') {
+      const desde = Number(url.searchParams.get('desde')) || 0;
+      res.writeHead(200, { 'content-type': 'application/json', 'cache-control': 'no-store' });
+      return res.end(JSON.stringify(historico.filter(p => p.t > desde)));
+    }
+    if (pathname === '/api/apuracao') {
+      res.writeHead(200, { 'content-type': 'application/json', 'cache-control': 'no-store' });
+      return res.end(JSON.stringify(estado));
+    }
+    // decodeURIComponent lança com %XX malformado: cai no catch e vira 400 em vez de derrubar o processo.
+    const arquivo = join(PUBLIC, normalize(pathname === '/' ? '/index.html' : decodeURIComponent(pathname)));
+    if (!arquivo.startsWith(PUBLIC)) return res.writeHead(403).end();
+    const info = await stat(arquivo).catch(() => null);
+    if (!info?.isFile()) return res.writeHead(404).end('não achei');
+    const { size } = info, tipo = TIPOS[extname(arquivo)] ?? 'application/octet-stream';
     // Safari só toca <video> se o servidor aceitar Range.
     const faixa = /bytes=(\d*)-(\d*)/.exec(req.headers.range ?? '');
     if (faixa) {
-      const ini = Number(faixa[1]) || 0, fim = faixa[2] ? Math.min(Number(faixa[2]), size - 1) : size - 1;
+      const ini = faixa[1] ? Number(faixa[1]) : 0, fim = faixa[2] ? Math.min(Number(faixa[2]), size - 1) : size - 1;
+      if (!(ini <= fim)) return res.writeHead(416, { 'content-range': `bytes */${size}` }).end();
       res.writeHead(206, { 'content-type': tipo, 'accept-ranges': 'bytes', 'content-range': `bytes ${ini}-${fim}/${size}`, 'content-length': fim - ini + 1 });
-      return createReadStream(arquivo, { start: ini, end: fim }).pipe(res);
+      return createReadStream(arquivo, { start: ini, end: fim }).on('error', () => res.destroy()).pipe(res);
     }
     res.writeHead(200, { 'content-type': tipo, 'accept-ranges': 'bytes', 'content-length': size });
-    createReadStream(arquivo).pipe(res);
+    createReadStream(arquivo).on('error', () => res.destroy()).pipe(res);
   } catch {
-    res.writeHead(404).end('não achei');
+    if (res.headersSent) res.destroy();
+    else res.writeHead(400).end('requisição inválida');
   }
 }).listen(PORT, () => console.log(`apuração em http://localhost:${PORT}/?variant=A`));
 
