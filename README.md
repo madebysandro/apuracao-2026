@@ -43,14 +43,16 @@ Conectar o repositório para deploy a cada merge na `main`:
 
 | Área | Onde mexer | Issue |
 | --- | --- | --- |
-| Poller / política de consulta | `src/poller/` | #4 |
+| Poller / política de consulta | `src/poller/` | #4 / #7 |
 | Normalização por cargo | `src/dominio/cargos/` (um arquivo por cargo) | #4 / #6 |
+| Presidente por UF | `src/config/ufs.ts`, `src/dominio/cargos/presidente-uf.ts` | #7 |
+| Faixa de destaques | `src/dominio/destaques.ts`, `public/js/tela1-destaques.js` | #7 |
 | Config TSE (base e códigos) | `src/config/tse.ts` | — |
 | Front Tela 1 (majoritárias) | `public/js/tela1-*.js`, `public/js/app.js` | #4 |
 | Front Tela 2 (proporcionais) | `public/js/tela2-proporcionais.js` | #6 |
 | Tema / CSS | `public/css/tema.css`, `public/css/tokens.css` | #8 |
 | Movimento (FLIP, conta, tema…) | `public/js/movimento/` | #8 |
-| Fixtures TSE | `fixtures/tse-provisorio/` (provisórias; #2 substitui) | #2 |
+| Fixtures TSE | `fixtures/tse-provisorio/` (cargos reais + `ufs/` sintéticas; #2 substitui) | #2 / #7 |
 
 ## Fixtures provisórias
 

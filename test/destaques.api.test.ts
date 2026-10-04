@@ -91,7 +91,8 @@ describe("GET /api/apuracao — Presidente por UF e faixa de destaques (#7)", ()
 
 	it("a partir das fixtures, a API traz placar, regiões, colégios, disputa, ritmo, exterior e intercalação 2:1 com o Pará", async () => {
 		await forcarConsulta();
-		// Segunda consulta com proporcionais reais: cadeiras mudam (PSD/PSB) e há disputa interna.
+		// Segunda leitura: Presidente avança (vantagem muda) e proporcionais reais (cadeiras).
+		tse.avancar();
 		tse.avancarProporcionais();
 		await forcarConsulta();
 
@@ -150,6 +151,8 @@ describe("GET /api/apuracao — Presidente por UF e faixa de destaques (#7)", ()
 		expect(t).toMatch(/Apuração.*Brasil.*Pará/i);
 		expect(t).toMatch(/Presidente · Brasil/i);
 		expect(t).toMatch(/Governador · Pará/i);
+		// Variação da vantagem do Presidente entre as duas leituras das fixtures.
+		expect(t).toMatch(/vantagem caiu [\d,]+ p\.p\. na última leitura/i);
 		expect(t).toMatch(/Senado · Pará/i);
 		expect(t).toMatch(/2ª vaga/i);
 		expect(t).toMatch(/Comparecimento.*Brasil.*Pará/i);
