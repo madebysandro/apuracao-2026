@@ -58,11 +58,18 @@ export function renderizarPainel(ctx) {
 		return items + items;
 	})();
 
+	const maj = analise?.majoritarias ?? {};
 	const telaHtml =
 		tela === 1
 			? `<div class="db-grade3">${["presidente", "governador", "senador"]
 					.map((id) =>
-						renderizarCartaoMajoritario(id, cargos[id], hist, graficos),
+						renderizarCartaoMajoritario(
+							id,
+							cargos[id],
+							hist,
+							graficos,
+							maj[id],
+						),
 					)
 					.join("")}</div>`
 			: renderizarTela2({ cargos, analise });

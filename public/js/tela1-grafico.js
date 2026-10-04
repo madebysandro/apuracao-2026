@@ -1,5 +1,11 @@
 /** Gráfico SVG da Tela 1 (variante D) — linhas sem biblioteca. */
 
+import { preferirCalmo } from "./movimento/calmo.js";
+import {
+	animarRevelacao,
+	clipRevelacao,
+	htmlClipPath,
+} from "./movimento/revela-grafico.js";
 import { esc, pf } from "./tela1-util.js";
 
 const passoBonito = (raw) =>
@@ -15,11 +21,9 @@ const fmtTick = (v, p) =>
 		.toFixed(p >= 1 ? 0 : Number.isInteger(+(p * 10).toFixed(6)) ? 1 : 2)
 		.replace(".", ",");
 
-const memoriaGraf = new Map();
-
 /**
  * @param {string} id
- * @param {{ rotulo: string, ref: number|null, series: { nome: string, cor: string, pts: number[][] }[] }} cfg
+ * @param {{ rotulo: string, ref: number|null, series: { nome: string, cor: string, pts: number[][] }[], escala?: object }} cfg
  * @param {number} W
  * @param {boolean} animar
  */
@@ -105,12 +109,16 @@ export function svgLinhas(id, cfg, W, animar) {
 				`<text class="v" x="${p.x + 10}" y="${p.ly + 4}">${pf.format(p.v)}%</text>`,
 		)
 		.join("");
-	const chave = "graf-" + id;
-	const apAnt = memoriaGraf.get(chave);
-	const de = !animar ? W : apAnt == null ? m.l : Math.min(W, X(apAnt) + 1);
-	memoriaGraf.set(chave, xs.at(-1));
+	const { de, para } = clipRevelacao(
+		id,
+		xs.at(-1),
+		X,
+		W,
+		m.l,
+		animar && !preferirCalmo(),
+	);
 	return `<svg width="${W}" height="${H}" role="img" aria-label="${esc(cfg.rotulo)}">
-    <defs><clipPath id="cl-${id}"><rect x="0" y="0" height="${H}" width="${de}" data-tw="width" data-para="${W}"/></clipPath></defs>
+    <defs>${htmlClipPath(id, H, de, para)}</defs>
     ${grade}<line class="eixo" x1="${m.l}" x2="${W - m.r}" y1="${m.t + ph}" y2="${m.t + ph}"/>${ref}
     <g clip-path="url(#cl-${id})">${linhas}${marcas}</g>
     <line class="mira" x1="-10" x2="-10" y1="${m.t}" y2="${m.t + ph}"/>
@@ -118,17 +126,75 @@ export function svgLinhas(id, cfg, W, animar) {
   </svg>${xs.length < 2 ? '<p class="db-vazio">A linha aparece a partir da 2ª leitura do TSE.</p>' : ""}<div class="db-tip" hidden></div>`;
 }
 
+/** Tooltip com valores, % apurado e hora do TSE (protótipo). */
+export function ligarHover(el, cfg) {
+	const svg = el.querySelector("svg");
+	if (!svg || !cfg.escala) return;
+	const tip = el.querySelector(".db-tip");
+	const mira = svg.querySelector(".mira");
+	const hit = svg.querySelector(".hit");
+	if (!tip || !mira || !hit) return;
+	const { X, x0, x1, m, pw, xs } = cfg.escala;
+	hit.addEventListener("pointermove", (e) => {
+		const r = svg.getBoundingClientRect();
+		const xv = x0 + ((e.clientX - r.left - m.l) / pw) * (x1 - x0);
+		const ap = xs.reduce((p, q) =>
+			Math.abs(q - xv) < Math.abs(p - xv) ? q : p,
+		);
+		const px = X(ap);
+		mira.setAttribute("x1", String(px));
+		mira.setAttribute("x2", String(px));
+		mira.classList.add("on");
+		const vals = cfg.series
+			.map((s) => [s, s.pts.findLast((p) => p[0] === ap)])
+			.filter(([, p]) => p)
+			.sort((p, q) => q[1][1] - p[1][1]);
+		tip.innerHTML =
+			`<b>${pf.format(ap)}% apurado${vals[0]?.[1][2] ? " · " + esc(vals[0][1][2]) : ""}</b>` +
+			vals
+				.map(
+					([s, p]) =>
+						`<div><i style="background:${s.cor}"></i>${esc(s.nome)}<span>${pf.format(p[1])}%</span></div>`,
+				)
+				.join("");
+		tip.hidden = false;
+		tip.style.left =
+			Math.max(0, Math.min(px + 12, r.width - tip.offsetWidth)) + "px";
+		tip.style.top = m.t + "px";
+	});
+	hit.addEventListener("pointerleave", () => {
+		tip.hidden = true;
+		mira.classList.remove("on");
+	});
+}
+
+/** @type {Map|null} */
+let graficosAtuais = null;
+let redim;
+
+/**
+ * @param {Map} graficos
+ * @param {boolean} animar
+ */
 export function pintarGraficos(graficos, animar) {
+	graficosAtuais = graficos;
+	const animarDeVerdade = animar && !preferirCalmo();
 	for (const [id, cfg] of graficos) {
 		const el = document.querySelector(`[data-graf="${id}"]`);
 		if (!el) continue;
 		const W = Math.max(280, Math.floor(el.clientWidth || 320));
-		el.innerHTML = svgLinhas(id, cfg, W, animar);
-		const rect = el.querySelector("rect[data-tw]");
-		if (rect && animar) {
-			requestAnimationFrame(() => {
-				rect.setAttribute("width", rect.dataset.para);
-			});
-		}
+		el.innerHTML = svgLinhas(id, cfg, W, animarDeVerdade);
+		ligarHover(el, cfg);
 	}
+	// Catálogo: revelação em 1100 ms, curva 1 − (1 − k)³.
+	animarRevelacao(document);
+}
+
+if (typeof addEventListener === "function") {
+	addEventListener("resize", () => {
+		clearTimeout(redim);
+		redim = setTimeout(() => {
+			if (graficosAtuais) pintarGraficos(graficosAtuais, false);
+		}, 150);
+	});
 }

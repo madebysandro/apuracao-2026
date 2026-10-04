@@ -141,7 +141,8 @@ async function atualizar() {
 		if (novo.versao !== versao) {
 			await puxarHistorico();
 			versao = novo.versao;
-			pintar(mudou);
+			// 1ª carga: revela da esquerda; leituras novas: só o trecho novo (1100 ms).
+			pintar(true);
 			if (mudou) {
 				const P = novo.cargos?.presidente;
 				const G = novo.cargos?.governador;

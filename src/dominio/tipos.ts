@@ -67,7 +67,17 @@ export type AnaliseProporcional = {
 	disputaInterna: DisputaInterna[];
 };
 
+export type {
+	AnaliseMajoritaria,
+	TendenciaCandidato,
+	PrimeiroTurnoAnalise,
+	RefCandidatoAnalise,
+} from "./majoritarias/analise";
+
+import type { AnaliseMajoritaria } from "./majoritarias/analise";
+
 export type AnaliseApuracao = {
+	majoritarias?: Record<string, AnaliseMajoritaria>;
 	proporcionais?: Record<string, AnaliseProporcional>;
 };
 
