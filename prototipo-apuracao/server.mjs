@@ -3,7 +3,7 @@
 // o navegador só lê /api/apuracao e /api/historico deste servidor (o TSE não manda CORS).
 // Rodar: node prototipo-apuracao/server.mjs  →  http://localhost:5173/?variant=A
 import { createServer } from 'node:http';
-import { stat, writeFile } from 'node:fs/promises';
+import { appendFile, mkdir, stat, writeFile } from 'node:fs/promises';
 import { createReadStream, existsSync, readFileSync } from 'node:fs';
 import { extname, join, normalize } from 'node:path';
 
@@ -110,6 +110,18 @@ function normalizarUf(uf, d) {
 }
 
 // Busca com ETag (304 quando nada mudou) e devolve o max-age que o TSE pede.
+// Gravador das respostas brutas do TSE (fixtures pros testes): só os arquivos que mudaram, uma pasta por ciclo.
+const GRAVACAO = join(import.meta.dirname, 'gravacao-tse');
+let ciclo = 'inicio';
+async function gravar(chave, url, r, corpo) {
+  await mkdir(join(GRAVACAO, ciclo), { recursive: true });
+  await writeFile(join(GRAVACAO, ciclo, chave + '.json'), corpo);
+  await appendFile(join(GRAVACAO, 'indice.jsonl'), JSON.stringify({
+    ciclo, chave, url, status: r.status, etag: r.headers.get('etag'),
+    cacheControl: r.headers.get('cache-control'), lastModified: r.headers.get('last-modified'),
+  }) + '\n');
+}
+
 async function buscar(url, chave) {
   const r = await fetch(url, { headers: etags[chave] ? { 'if-none-match': etags[chave] } : {} });
   if (r.status === 429) throw Object.assign(new Error('TSE pediu calma (429)'), { espera: Number(r.headers.get('retry-after')) || 120 });
@@ -117,11 +129,14 @@ async function buscar(url, chave) {
   if (r.status === 304) return { maxAge };
   if (!r.ok) throw new Error(`TSE respondeu ${r.status} para ${chave}`);
   etags[chave] = r.headers.get('etag');
-  return { maxAge, json: await r.json() };
+  const corpo = await r.text();
+  gravar(chave, url, r, corpo).catch(e => console.error('gravação:', e.message));
+  return { maxAge, json: JSON.parse(corpo) };
 }
 
 async function consultar() {
   let espera = 60;
+  ciclo = new Date().toISOString().replace(/[:.]/g, '-');
   try {
     let mudou = false;
     for (const c of CARGOS) {
@@ -195,4 +210,7 @@ createServer(async (req, res) => {
   }
 }).listen(PORT, () => console.log(`apuração em http://localhost:${PORT}/?variant=A`));
 
+fetch('https://resultados.tse.jus.br/oficial/comum/config/ele-c.json')
+  .then(async r => { await mkdir(GRAVACAO, { recursive: true }); await writeFile(join(GRAVACAO, 'ele-c.json'), await r.text()); })
+  .catch(e => console.error('gravação ele-c:', e.message));
 consultar();
