@@ -1,5 +1,7 @@
 /** Utilitários compartilhados da Tela 1 (variante D do protótipo). */
 
+import { preferirCalmo } from "./movimento/calmo.js";
+
 export const nf = new Intl.NumberFormat("pt-BR");
 export const pf = new Intl.NumberFormat("pt-BR", {
 	minimumFractionDigits: 2,
@@ -49,31 +51,11 @@ export function fmt(v, t = "n") {
 
 const memoria = new Map();
 
-export function conta(k, v, t = "n", delta = false) {
+export function conta(k, v, t = "n") {
 	const de = memoria.has(k) ? memoria.get(k) : 0;
 	memoria.set(k, v);
 	const mudou = de > 0 && fmt(de, t) !== fmt(v, t);
-	const dif = Math.abs(v - de);
-	const num = t === "p" ? pf.format(dif) : nf.format(Math.round(dif));
-	return (
-		`<span class="conta ${mudou ? "mudou" : ""}" data-de="${de}" data-para="${v}" data-t="${t}">${fmt(de, t)}</span>` +
-		(mudou && delta
-			? `<small class="delta ${v > de ? "sobe" : "desce"}">${v > de ? "▲" : "▼"} ${num}</small>`
-			: "")
-	);
-}
-
-export function anima(k, prop, v, extra = "", un = "%") {
-	const de = memoria.has(k) ? memoria.get(k) : un === "%" ? 0 : v;
-	memoria.set(k, v);
-	return `data-anim="${prop}" data-para="${v}${un}" style="${prop}:${de}${un};${extra}"`;
-}
-
-function preferirCalmo() {
-	return (
-		typeof matchMedia === "function" &&
-		matchMedia("(prefers-reduced-motion: reduce)").matches
-	);
+	return `<span class="conta ${mudou ? "mudou" : ""}" data-de="${de}" data-para="${v}" data-t="${t}">${fmt(de, t)}</span>`;
 }
 
 /** Continuidade da faixa DESTAQUES: 55 px/s e atraso negativo pelo relógio (protótipo). */
@@ -137,8 +119,14 @@ export function deltaPp(v, neutro = false) {
 	return `<span class="d ${neutro ? "" : r > 0 ? "sobe" : "desce"}">${r > 0 ? "▲" : "▼"} ${pf.format(Math.abs(r))}</span>`;
 }
 
+export function deltaInt(v) {
+	if (v == null) return "";
+	if (!v) return `<span class="d">=</span>`;
+	return `<span class="d ${v > 0 ? "sobe" : "desce"}">${v > 0 ? "▲" : "▼"} ${Math.abs(v)}</span>`;
+}
+
 export function spark(vals, w = 72, h = 22, vivo = false) {
-	if (vals.length < 2) {
+	if (!vals || vals.length < 2) {
 		return `<svg class="spark" width="${w}" height="${h}" aria-hidden="true"></svg>`;
 	}
 	const mn = Math.min(...vals);
@@ -173,16 +161,6 @@ export function serieCand(hist, id, n) {
 	return pontos(hist, id)
 		.filter((p) => p.c[id].c[n])
 		.map((p) => [p.c[id].ap, p.c[id].c[n][1], p.c[id].hora]);
-}
-
-export function aviso(texto) {
-	const el = document.getElementById("aviso");
-	if (!el) return;
-	el.innerHTML = `<i></i><span>${esc(texto)}</span>`;
-	el.classList.add("on");
-	clearTimeout(aviso._t);
-	// Catálogo: resumo permanece ~7 s.
-	aviso._t = setTimeout(() => el.classList.remove("on"), 7000);
 }
 
 export function temaSalvo() {
