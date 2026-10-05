@@ -346,19 +346,6 @@ body[data-tema="claro"]::before { opacity: .45; }
   from { transform: scale(1); opacity: .55; }
   to { transform: scale(3.4); opacity: 0; }
 }
-.db-barra i, .db-prog i { position: relative; overflow: hidden; }
-.db-barra i::after, .db-prog i::after {
-  content: ''; position: absolute; inset: 0;
-  background: linear-gradient(90deg, transparent, rgb(255 255 255 / .4), transparent);
-  transform: translateX(-100%);
-  animation: brilho-d 5s ease-in-out infinite; animation-delay: var(--atraso, 0s);
-}
-@keyframes brilho-d {
-  0%, 55% { transform: translateX(-100%); }
-  85%, 100% { transform: translateX(100%); }
-}
-.db-prog { height: 4px; margin-top: 6px; border-radius: 2px; background: var(--superficie-2); }
-.db-prog i { display: block; height: 100%; border-radius: 2px; background: var(--acento); }
 .db-seat { animation: onda-d 7s ease-in-out infinite; animation-delay: calc(var(--i) * 60ms); }
 @keyframes onda-d {
   0%, 80%, 100% { filter: brightness(1); transform: none; }
@@ -401,8 +388,6 @@ body[data-tema="claro"]::before { opacity: .45; }
     transition-duration: .01ms !important;
   }
   .db-rolo { animation: none !important; transform: none !important; }
-  .delta { animation: none !important; }
-  .db-barra i::after, .db-prog i::after { animation: none !important; display: none; }
   .db-graf .ping, .spark .ping { animation: none !important; }
   .sd-anel.girando { animation: none !important; }
   body::before { animation: none !important; }
