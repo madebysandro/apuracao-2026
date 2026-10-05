@@ -3,7 +3,7 @@
  * Vive fora de #app — animações (odômetro, anel, ciclo) não reiniciam no redesenho.
  */
 import { preferirCalmo } from "./calmo.js";
-import { escapar as esc } from "./formato.js";
+import { esc } from "../tela1-util.js";
 
 /** @type {HTMLElement | null} */
 let sd = null;
