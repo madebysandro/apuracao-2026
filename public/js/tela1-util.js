@@ -1,5 +1,6 @@
 /** Utilitários compartilhados da Tela 1 (variante D do protótipo). */
 
+import { limitesContagem } from "./arquivo.js";
 import { preferirCalmo } from "./movimento/calmo.js";
 import { pontos } from "./pontos-hist.js";
 
@@ -53,11 +54,21 @@ export function fmt(v, t = "n") {
 }
 
 const memoria = new Map();
+/**
+ * ponytail: trava global da pintura. Teto: um painel por aba; quem pinta
+ * (renderizarPainel / o cartão) chama definirArquivoCongelado antes de conta().
+ * Upgrade: passar o flag em conta() se duas pinturas concorrerem.
+ */
+export let arquivoCongelado = false;
+export function definirArquivoCongelado(v) {
+	arquivoCongelado = Boolean(v);
+}
 
 export function conta(k, v, t = "n") {
-	const de = memoria.has(k) ? memoria.get(k) : 0;
+	const visto = memoria.has(k) ? memoria.get(k) : null;
+	const { de, animar } = limitesContagem(visto, v, arquivoCongelado);
 	memoria.set(k, v);
-	const mudou = de > 0 && fmt(de, t) !== fmt(v, t);
+	const mudou = animar && de > 0 && fmt(de, t) !== fmt(v, t);
 	return `<span class="conta ${mudou ? "mudou" : ""}" data-de="${de}" data-para="${v}" data-t="${t}">${fmt(de, t)}</span>`;
 }
 

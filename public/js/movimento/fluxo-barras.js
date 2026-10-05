@@ -1,8 +1,10 @@
 /**
  * Barras "fluxo de votos" (issue #13 / protótipo variante 2).
- * Canvas de 6 px; mola subamortecida; pontos proporais ao ganho da última leitura.
+ * Altura em --barra-altura; mola subamortecida; pontos proporais ao ganho da última leitura.
  * O estado por chave sobrevive aos redesenhos do #app.
  */
+import { nascerBarra } from "../arquivo.js";
+import { arquivoCongelado } from "../tela1-util.js";
 import { preferirCalmo } from "./calmo.js";
 
 const estadoBarras = new Map();
@@ -22,10 +24,9 @@ export function ligarBarras() {
 		const alvo = +el.dataset.alvo;
 		let st = estadoBarras.get(k);
 		if (!st) {
-			estadoBarras.set(
-				k,
-				(st = { v: 0, vel: 0, energia: 1, parts: [], acum: 0 }),
-			);
+			estadoBarras.set(k, (st = nascerBarra(alvo, arquivoCongelado)));
+		} else if (arquivoCongelado) {
+			Object.assign(st, nascerBarra(alvo, true));
 		} else if (Math.abs(alvo - (st.alvo ?? 0)) > 1e-6) {
 			st.energia = 1;
 		}

@@ -1,5 +1,10 @@
 /** Cartão majoritário da Tela 1 (marcação .db-* do protótipo, variante D). */
 
+import {
+	MSG_FIGURA_ARQUIVO,
+	figuraSemLinha,
+	textoTendenciaVazia,
+} from "./arquivo.js";
 import { barraViva } from "./movimento/fluxo-barras.js";
 import {
 	anteriorD,
@@ -7,6 +12,7 @@ import {
 	conta,
 	corD,
 	deltaPp,
+	definirArquivoCongelado,
 	esc,
 	foto,
 	nf,
@@ -29,7 +35,9 @@ export function renderizarCartaoMajoritario(
 	hist,
 	graficos,
 	analiseMaj,
+	opts = {},
 ) {
+	definirArquivoCongelado(Boolean(opts.encerrada));
 	if (!cargo?.candidatos?.length) {
 		return `<article class="db-card"><p class="db-vazio">Aguardando dados de ${esc(id)}…</p></article>`;
 	}
@@ -48,7 +56,7 @@ export function renderizarCartaoMajoritario(
 			const pa = ant?.c[x.n]?.[1];
 			return `<li class="db-cand" data-flip="${id}-${x.n}" style="--c:${corX}">
       ${foto(x, "db-rosto")}
-      <span class="db-nome"><b>${esc(nomeBonito(x.nome))}</b><small>${esc(x.partido)} · ${conta(`d-${id}-${x.n}-v`, x.votos)} votos</small>
+      <span class="db-nome"><b title="${esc(nomeBonito(x.nome))}">${esc(nomeBonito(x.nome))}</b><small title="${esc(x.partido)} · ${nf.format(x.votos)} votos">${esc(x.partido)} · ${conta(`d-${id}-${x.n}-v`, x.votos)} votos</small>
         ${barraViva(`${id}-${x.n}`, x.pct, pa, ganho(x) / maior, corX, duas ? "" : "<em></em>")}</span>
       <span class="db-pct">${conta(`d-${id}-${x.n}-p`, x.pct, "p")}</span>
       <span class="db-delta">${pa == null ? "" : deltaPp(x.pct - pa)}</span>
@@ -56,15 +64,24 @@ export function renderizarCartaoMajoritario(
 		})
 		.join("");
 
-	graficos.set(id, {
-		rotulo: `Evolução do percentual de votos válidos de ${c.titulo}`,
-		ref: duas ? null : 50,
-		series: noGrafico.map((x) => ({
-			nome: nomeBonito(x.nome),
-			cor: corD(id, x.n),
-			pts: serieCand(hist, id, x.n),
-		})),
-	});
+	const series = noGrafico.map((x) => ({
+		nome: nomeBonito(x.nome),
+		cor: corD(id, x.n),
+		pts: serieCand(hist, id, x.n),
+	}));
+	const temLinha = series.some((x) => x.pts.length > 1);
+	const semFigura = figuraSemLinha(
+		Boolean(opts.encerrada),
+		c.apurado,
+		temLinha,
+	);
+	if (!semFigura) {
+		graficos.set(id, {
+			rotulo: `Evolução do percentual de votos válidos de ${c.titulo}`,
+			ref: duas ? null : 50,
+			series,
+		});
+	}
 
 	const manchete = duas
 		? `<b class="db-heroi menor">${esc(nomeBonito(a.nome))} e ${esc(nomeBonito(b.nome))}</b><span>ocupam as 2 vagas · 3º lugar a ${pf.format(b.pct - d3.pct)} p.p. da 2ª vaga</span>`
@@ -77,12 +94,16 @@ export function renderizarCartaoMajoritario(
     </header>
     <div class="db-manchete">${manchete}</div>
     <ol class="db-cands">${linhas}</ol>
-    <figure class="db-fig">
+    ${
+			semFigura
+				? `<p class="db-vazio db-fig-final">${MSG_FIGURA_ARQUIVO}</p>`
+				: `<figure class="db-fig">
       <figcaption><span>% dos votos válidos conforme as seções são apuradas</span>
         <span class="db-leg">${noGrafico.map((x) => `<span><i class="db-sw" style="background:${corD(id, x.n)}"></i>${esc(nomeBonito(x.nome))}</span>`).join("")}</span></figcaption>
       <div class="db-graf" data-graf="${id}"></div>
-    </figure>
-    ${dbAnalise(c, analiseMaj)}
+    </figure>`
+		}
+    ${dbAnalise(c, analiseMaj, opts)}
   </article>`;
 }
 
@@ -91,8 +112,12 @@ export function renderizarCartaoMajoritario(
  * @param {object} c
  * @param {object|null|undefined} a
  */
-function dbAnalise(c, a) {
+function dbAnalise(c, a, opts = {}) {
 	if (!a?.defensor || !a?.perseguidor) return "";
+	const vazio = textoTendenciaVazia({
+		encerrada: Boolean(opts.encerrada),
+		apurado: c.apurado,
+	});
 	const duas = c.vagas === 2;
 	const nm = (x) => esc(nomeBonito(x.nome));
 	const itens = [
@@ -141,10 +166,10 @@ function dbAnalise(c, a) {
 							`<span class="db-tend">${esc(nomeBonito(t.nome))} ${deltaPp(t.ppPor10pct)}</span>`,
 					)
 					.join("")
-			: '<span class="db-vazio">aguardando mais leituras</span>',
+			: `<span class="db-vazio">${vazio.valor}</span>`,
 		tend.length
 			? "p.p. a cada 10% de seções, nas últimas leituras"
-			: "aparece a partir da 3ª leitura com avanço na apuração",
+			: vazio.sub,
 	]);
 	return `<dl class="db-analise">${itens
 		.map(

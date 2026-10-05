@@ -1,3 +1,4 @@
+import { apuracaoArquivada } from "./arquivo.js";
 import { deslizarAba } from "./movimento/abas.js";
 import {
 	atualizarFaixaDados,
@@ -102,6 +103,7 @@ function pintar(animarGraf) {
 		graficos,
 		horaTse,
 		erro: dados.erro,
+		encerrada: apuracaoArquivada(dados),
 	});
 	ativar();
 	pintarGraficos(graficos, animarGraf);
