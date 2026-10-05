@@ -122,6 +122,17 @@ describe("Poller — encerramento a 100% (#19)", () => {
 		expect(tse.pedidos.length).toBe(pedidosAntes);
 	});
 
+	it("com pst a 100% mas tf ainda \"n\", continua consultando", async () => {
+		tse.definirVarianteSecoes({ padrao: "100,00", tf: "n" });
+		await forcarConsulta();
+		const dados = await lerApuracao();
+
+		expect(dados.cargos.presidente?.apurado).toBe(100);
+		expect(dados.encerrada).toBeFalsy();
+		expect(dados.proximaConsulta).toEqual(expect.any(Number));
+		expect(await lerAlarme()).toEqual(expect.any(Number));
+	});
+
 	it("erro no ciclo não encerra mesmo com fixtures a 100%", async () => {
 		tse.definirVarianteSecoes({ padrao: "100,00", tf: "s" });
 		tse.simularErro(503);
@@ -129,6 +140,18 @@ describe("Poller — encerramento a 100% (#19)", () => {
 		const dados = await lerApuracao();
 
 		expect(dados.erro).toMatch(/503/);
+		expect(dados.encerrada).toBeFalsy();
+		expect(dados.proximaConsulta).toEqual(expect.any(Number));
+		expect(await lerAlarme()).toEqual(expect.any(Number));
+	});
+
+	it("429 no ciclo não encerra mesmo com fixtures a 100%", async () => {
+		tse.definirVarianteSecoes({ padrao: "100,00", tf: "s" });
+		tse.simular429(90);
+		await forcarConsulta();
+		const dados = await lerApuracao();
+
+		expect(dados.erro).toMatch(/429/);
 		expect(dados.encerrada).toBeFalsy();
 		expect(dados.proximaConsulta).toEqual(expect.any(Number));
 		expect(await lerAlarme()).toEqual(expect.any(Number));
