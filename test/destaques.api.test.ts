@@ -139,10 +139,10 @@ describe("GET /api/apuracao — Presidente por UF e faixa de destaques (#7)", ()
 		expect(frases.length).toBeGreaterThan(10);
 		const t = texto(frases);
 
-		// Placar dos estados (exterior fora da conta).
+		// Placar dos estados (exterior fora da conta) — gravação real.
 		expect(t).toMatch(/placar dos estados/i);
-		expect(t).toMatch(/Flavio Bolsonaro lidera em 15 UFs/i);
-		expect(t).toMatch(/Lula lidera em 12 UFs/i);
+		expect(t).toMatch(/Flavio Bolsonaro lidera em 16 UFs/i);
+		expect(t).toMatch(/Lula lidera em 11 UFs/i);
 
 		// 5 regiões.
 		for (const reg of [
@@ -155,14 +155,14 @@ describe("GET /api/apuracao — Presidente por UF e faixa de destaques (#7)", ()
 			expect(t).toContain(`Presidente · ${reg}`);
 		}
 
-		// 8 maiores colégios (por eleitorado nas fixtures).
+		// 8 maiores colégios (por eleitorado real do TSE).
 		for (const nome of [
 			"São Paulo",
 			"Minas Gerais",
 			"Rio de Janeiro",
 			"Bahia",
-			"Rio Grande do Sul",
 			"Paraná",
+			"Rio Grande do Sul",
 			"Pernambuco",
 			"Ceará",
 		]) {
@@ -171,13 +171,13 @@ describe("GET /api/apuracao — Presidente por UF e faixa de destaques (#7)", ()
 
 		// Disputa mais apertada / maior vantagem (só UFs com ≥5% apurado).
 		expect(t).toMatch(/disputa mais apertada/i);
-		expect(t).toMatch(/Roraima/);
+		expect(t).toMatch(/Pará/);
 		expect(t).toMatch(/maior vantagem/i);
-		expect(t).toMatch(/Bahia/);
+		expect(t).toMatch(/Roraima/);
 
 		// Mais adiantado / mais atrasado.
-		expect(t).toMatch(/mais adiantado:\s*Santa Catarina/i);
-		expect(t).toMatch(/mais atrasado:\s*Amazonas/i);
+		expect(t).toMatch(/mais adiantado:\s*Distrito Federal/i);
+		expect(t).toMatch(/mais atrasado:\s*Alagoas/i);
 
 		// Exterior.
 		expect(t).toMatch(/Presidente · Exterior/);
@@ -191,7 +191,7 @@ describe("GET /api/apuracao — Presidente por UF e faixa de destaques (#7)", ()
 		expect(t).toMatch(/Senado · Pará/i);
 		expect(t).toMatch(/2ª vaga/i);
 		expect(t).toMatch(/Comparecimento.*Brasil.*Pará/i);
-		// Cadeiras que mudaram (ciclo derivada → real: PSB ganhou / PSD perdeu).
+		// Cadeiras que mudaram (ciclo real: PSD ganhou / PSB perdeu).
 		expect(t).toMatch(/Dep\. Federal/i);
 		expect(t).toMatch(/(ganhou|perdeu) \d+ cadeira/i);
 		// Disputa interna mais apertada.

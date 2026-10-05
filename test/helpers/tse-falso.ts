@@ -1,107 +1,203 @@
 import { http, HttpResponse } from "msw";
 import { network } from "./rede";
-
-import cicloA from "../../fixtures/tse-provisorio/2026-10-04T21-36-05-598Z/presidente.json";
-import cicloB from "../../fixtures/tse-provisorio/2026-10-04T21-39-46-908Z/presidente.json";
-import cicloC from "../../fixtures/tse-provisorio/2026-10-04T21-44-49-070Z/presidente.json";
-import governador from "../../fixtures/tse-provisorio/2026-10-04T21-57-01-000Z/governador.json";
-import governadorQuaseFim from "../../fixtures/tse-provisorio/sintetica-quase-fim/governador.json";
-import senador from "../../fixtures/tse-provisorio/2026-10-04T21-57-01-000Z/senador.json";
-import depfedReal from "../../fixtures/tse-provisorio/2026-10-04T21-56-47-000Z/depfed.json";
-import depestReal from "../../fixtures/tse-provisorio/2026-10-04T21-56-47-000Z/depest.json";
-import depfedDerivada from "../../fixtures/tse-provisorio/2026-10-04T21-56-47-000Z-derivada-antes/depfed.json";
-import depestDerivada from "../../fixtures/tse-provisorio/2026-10-04T21-56-47-000Z-derivada-antes/depest.json";
-import presidenteUfs from "../../fixtures/tse-provisorio/ufs/presidente-ufs.json";
+import indice from "../../fixtures/tse-provisorio/indice.json";
 
 /**
- * Sequência provisória gravada em 04/10/2026.
- * A issue #2 substituirá/estenderá estas fixtures; o mecanismo (índice + avanço)
- * permanece. Três ciclos de Presidente permitem tendência (≥ 3 leituras).
+ * Corpos JSON das fixtures, indexados pelo caminho relativo ao glob.
+ * O Vite embute só o recorte versionado em fixtures/tse-provisorio/.
  */
-export const SEQUENCIA_PRESIDENTE = [
-	{
-		ciclo: "2026-10-04T21-36-05-598Z",
-		etag: '"1d5285921d666c878ec42545a751657b"',
-		cacheControl: "max-age=55",
-		corpo: cicloA,
-	},
-	{
-		ciclo: "2026-10-04T21-39-46-908Z",
-		etag: '"53dc1d917e92e70583eeefee67e53dfa"',
-		cacheControl: "max-age=58",
-		corpo: cicloB,
-	},
-	{
-		ciclo: "2026-10-04T21-44-49-070Z",
-		etag: '"cfcfdb324035e3866fcc731be644e4e4"',
-		cacheControl: "max-age=56",
-		corpo: cicloC,
-	},
+const corposGlob = import.meta.glob(
+	"../../fixtures/tse-provisorio/*/*.json",
+	{ eager: true, import: "default" },
+) as Record<string, object>;
+
+type MetaArquivo = {
+	ciclo: string;
+	chave: string;
+	url: string;
+	etag: string;
+	cacheControl: string;
+	corpo: object;
+};
+
+type EntradaIndice = {
+	ciclo: string;
+	chave: string;
+	url: string;
+	etag: string;
+	cacheControl: string;
+};
+
+/** Ciclos versionados, em ordem cronológica. */
+export const CICLOS = [
+	"2026-10-04T21-36-05-598Z",
+	"2026-10-04T21-38-48-884Z",
+	"2026-10-04T21-39-46-908Z",
+	"2026-10-04T21-44-49-070Z",
+	"2026-10-04T23-17-25-721Z",
+	"2026-10-05T00-01-02-086Z",
 ] as const;
 
-/** Governador: real → sintético quase no fim (fora de alcance / maioria). */
-export const SEQUENCIA_GOVERNADOR = [
-	{
-		ciclo: "2026-10-04T21-57-01-000Z",
-		etag: '"7b3afcbce1289c6f7258c539ff158bd1"',
-		cacheControl: "max-age=50",
-		corpo: governador,
-	},
-	{
-		ciclo: "sintetica-quase-fim",
-		etag: '"sintetica-governador-quase-fim"',
-		cacheControl: "max-age=50",
-		corpo: governadorQuaseFim,
-	},
+export type IdCiclo = (typeof CICLOS)[number];
+
+function corpoDoCiclo(ciclo: string, arquivo: string): object | undefined {
+	const sufixo = `/fixtures/tse-provisorio/${ciclo}/${arquivo}`;
+	for (const [caminho, corpo] of Object.entries(corposGlob)) {
+		if (caminho.endsWith(sufixo) || caminho.includes(`${ciclo}/${arquivo}`)) {
+			return corpo;
+		}
+	}
+	return undefined;
+}
+
+function arquivoDaChave(chave: string): string {
+	return `${chave}.json`;
+}
+
+/** Catálogo: por ciclo, por chave → meta + corpo. */
+function montarCatalogo(): Map<string, Map<string, MetaArquivo>> {
+	const out = new Map<string, Map<string, MetaArquivo>>();
+	for (const entrada of indice as EntradaIndice[]) {
+		if (!(CICLOS as readonly string[]).includes(entrada.ciclo)) continue;
+		const corpo = corpoDoCiclo(entrada.ciclo, arquivoDaChave(entrada.chave));
+		if (!corpo) continue;
+		let porChave = out.get(entrada.ciclo);
+		if (!porChave) {
+			porChave = new Map();
+			out.set(entrada.ciclo, porChave);
+		}
+		porChave.set(entrada.chave, {
+			ciclo: entrada.ciclo,
+			chave: entrada.chave,
+			url: entrada.url,
+			etag: entrada.etag,
+			cacheControl: entrada.cacheControl,
+			corpo,
+		});
+	}
+	return out;
+}
+
+const CATALOGO = montarCatalogo();
+
+/** Resolve o arquivo vigente até `ateCiclo` (inclusive), andando para trás. */
+export function resolverArquivo(
+	chave: string,
+	ateCiclo: string,
+): MetaArquivo | null {
+	const idx = (CICLOS as readonly string[]).indexOf(ateCiclo);
+	if (idx < 0) return null;
+	for (let i = idx; i >= 0; i--) {
+		const ciclo = CICLOS[i]!;
+		const meta = CATALOGO.get(ciclo)?.get(chave);
+		if (meta) return meta;
+	}
+	return null;
+}
+
+/** Sequência de Presidente (leituras distintas para tendência). */
+export const CICLOS_PRESIDENTE = [
+	"2026-10-04T21-36-05-598Z",
+	"2026-10-04T21-39-46-908Z",
+	"2026-10-04T21-44-49-070Z",
 ] as const;
 
-const FIXTURES_PA = {
-	senador: {
-		etag: '"fc182858b3f6823b19fb155edb20e63d"',
-		cacheControl: "max-age=58",
-		corpo: senador,
-	},
-} as const;
+/** Governador: início → quase fim (fora de alcance / maioria). */
+export const CICLOS_GOVERNADOR = [
+	"2026-10-04T21-36-05-598Z",
+	"2026-10-05T00-01-02-086Z",
+] as const;
 
-/** Gravação real atual dos deputados do Pará (04/10/2026 ~18:55). */
+/** Troca real de cadeira Dep. Federal: PSB 2→1, PSD 1→2. */
+export const CICLOS_CADEIRAS = [
+	"2026-10-04T21-38-48-884Z",
+	"2026-10-04T21-39-46-908Z",
+] as const;
+
+/** Meio e fim da noite (além do início). */
+export const CICLOS_NOITE = [
+	"2026-10-04T21-36-05-598Z",
+	"2026-10-04T23-17-25-721Z",
+	"2026-10-05T00-01-02-086Z",
+] as const;
+
+function metaObrigatoria(chave: string, ciclo: string): MetaArquivo {
+	const meta = resolverArquivo(chave, ciclo);
+	if (!meta) {
+		throw new Error(`fixture ausente: ${chave} @ ${ciclo}`);
+	}
+	return meta;
+}
+
+export const SEQUENCIA_PRESIDENTE = CICLOS_PRESIDENTE.map((ciclo) => {
+	const m = metaObrigatoria("presidente", ciclo);
+	return {
+		ciclo,
+		etag: m.etag,
+		cacheControl: m.cacheControl,
+		corpo: m.corpo,
+	};
+});
+
+export const SEQUENCIA_GOVERNADOR = CICLOS_GOVERNADOR.map((ciclo) => {
+	const m = metaObrigatoria("governador", ciclo);
+	return {
+		ciclo,
+		etag: m.etag,
+		cacheControl: m.cacheControl,
+		corpo: m.corpo,
+	};
+});
+
+const PROP_CADEIRAS = CICLOS_CADEIRAS.map((ciclo) => ({
+	ciclo,
+	depfed: (() => {
+		const m = metaObrigatoria("depfed", ciclo);
+		return {
+			etag: m.etag,
+			cacheControl: m.cacheControl,
+			corpo: m.corpo,
+		};
+	})(),
+	depest: (() => {
+		const m = metaObrigatoria("depest", ciclo);
+		return {
+			etag: m.etag,
+			cacheControl: m.cacheControl,
+			corpo: m.corpo,
+		};
+	})(),
+}));
+
+/** Gravação “atual” dos proporcionais = ciclo do início (mesmo instante do primeiro Presidente). */
 const PROP_REAL = {
-	ciclo: "2026-10-04T21-56-47-000Z",
-	depfed: {
-		etag: '"408b0e6ec49d9ef2de83ae5577967534"',
-		cacheControl: "max-age=57",
-		corpo: depfedReal,
-	},
-	depest: {
-		etag: '"0b19a78dc50f02abfe1f5928406cb6de"',
-		cacheControl: "max-age=59",
-		corpo: depestReal,
-	},
-} as const;
+	ciclo: CICLOS[0],
+	depfed: (() => {
+		const m = metaObrigatoria("depfed", CICLOS[0]);
+		return {
+			etag: m.etag,
+			cacheControl: m.cacheControl,
+			corpo: m.corpo,
+		};
+	})(),
+	depest: (() => {
+		const m = metaObrigatoria("depest", CICLOS[0]);
+		return {
+			etag: m.etag,
+			cacheControl: m.cacheControl,
+			corpo: m.corpo,
+		};
+	})(),
+};
 
-/**
- * Sequência para troca de cadeira: primeiro um JSON DERIVADO da gravação real
- * (PSD +1 / PSB −1 e um inválido sintético no PL), depois a gravação real.
- */
-const PROP_CADEIRAS = [
-	{
-		ciclo: "2026-10-04T21-56-47-000Z-derivada-antes",
-		depfed: {
-			etag: '"derivada-depfed-antes-psd3-psb0"',
-			cacheControl: "max-age=57",
-			corpo: depfedDerivada,
-		},
-		depest: {
-			etag: '"derivada-depest-antes"',
-			cacheControl: "max-age=59",
-			corpo: depestDerivada,
-		},
-	},
-	{
-		ciclo: PROP_REAL.ciclo,
-		depfed: PROP_REAL.depfed,
-		depest: PROP_REAL.depest,
-	},
-] as const;
+const SENADOR_INICIO = (() => {
+	const m = metaObrigatoria("senador", CICLOS[0]);
+	return {
+		etag: m.etag,
+		cacheControl: m.cacheControl,
+		corpo: m.corpo,
+	};
+})();
 
 export const URLS_TSE = {
 	presidente:
@@ -124,8 +220,14 @@ export type PedidoTse = {
 export type ModoProporcionais = "real" | "cadeiras";
 
 export type OpcoesTseFalso = {
-	/** Padrão: "real" (gravação atual). "cadeiras" começa na derivada e avança para a real. */
+	/** Padrão: "real" (início da noite). "cadeiras" percorre a troca PSD/PSB. */
 	proporcionais?: ModoProporcionais;
+	/**
+	 * Sequência unificada da noite (início → meio → fim).
+	 * Quando true, `avancar()` anda em CICLOS_NOITE e todos os arquivos
+	 * (cargos + UFs) acompanham o mesmo índice.
+	 */
+	sequenciaNoite?: boolean;
 };
 
 export type TseFalso = {
@@ -135,7 +237,7 @@ export type TseFalso = {
 	pedidos: PedidoTse[];
 	avancar: () => void;
 	avancarProporcionais: () => void;
-	/** Avança a sequência do Governador (real → quase-fim). */
+	/** Avança a sequência do Governador (início → quase-fim). */
 	avancarGovernador: () => void;
 	/** Próxima resposta do Presidente será 429 com este Retry-After (segundos). */
 	simular429: (retryAfter: number) => void;
@@ -153,6 +255,8 @@ export type TseFalso = {
 	urlPresidente: string;
 	urlDepfed: string;
 	urlDepest: string;
+	/** Ciclo vigente para UFs / sequência da noite. */
+	cicloAtual: () => string;
 };
 
 type ModoEspecial =
@@ -176,17 +280,88 @@ export function instalarTseFalso(opcoes: OpcoesTseFalso = {}): TseFalso {
 		} | null,
 	};
 	const modoProp = opcoes.proporcionais ?? "real";
-	const fixturesUf = presidenteUfs as Record<string, object>;
+	const sequenciaNoite = opcoes.sequenciaNoite ?? false;
+
+	const cicloPresidente = () => {
+		if (sequenciaNoite) {
+			return (
+				CICLOS_NOITE[estado.indice] ?? CICLOS_NOITE.at(-1)!
+			);
+		}
+		return (
+			CICLOS_PRESIDENTE[estado.indice] ?? CICLOS_PRESIDENTE.at(-1)!
+		);
+	};
 
 	const propAtual = () => {
 		if (modoProp === "cadeiras") {
 			return PROP_CADEIRAS[estado.indiceProp] ?? PROP_CADEIRAS.at(-1)!;
+		}
+		if (sequenciaNoite) {
+			const ciclo = cicloPresidente();
+			const depfed = metaObrigatoria("depfed", ciclo);
+			const depest = metaObrigatoria("depest", ciclo);
+			return {
+				ciclo,
+				depfed: {
+					etag: depfed.etag,
+					cacheControl: depfed.cacheControl,
+					corpo: depfed.corpo,
+				},
+				depest: {
+					etag: depest.etag,
+					cacheControl: depest.cacheControl,
+					corpo: depest.corpo,
+				},
+			};
 		}
 		return {
 			ciclo: PROP_REAL.ciclo,
 			depfed: PROP_REAL.depfed,
 			depest: PROP_REAL.depest,
 		};
+	};
+
+	const governadorAtual = () => {
+		if (sequenciaNoite) {
+			const m = metaObrigatoria("governador", cicloPresidente());
+			return {
+				etag: m.etag,
+				cacheControl: m.cacheControl,
+				corpo: m.corpo,
+			};
+		}
+		return (
+			SEQUENCIA_GOVERNADOR[estado.indiceGov] ??
+			SEQUENCIA_GOVERNADOR.at(-1)!
+		);
+	};
+
+	const senadorAtual = () => {
+		if (sequenciaNoite) {
+			const m = metaObrigatoria("senador", cicloPresidente());
+			return {
+				etag: m.etag,
+				cacheControl: m.cacheControl,
+				corpo: m.corpo,
+			};
+		}
+		return SENADOR_INICIO;
+	};
+
+	const presidenteAtual = () => {
+		if (sequenciaNoite) {
+			const m = metaObrigatoria("presidente", cicloPresidente());
+			return {
+				etag: m.etag,
+				cacheControl: m.cacheControl,
+				corpo: m.corpo,
+			};
+		}
+		return (
+			SEQUENCIA_PRESIDENTE[estado.indice] ??
+			SEQUENCIA_PRESIDENTE.at(-1)!
+		);
 	};
 
 	const responderArquivo = (
@@ -232,27 +407,20 @@ export function instalarTseFalso(opcoes: OpcoesTseFalso = {}): TseFalso {
 				estado.pedidos.push({ url: request.url, ifNoneMatch });
 				return new HttpResponse("falha", { status });
 			}
-			const atual = SEQUENCIA_PRESIDENTE[estado.indice];
-			if (!atual) {
-				return new HttpResponse("fixture esgotada", { status: 500 });
-			}
-			return responderArquivo(request.url, ifNoneMatch, atual);
+			return responderArquivo(request.url, ifNoneMatch, presidenteAtual());
 		}),
-		http.get(URLS_TSE.governador, ({ request }) => {
-			const atual =
-				SEQUENCIA_GOVERNADOR[estado.indiceGov] ??
-				SEQUENCIA_GOVERNADOR.at(-1)!;
-			return responderArquivo(
+		http.get(URLS_TSE.governador, ({ request }) =>
+			responderArquivo(
 				request.url,
 				request.headers.get("if-none-match"),
-				atual,
-			);
-		}),
+				governadorAtual(),
+			),
+		),
 		http.get(URLS_TSE.senador, ({ request }) =>
 			responderArquivo(
 				request.url,
 				request.headers.get("if-none-match"),
-				FIXTURES_PA.senador,
+				senadorAtual(),
 			),
 		),
 		http.get(URLS_TSE.depfed, ({ request }) =>
@@ -289,15 +457,15 @@ export function instalarTseFalso(opcoes: OpcoesTseFalso = {}): TseFalso {
 					}
 					return new HttpResponse("falha uf", { status });
 				}
-				const corpo = fixturesUf[uf];
-				if (!corpo) {
+				const meta = resolverArquivo(`pres-${uf}`, cicloPresidente());
+				if (!meta) {
 					estado.pedidos.push({ url: request.url, ifNoneMatch });
 					return new HttpResponse("uf desconhecida", { status: 404 });
 				}
 				return responderArquivo(request.url, ifNoneMatch, {
-					etag: `"pres-uf-${uf}-v1"`,
-					cacheControl: "max-age=55",
-					corpo,
+					etag: meta.etag,
+					cacheControl: meta.cacheControl,
+					corpo: meta.corpo,
 				});
 			},
 		),
@@ -343,5 +511,6 @@ export function instalarTseFalso(opcoes: OpcoesTseFalso = {}): TseFalso {
 		urlPresidente: URLS_TSE.presidente,
 		urlDepfed: URLS_TSE.depfed,
 		urlDepest: URLS_TSE.depest,
+		cicloAtual: () => cicloPresidente(),
 	};
 }

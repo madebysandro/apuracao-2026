@@ -1,6 +1,6 @@
 /**
  * Único ponto de teste combinado: a API HTTP (`/api/apuracao`).
- * O TSE é substituído por fixtures provisórias via interceptação do fetch de saída.
+ * O TSE é substituído por fixtures reais (issue #2) via interceptação do fetch de saída.
  */
 import {
 	runDurableObjectAlarm,
@@ -140,23 +140,23 @@ describe("GET /api/apuracao — Tela 1 (Presidente, Governador, Senado)", () => 
 		expect(g!.titulo).toBe("Governador");
 		expect(g!.local).toBe("Pará");
 		expect(g!.vagas).toBe(1);
-		expect(g!.hora).toBe("18:55:38");
-		expect(g!.apurado).toBeCloseTo(56.758054449, 6);
-		expect(g!.totais.comparecimento).toBeCloseTo(81.053361787, 6);
-		expect(g!.totais.abstencao).toBeCloseTo(18.946638213, 6);
+		expect(g!.hora).toBe("18:34:46");
+		expect(g!.apurado).toBeCloseTo(44.399097326, 6);
+		expect(g!.totais.comparecimento).toBeCloseTo(81.129948693, 6);
+		expect(g!.totais.abstencao).toBeCloseTo(18.870051307, 6);
 		expect(g!.candidatos[0]).toMatchObject({
 			n: "20",
 			nome: "DR. DANIEL",
 			partido: "PODE",
-			votos: 1348271,
+			votos: 1066644,
 			pos: 1,
 		});
-		expect(g!.candidatos[0].pct).toBeCloseTo(52.473320072, 6);
+		expect(g!.candidatos[0].pct).toBeCloseTo(52.723142261, 6);
 		expect(g!.candidatos[1]).toMatchObject({
 			n: "15",
 			nome: "HANA GHASSAN",
 			partido: "MDB",
-			votos: 1149167,
+			votos: 893531,
 			pos: 2,
 		});
 
@@ -165,27 +165,27 @@ describe("GET /api/apuracao — Tela 1 (Presidente, Governador, Senado)", () => 
 		expect(s!.titulo).toBe("Senador");
 		expect(s!.local).toBe("Pará");
 		expect(s!.vagas).toBe(2);
-		expect(s!.hora).toBe("18:56:09");
-		expect(s!.apurado).toBeCloseTo(57.286215009, 6);
+		expect(s!.hora).toBe("18:34:46");
+		expect(s!.apurado).toBeCloseTo(44.399097326, 6);
 		expect(s!.candidatos[0]).toMatchObject({
 			n: "151",
 			nome: "HELDER",
 			partido: "MDB",
-			votos: 1269474,
+			votos: 971845,
 			pos: 1,
 		});
 		expect(s!.candidatos[1]).toMatchObject({
 			n: "222",
 			nome: "DELEGADO ÉDER MAURO",
 			partido: "PL",
-			votos: 1168961,
+			votos: 919895,
 			pos: 2,
 		});
 		expect(s!.candidatos[2]).toMatchObject({
 			n: "200",
 			nome: "ZEQUINHA MARINHO",
 			partido: "PODE",
-			votos: 1079430,
+			votos: 841684,
 			pos: 3,
 		});
 		for (let i = 1; i < s!.candidatos.length; i++) {

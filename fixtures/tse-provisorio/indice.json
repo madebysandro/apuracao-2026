@@ -1,0 +1,1424 @@
+[
+  {
+    "ciclo": "2026-10-04T21-36-05-598Z",
+    "chave": "presidente",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/br/br-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"1d5285921d666c878ec42545a751657b\"",
+    "cacheControl": "max-age=55",
+    "lastModified": "Sun, 04 Oct 2026 21:33:21 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-36-05-598Z",
+    "chave": "governador",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6259/dados/pa/pa-c0003-e006259-u.json",
+    "status": 200,
+    "etag": "\"6edaee1cfdc44486e801b0fc1425eec0\"",
+    "cacheControl": "max-age=48",
+    "lastModified": "Sun, 04 Oct 2026 21:34:57 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-36-05-598Z",
+    "chave": "senador",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6259/dados/pa/pa-c0005-e006259-u.json",
+    "status": 200,
+    "etag": "\"1fff82c7692cda88b648e8b604a5cf01\"",
+    "cacheControl": "max-age=50",
+    "lastModified": "Sun, 04 Oct 2026 21:34:57 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-36-05-598Z",
+    "chave": "depfed",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6259/dados/pa/pa-c0006-e006259-u.json",
+    "status": 200,
+    "etag": "\"cf6a8d53b04aaa6cabbbe1ce02ae114d\"",
+    "cacheControl": "max-age=54",
+    "lastModified": "Sun, 04 Oct 2026 21:34:57 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-36-05-598Z",
+    "chave": "depest",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6259/dados/pa/pa-c0007-e006259-u.json",
+    "status": 200,
+    "etag": "\"ff1c993c35ea922b49a1206af16c5614\"",
+    "cacheControl": "max-age=46",
+    "lastModified": "Sun, 04 Oct 2026 21:34:58 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-36-05-598Z",
+    "chave": "pres-ac",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/ac/ac-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"cd8e91da4dc8f9019ddcb17e5760e67f\"",
+    "cacheControl": "max-age=50",
+    "lastModified": "Sun, 04 Oct 2026 21:34:52 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-36-05-598Z",
+    "chave": "pres-al",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/al/al-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"16a20e62a13a2acc469396017d5adb9c\"",
+    "cacheControl": "max-age=52",
+    "lastModified": "Sun, 04 Oct 2026 21:34:52 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-36-05-598Z",
+    "chave": "pres-am",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/am/am-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"9048be190fd73c1851c5bba03b0d2dbd\"",
+    "cacheControl": "max-age=53",
+    "lastModified": "Sun, 04 Oct 2026 21:33:11 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-36-05-598Z",
+    "chave": "pres-ap",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/ap/ap-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"bdcc0811ead0e4f26cd0c1adc96caa66\"",
+    "cacheControl": "max-age=47",
+    "lastModified": "Sun, 04 Oct 2026 21:34:51 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-36-05-598Z",
+    "chave": "pres-ba",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/ba/ba-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"9e185fab10f565849f9e4999bdc7ddd1\"",
+    "cacheControl": "max-age=55",
+    "lastModified": "Sun, 04 Oct 2026 21:34:46 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-36-05-598Z",
+    "chave": "pres-ce",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/ce/ce-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"9a167ca0011220fc7fdc53a8f6051621\"",
+    "cacheControl": "max-age=56",
+    "lastModified": "Sun, 04 Oct 2026 21:34:46 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-36-05-598Z",
+    "chave": "pres-df",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/df/df-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"8ee6cb42c5b5efe25dd11298188629b2\"",
+    "cacheControl": "max-age=53",
+    "lastModified": "Sun, 04 Oct 2026 21:34:51 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-36-05-598Z",
+    "chave": "pres-es",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/es/es-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"9a66c962a8ac0d11ed013eba4dfaffbe\"",
+    "cacheControl": "max-age=52",
+    "lastModified": "Sun, 04 Oct 2026 21:34:52 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-36-05-598Z",
+    "chave": "pres-go",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/go/go-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"9ef3f6f3299def8ad96bce77d510c299\"",
+    "cacheControl": "max-age=53",
+    "lastModified": "Sun, 04 Oct 2026 21:34:48 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-36-05-598Z",
+    "chave": "pres-ma",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/ma/ma-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"e6c054f6ff99e553ee8c4e883ff98273\"",
+    "cacheControl": "max-age=53",
+    "lastModified": "Sun, 04 Oct 2026 21:34:45 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-36-05-598Z",
+    "chave": "pres-mg",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/mg/mg-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"f44685ccfd05f7b057ec36f9af50822e\"",
+    "cacheControl": "max-age=56",
+    "lastModified": "Sun, 04 Oct 2026 21:34:49 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-36-05-598Z",
+    "chave": "pres-ms",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/ms/ms-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"6279ac4f3ca3f60661d8fb73d1d52384\"",
+    "cacheControl": "max-age=51",
+    "lastModified": "Sun, 04 Oct 2026 21:35:02 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-36-05-598Z",
+    "chave": "pres-mt",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/mt/mt-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"7f70295de40a06854873623e518ff167\"",
+    "cacheControl": "max-age=45",
+    "lastModified": "Sun, 04 Oct 2026 21:34:57 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-36-05-598Z",
+    "chave": "pres-pa",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/pa/pa-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"51ac5786a66f9a172fc8cc34cf656d1e\"",
+    "cacheControl": "max-age=55",
+    "lastModified": "Sun, 04 Oct 2026 21:34:48 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-36-05-598Z",
+    "chave": "pres-pb",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/pb/pb-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"f40e1e49cf5e8354765c8aeb74eff127\"",
+    "cacheControl": "max-age=54",
+    "lastModified": "Sun, 04 Oct 2026 21:34:48 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-36-05-598Z",
+    "chave": "pres-pe",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/pe/pe-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"a5816ad941f0d26b54e04533678fd763\"",
+    "cacheControl": "max-age=47",
+    "lastModified": "Sun, 04 Oct 2026 21:34:49 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-36-05-598Z",
+    "chave": "pres-pi",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/pi/pi-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"77b28c17788e11dce6c1e12cf4e417da\"",
+    "cacheControl": "max-age=52",
+    "lastModified": "Sun, 04 Oct 2026 21:34:48 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-36-05-598Z",
+    "chave": "pres-pr",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/pr/pr-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"e20c63d8b2cf63f8346f19e0fcbaa1dd\"",
+    "cacheControl": "max-age=52",
+    "lastModified": "Sun, 04 Oct 2026 21:34:49 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-36-05-598Z",
+    "chave": "pres-rj",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/rj/rj-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"30506bb505bd79454c3e7655bb705cc9\"",
+    "cacheControl": "max-age=43",
+    "lastModified": "Sun, 04 Oct 2026 21:34:59 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-36-05-598Z",
+    "chave": "pres-rn",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/rn/rn-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"710f1d33d929d1295c697d04af95230b\"",
+    "cacheControl": "max-age=46",
+    "lastModified": "Sun, 04 Oct 2026 21:34:56 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-36-05-598Z",
+    "chave": "pres-ro",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/ro/ro-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"54a404db6c2199b0a6ea658b823b480e\"",
+    "cacheControl": "max-age=54",
+    "lastModified": "Sun, 04 Oct 2026 21:35:04 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-36-05-598Z",
+    "chave": "pres-rr",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/rr/rr-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"1138128f55e6f7280f2512d764737841\"",
+    "cacheControl": "max-age=53",
+    "lastModified": "Sun, 04 Oct 2026 21:34:52 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-36-05-598Z",
+    "chave": "pres-rs",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/rs/rs-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"83018a66ed43d88c67518caac3e324eb\"",
+    "cacheControl": "max-age=47",
+    "lastModified": "Sun, 04 Oct 2026 21:34:53 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-36-05-598Z",
+    "chave": "pres-sc",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/sc/sc-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"a52e1ca940c364f50a2dddb4bb973aa3\"",
+    "cacheControl": "max-age=50",
+    "lastModified": "Sun, 04 Oct 2026 21:34:52 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-36-05-598Z",
+    "chave": "pres-se",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/se/se-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"d1cd3c577357d442788ddc8dbdad5ccd\"",
+    "cacheControl": "max-age=50",
+    "lastModified": "Sun, 04 Oct 2026 21:34:51 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-36-05-598Z",
+    "chave": "pres-sp",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/sp/sp-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"4c22bd74fe61a692fee67a3f1ace6e00\"",
+    "cacheControl": "max-age=47",
+    "lastModified": "Sun, 04 Oct 2026 21:34:56 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-36-05-598Z",
+    "chave": "pres-to",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/to/to-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"ddbb2aef0195804351b5e58c668c73d9\"",
+    "cacheControl": "max-age=43",
+    "lastModified": "Sun, 04 Oct 2026 21:35:39 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-36-05-598Z",
+    "chave": "pres-zz",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/zz/zz-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"28b0234b091de76cf80e2c3c2fa63876\"",
+    "cacheControl": "max-age=48",
+    "lastModified": "Sun, 04 Oct 2026 21:35:23 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-38-48-884Z",
+    "chave": "governador",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6259/dados/pa/pa-c0003-e006259-u.json",
+    "status": 200,
+    "etag": "\"8447c2b25ccc70f0b0f1f8eeb5725e18\"",
+    "cacheControl": "max-age=47",
+    "lastModified": "Sun, 04 Oct 2026 21:38:24 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-38-48-884Z",
+    "chave": "senador",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6259/dados/pa/pa-c0005-e006259-u.json",
+    "status": 200,
+    "etag": "\"8bd9b3e16d8bfdcd52db53be1e88f6b0\"",
+    "cacheControl": "max-age=49",
+    "lastModified": "Sun, 04 Oct 2026 21:38:25 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-38-48-884Z",
+    "chave": "depfed",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6259/dados/pa/pa-c0006-e006259-u.json",
+    "status": 200,
+    "etag": "\"510934801a507bfefa2b4f55c0800d9b\"",
+    "cacheControl": "max-age=50",
+    "lastModified": "Sun, 04 Oct 2026 21:38:25 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-38-48-884Z",
+    "chave": "depest",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6259/dados/pa/pa-c0007-e006259-u.json",
+    "status": 200,
+    "etag": "\"37b302c02c17589ede674cd91c76001b\"",
+    "cacheControl": "max-age=52",
+    "lastModified": "Sun, 04 Oct 2026 21:38:25 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-38-48-884Z",
+    "chave": "pres-ac",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/ac/ac-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"6d1e94798fdad1cc13a31c56c3ea2fe0\"",
+    "cacheControl": "max-age=52",
+    "lastModified": "Sun, 04 Oct 2026 21:38:08 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-38-48-884Z",
+    "chave": "pres-am",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/am/am-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"7bc0a9ae0acbcb1d519300574c2fa1ea\"",
+    "cacheControl": "max-age=49",
+    "lastModified": "Sun, 04 Oct 2026 21:38:21 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-38-48-884Z",
+    "chave": "pres-ap",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/ap/ap-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"811ceaa6f303de6321a6b2d95f9a9a1d\"",
+    "cacheControl": "max-age=44",
+    "lastModified": "Sun, 04 Oct 2026 21:38:06 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-38-48-884Z",
+    "chave": "pres-df",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/df/df-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"5dbf78f7d0e594992267c2f750ae0c12\"",
+    "cacheControl": "max-age=56",
+    "lastModified": "Sun, 04 Oct 2026 21:37:56 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-38-48-884Z",
+    "chave": "pres-es",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/es/es-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"a5568bfe845bb94b9f8c6de55dacd67b\"",
+    "cacheControl": "max-age=48",
+    "lastModified": "Sun, 04 Oct 2026 21:38:20 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-38-48-884Z",
+    "chave": "pres-go",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/go/go-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"2e4ef8deaa699ef5678660cf36a24101\"",
+    "cacheControl": "max-age=46",
+    "lastModified": "Sun, 04 Oct 2026 21:37:48 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-38-48-884Z",
+    "chave": "pres-ma",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/ma/ma-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"16c970ff8022e4c9c832216ab8d89414\"",
+    "cacheControl": "max-age=49",
+    "lastModified": "Sun, 04 Oct 2026 21:38:32 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-38-48-884Z",
+    "chave": "pres-ms",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/ms/ms-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"08f86ead1d4c77837925d3d25c960b8c\"",
+    "cacheControl": "max-age=48",
+    "lastModified": "Sun, 04 Oct 2026 21:37:57 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-38-48-884Z",
+    "chave": "pres-mt",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/mt/mt-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"64b6ff5775d461368f544b9cd5a5d3d6\"",
+    "cacheControl": "max-age=46",
+    "lastModified": "Sun, 04 Oct 2026 21:38:03 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-38-48-884Z",
+    "chave": "pres-pa",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/pa/pa-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"4560f32dc11a481222f4c30d2124a307\"",
+    "cacheControl": "max-age=58",
+    "lastModified": "Sun, 04 Oct 2026 21:38:19 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-38-48-884Z",
+    "chave": "pres-pe",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/pe/pe-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"a719e23e302064fc634dd06d8b94ee6b\"",
+    "cacheControl": "max-age=49",
+    "lastModified": "Sun, 04 Oct 2026 21:38:18 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-38-48-884Z",
+    "chave": "pres-pi",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/pi/pi-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"68861189f674d54570cb835048c49d7a\"",
+    "cacheControl": "max-age=55",
+    "lastModified": "Sun, 04 Oct 2026 21:37:50 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-38-48-884Z",
+    "chave": "pres-rj",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/rj/rj-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"781739f45386927d73e71d4ae18a9382\"",
+    "cacheControl": "max-age=50",
+    "lastModified": "Sun, 04 Oct 2026 21:38:21 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-38-48-884Z",
+    "chave": "pres-ro",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/ro/ro-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"69a50ff3119b01a83e921ab31f77e363\"",
+    "cacheControl": "max-age=53",
+    "lastModified": "Sun, 04 Oct 2026 21:38:25 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-38-48-884Z",
+    "chave": "pres-rr",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/rr/rr-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"5f7ab9a5a602dffad22a2e1a68258dcf\"",
+    "cacheControl": "max-age=50",
+    "lastModified": "Sun, 04 Oct 2026 21:38:06 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-38-48-884Z",
+    "chave": "pres-rs",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/rs/rs-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"f486c45ff36bce2364debff139ef6a70\"",
+    "cacheControl": "max-age=53",
+    "lastModified": "Sun, 04 Oct 2026 21:38:22 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-38-48-884Z",
+    "chave": "pres-to",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/to/to-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"495acd29b675d35695db6c1d2b6b17fb\"",
+    "cacheControl": "max-age=51",
+    "lastModified": "Sun, 04 Oct 2026 21:38:26 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-38-48-884Z",
+    "chave": "pres-zz",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/zz/zz-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"5a730e31f5432edc94c9f5629f340081\"",
+    "cacheControl": "max-age=53",
+    "lastModified": "Sun, 04 Oct 2026 21:38:25 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-39-46-908Z",
+    "chave": "presidente",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/br/br-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"53dc1d917e92e69283eeefee67e53dfa\"",
+    "cacheControl": "max-age=58",
+    "lastModified": "Sun, 04 Oct 2026 21:38:44 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-39-46-908Z",
+    "chave": "governador",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6259/dados/pa/pa-c0003-e006259-u.json",
+    "status": 200,
+    "etag": "\"e7edfb2e7eb841fd7519693ff7e6077a\"",
+    "cacheControl": "max-age=49",
+    "lastModified": "Sun, 04 Oct 2026 21:39:22 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-39-46-908Z",
+    "chave": "senador",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6259/dados/pa/pa-c0005-e006259-u.json",
+    "status": 200,
+    "etag": "\"be77cac9d12c088958357aad2ecfdd64\"",
+    "cacheControl": "max-age=51",
+    "lastModified": "Sun, 04 Oct 2026 21:39:21 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-39-46-908Z",
+    "chave": "depfed",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6259/dados/pa/pa-c0006-e006259-u.json",
+    "status": 200,
+    "etag": "\"56b29230364392939257661167003c56\"",
+    "cacheControl": "max-age=51",
+    "lastModified": "Sun, 04 Oct 2026 21:39:24 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-39-46-908Z",
+    "chave": "depest",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6259/dados/pa/pa-c0007-e006259-u.json",
+    "status": 200,
+    "etag": "\"9988781c86e7cdb3dddb2f3b915502b5\"",
+    "cacheControl": "max-age=53",
+    "lastModified": "Sun, 04 Oct 2026 21:39:22 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-39-46-908Z",
+    "chave": "pres-ac",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/ac/ac-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"4dc64a991c0449bb54e1b4c6b0e0c867\"",
+    "cacheControl": "max-age=55",
+    "lastModified": "Sun, 04 Oct 2026 21:39:23 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-39-46-908Z",
+    "chave": "pres-al",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/al/al-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"a9717dec550dc9399f73b2da7e074a1b\"",
+    "cacheControl": "max-age=52",
+    "lastModified": "Sun, 04 Oct 2026 21:39:00 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-39-46-908Z",
+    "chave": "pres-am",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/am/am-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"4d340199b3624b7804a862a8e1a4f3fb\"",
+    "cacheControl": "max-age=47",
+    "lastModified": "Sun, 04 Oct 2026 21:39:27 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-39-46-908Z",
+    "chave": "pres-ap",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/ap/ap-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"cf3edb3bd3ce127c850e26d0025bc1ff\"",
+    "cacheControl": "max-age=51",
+    "lastModified": "Sun, 04 Oct 2026 21:39:21 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-39-46-908Z",
+    "chave": "pres-ba",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/ba/ba-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"783072d25ee6b5d63e5453f5d72404ff\"",
+    "cacheControl": "max-age=52",
+    "lastModified": "Sun, 04 Oct 2026 21:39:37 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-39-46-908Z",
+    "chave": "pres-ce",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/ce/ce-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"eba9a3a61e06585b2c82418bde4b55e3\"",
+    "cacheControl": "max-age=50",
+    "lastModified": "Sun, 04 Oct 2026 21:38:47 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-39-46-908Z",
+    "chave": "pres-df",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/df/df-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"051cfc3d4ed9b5d940719b8d243b9c9b\"",
+    "cacheControl": "max-age=50",
+    "lastModified": "Sun, 04 Oct 2026 21:38:52 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-39-46-908Z",
+    "chave": "pres-es",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/es/es-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"268fbd6c153e8bb79b588af9a3dd6aca\"",
+    "cacheControl": "max-age=45",
+    "lastModified": "Sun, 04 Oct 2026 21:39:22 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-39-46-908Z",
+    "chave": "pres-go",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/go/go-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"38d614b2bce31ebdd29111d91a6ae512\"",
+    "cacheControl": "max-age=49",
+    "lastModified": "Sun, 04 Oct 2026 21:38:47 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-39-46-908Z",
+    "chave": "pres-ma",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/ma/ma-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"becc2a34d98f59f01d047f894e10e015\"",
+    "cacheControl": "max-age=49",
+    "lastModified": "Sun, 04 Oct 2026 21:39:18 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-39-46-908Z",
+    "chave": "pres-mg",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/mg/mg-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"85383ed921cd7bf1b4ef086549671ef5\"",
+    "cacheControl": "max-age=55",
+    "lastModified": "Sun, 04 Oct 2026 21:39:16 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-39-46-908Z",
+    "chave": "pres-ms",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/ms/ms-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"b7c5b1f8429655ab3ea17a18ae94260c\"",
+    "cacheControl": "max-age=47",
+    "lastModified": "Sun, 04 Oct 2026 21:38:52 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-39-46-908Z",
+    "chave": "pres-mt",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/mt/mt-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"42ff5fffcbfd59e03602dacb8956f4ea\"",
+    "cacheControl": "max-age=59",
+    "lastModified": "Sun, 04 Oct 2026 21:38:57 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-39-46-908Z",
+    "chave": "pres-pa",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/pa/pa-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"0910f5cfdbc3512f9a560b856add6214\"",
+    "cacheControl": "max-age=57",
+    "lastModified": "Sun, 04 Oct 2026 21:39:16 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-39-46-908Z",
+    "chave": "pres-pb",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/pb/pb-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"8fd705b9943558b39ff4e4c2f6fae118\"",
+    "cacheControl": "max-age=52",
+    "lastModified": "Sun, 04 Oct 2026 21:38:49 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-39-46-908Z",
+    "chave": "pres-pe",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/pe/pe-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"f9aa9a686335bff06351fefefa2e2164\"",
+    "cacheControl": "max-age=51",
+    "lastModified": "Sun, 04 Oct 2026 21:39:20 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-39-46-908Z",
+    "chave": "pres-pi",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/pi/pi-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"23cb2c259b6b7a59fcbd5322a70d09f7\"",
+    "cacheControl": "max-age=45",
+    "lastModified": "Sun, 04 Oct 2026 21:38:50 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-39-46-908Z",
+    "chave": "pres-pr",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/pr/pr-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"456ba6ce618e79a6442eb545075e40eb\"",
+    "cacheControl": "max-age=53",
+    "lastModified": "Sun, 04 Oct 2026 21:39:21 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-39-46-908Z",
+    "chave": "pres-rj",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/rj/rj-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"e8716593f96d27ec60549b2ab0375adc\"",
+    "cacheControl": "max-age=57",
+    "lastModified": "Sun, 04 Oct 2026 21:39:26 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-39-46-908Z",
+    "chave": "pres-rn",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/rn/rn-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"de719560ac3f60c388bcb26b0c9a4479\"",
+    "cacheControl": "max-age=47",
+    "lastModified": "Sun, 04 Oct 2026 21:38:55 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-39-46-908Z",
+    "chave": "pres-ro",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/ro/ro-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"ffc565c3e98065a4a4bbdb4c1311121c\"",
+    "cacheControl": "max-age=52",
+    "lastModified": "Sun, 04 Oct 2026 21:39:24 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-39-46-908Z",
+    "chave": "pres-rr",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/rr/rr-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"d8bf0510010c5f0d936aadb7d909933e\"",
+    "cacheControl": "max-age=52",
+    "lastModified": "Sun, 04 Oct 2026 21:39:24 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-39-46-908Z",
+    "chave": "pres-sc",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/sc/sc-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"90d2d001d16518b94e45dc3b59f8e070\"",
+    "cacheControl": "max-age=45",
+    "lastModified": "Sun, 04 Oct 2026 21:38:52 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-39-46-908Z",
+    "chave": "pres-se",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/se/se-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"991f611b0d96791cade740863e855054\"",
+    "cacheControl": "max-age=48",
+    "lastModified": "Sun, 04 Oct 2026 21:38:51 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-39-46-908Z",
+    "chave": "pres-sp",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/sp/sp-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"cf7d0918256ad730a2c987a3d4a6b1a3\"",
+    "cacheControl": "max-age=55",
+    "lastModified": "Sun, 04 Oct 2026 21:39:50 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-39-46-908Z",
+    "chave": "pres-to",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/to/to-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"87f0af0b62a4e13426caa73421c7e421\"",
+    "cacheControl": "max-age=52",
+    "lastModified": "Sun, 04 Oct 2026 21:39:28 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-39-46-908Z",
+    "chave": "pres-zz",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/zz/zz-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"b7bee3be72be276f1a755a7db1784daa\"",
+    "cacheControl": "max-age=48",
+    "lastModified": "Sun, 04 Oct 2026 21:38:54 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-44-49-070Z",
+    "chave": "presidente",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/br/br-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"cfcfdb324035e3866fcc731be644e4e4\"",
+    "cacheControl": "max-age=56",
+    "lastModified": "Sun, 04 Oct 2026 21:44:15 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-44-49-070Z",
+    "chave": "governador",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6259/dados/pa/pa-c0003-e006259-u.json",
+    "status": 200,
+    "etag": "\"7915327f0efb7fcfeeb0673457f8ea85\"",
+    "cacheControl": "max-age=50",
+    "lastModified": "Sun, 04 Oct 2026 21:44:22 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-44-49-070Z",
+    "chave": "senador",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6259/dados/pa/pa-c0005-e006259-u.json",
+    "status": 200,
+    "etag": "\"bcc56542a97b59c304b33547fbc364e3\"",
+    "cacheControl": "max-age=49",
+    "lastModified": "Sun, 04 Oct 2026 21:44:21 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-44-49-070Z",
+    "chave": "depfed",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6259/dados/pa/pa-c0006-e006259-u.json",
+    "status": 200,
+    "etag": "\"c88837766c43347ec30d55219ad44bac\"",
+    "cacheControl": "max-age=53",
+    "lastModified": "Sun, 04 Oct 2026 21:44:22 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-44-49-070Z",
+    "chave": "depest",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6259/dados/pa/pa-c0007-e006259-u.json",
+    "status": 200,
+    "etag": "\"982a0ff2f9de465bd84b65f4206edc18\"",
+    "cacheControl": "max-age=46",
+    "lastModified": "Sun, 04 Oct 2026 21:44:22 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-44-49-070Z",
+    "chave": "pres-ba",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/ba/ba-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"4c7dabe98110fe9c138878152d2a0d4a\"",
+    "cacheControl": "max-age=49",
+    "lastModified": "Sun, 04 Oct 2026 21:44:16 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-44-49-070Z",
+    "chave": "pres-ce",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/ce/ce-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"6d9e55dce76ec456f4cc2ff8d11dda58\"",
+    "cacheControl": "max-age=56",
+    "lastModified": "Sun, 04 Oct 2026 21:44:15 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-44-49-070Z",
+    "chave": "pres-df",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/df/df-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"36102bc6d6df72e4c0323fc0e41ce2db\"",
+    "cacheControl": "max-age=53",
+    "lastModified": "Sun, 04 Oct 2026 21:44:06 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-44-49-070Z",
+    "chave": "pres-es",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/es/es-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"fc469bd64a8ff91122a56a98242cf100\"",
+    "cacheControl": "max-age=52",
+    "lastModified": "Sun, 04 Oct 2026 21:44:21 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-44-49-070Z",
+    "chave": "pres-ms",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/ms/ms-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"c5c899e5a1c84b098934dfa3c56b816d\"",
+    "cacheControl": "max-age=52",
+    "lastModified": "Sun, 04 Oct 2026 21:44:13 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-44-49-070Z",
+    "chave": "pres-mt",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/mt/mt-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"f08c83b21e16b22cfe7b47b777e0518a\"",
+    "cacheControl": "max-age=45",
+    "lastModified": "Sun, 04 Oct 2026 21:44:07 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-44-49-070Z",
+    "chave": "pres-pa",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/pa/pa-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"4c6afedb3cd8fc41356a44ba1f29b78f\"",
+    "cacheControl": "max-age=55",
+    "lastModified": "Sun, 04 Oct 2026 21:44:16 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-44-49-070Z",
+    "chave": "pres-pb",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/pb/pb-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"7057305c1c4350c27cecc5ee0ac7fdf2\"",
+    "cacheControl": "max-age=54",
+    "lastModified": "Sun, 04 Oct 2026 21:44:19 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-44-49-070Z",
+    "chave": "pres-pe",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/pe/pe-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"7058ec769de7734300104c033c444c09\"",
+    "cacheControl": "max-age=56",
+    "lastModified": "Sun, 04 Oct 2026 21:44:18 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-44-49-070Z",
+    "chave": "pres-pi",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/pi/pi-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"6851734198e3d54b2ab1330288eef36b\"",
+    "cacheControl": "max-age=53",
+    "lastModified": "Sun, 04 Oct 2026 21:44:19 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-44-49-070Z",
+    "chave": "pres-pr",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/pr/pr-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"3b42c4ffa3bbe03dc87e94ab0f790a6c\"",
+    "cacheControl": "max-age=47",
+    "lastModified": "Sun, 04 Oct 2026 21:44:21 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-44-49-070Z",
+    "chave": "pres-rj",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/rj/rj-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"15bf004f0b6b995ecc7307dc4a64a390\"",
+    "cacheControl": "max-age=51",
+    "lastModified": "Sun, 04 Oct 2026 21:44:25 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-44-49-070Z",
+    "chave": "pres-rs",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/rs/rs-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"c12a8522a14d63cc489471985740174c\"",
+    "cacheControl": "max-age=48",
+    "lastModified": "Sun, 04 Oct 2026 21:44:22 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-44-49-070Z",
+    "chave": "pres-sc",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/sc/sc-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"cb9afe8a5f67ea148a80d8152721659e\"",
+    "cacheControl": "max-age=48",
+    "lastModified": "Sun, 04 Oct 2026 21:44:22 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T21-44-49-070Z",
+    "chave": "pres-zz",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/zz/zz-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"f2ddc6e1a05aa56ebeb077352ba6e689\"",
+    "cacheControl": "max-age=58",
+    "lastModified": "Sun, 04 Oct 2026 21:44:23 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T23-17-25-721Z",
+    "chave": "presidente",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/br/br-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"5429a0b1e75566d2dfcf54599a384b7a\"",
+    "cacheControl": "max-age=58",
+    "lastModified": "Sun, 04 Oct 2026 23:17:12 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T23-17-25-721Z",
+    "chave": "governador",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6259/dados/pa/pa-c0003-e006259-u.json",
+    "status": 200,
+    "etag": "\"333b5e0b7e9b8e92c93cf2ea7082ef70\"",
+    "cacheControl": "max-age=54",
+    "lastModified": "Sun, 04 Oct 2026 23:16:49 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T23-17-25-721Z",
+    "chave": "depfed",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6259/dados/pa/pa-c0006-e006259-u.json",
+    "status": 200,
+    "etag": "\"8ef50cdb7898ef6f8ae3b8df0d8187db\"",
+    "cacheControl": "max-age=32",
+    "lastModified": "Sun, 04 Oct 2026 23:16:51 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T23-17-25-721Z",
+    "chave": "pres-ac",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/ac/ac-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"45ebd4b59e0c3dabdd72d8a10bc33790\"",
+    "cacheControl": "max-age=49",
+    "lastModified": "Sun, 04 Oct 2026 23:16:49 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T23-17-25-721Z",
+    "chave": "pres-al",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/al/al-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"890332e5095167468165dd873888b6db\"",
+    "cacheControl": "max-age=36",
+    "lastModified": "Sun, 04 Oct 2026 23:16:59 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T23-17-25-721Z",
+    "chave": "pres-am",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/am/am-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"d80afa1f258c6ed7456f73b4fca88c50\"",
+    "cacheControl": "max-age=46",
+    "lastModified": "Sun, 04 Oct 2026 23:16:51 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T23-17-25-721Z",
+    "chave": "pres-ap",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/ap/ap-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"c9e0f67d340cb8d5eadd59e4d8cb8a39\"",
+    "cacheControl": "max-age=58",
+    "lastModified": "Sun, 04 Oct 2026 23:16:48 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T23-17-25-721Z",
+    "chave": "pres-ce",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/ce/ce-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"e522a383309385948774033fd2d1a5d6\"",
+    "cacheControl": "max-age=49",
+    "lastModified": "Sun, 04 Oct 2026 23:16:42 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T23-17-25-721Z",
+    "chave": "pres-go",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/go/go-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"a7722687790c80321f8ada9a229108c1\"",
+    "cacheControl": "max-age=48",
+    "lastModified": "Sun, 04 Oct 2026 23:16:42 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T23-17-25-721Z",
+    "chave": "pres-ma",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/ma/ma-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"8a1ad6b323b8ac83dd8c2acf7519ccfe\"",
+    "cacheControl": "max-age=46",
+    "lastModified": "Sun, 04 Oct 2026 23:17:09 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T23-17-25-721Z",
+    "chave": "pres-mg",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/mg/mg-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"8fe89a7ed023ce05207948eac76a2226\"",
+    "cacheControl": "max-age=53",
+    "lastModified": "Sun, 04 Oct 2026 23:16:45 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T23-17-25-721Z",
+    "chave": "pres-ms",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/ms/ms-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"bf5aa4d0c7e34c29bd8eb88b0a198218\"",
+    "cacheControl": "max-age=51",
+    "lastModified": "Sun, 04 Oct 2026 23:16:18 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T23-17-25-721Z",
+    "chave": "pres-pa",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/pa/pa-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"5efc748ad37ac033da7914d9e3b05499\"",
+    "cacheControl": "max-age=46",
+    "lastModified": "Sun, 04 Oct 2026 23:16:46 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T23-17-25-721Z",
+    "chave": "pres-pe",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/pe/pe-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"5240f0ee3c6a046367923b5ab3dadbc5\"",
+    "cacheControl": "max-age=56",
+    "lastModified": "Sun, 04 Oct 2026 23:17:15 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T23-17-25-721Z",
+    "chave": "pres-pr",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/pr/pr-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"9ab00823e7dcef2f0477bd587ab4c378\"",
+    "cacheControl": "max-age=54",
+    "lastModified": "Sun, 04 Oct 2026 23:17:15 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T23-17-25-721Z",
+    "chave": "pres-ro",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/ro/ro-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"e01841dc518daae74e8bdd457a92b749\"",
+    "cacheControl": "max-age=46",
+    "lastModified": "Sun, 04 Oct 2026 23:16:51 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T23-17-25-721Z",
+    "chave": "pres-rr",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/rr/rr-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"5f0e81caa17417a5739bc0214cc3e95b\"",
+    "cacheControl": "max-age=55",
+    "lastModified": "Sun, 04 Oct 2026 23:16:46 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T23-17-25-721Z",
+    "chave": "pres-sc",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/sc/sc-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"4b3bb4ecd7b05f0adb7abef1bca96eac\"",
+    "cacheControl": "max-age=51",
+    "lastModified": "Sun, 04 Oct 2026 23:17:18 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T23-17-25-721Z",
+    "chave": "pres-se",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/se/se-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"8e5ec8789e626f676ea93553c4aac044\"",
+    "cacheControl": "max-age=54",
+    "lastModified": "Sun, 04 Oct 2026 23:16:49 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T23-17-25-721Z",
+    "chave": "pres-to",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/to/to-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"1f345292580087e40cb5b35101c4608a\"",
+    "cacheControl": "max-age=55",
+    "lastModified": "Sun, 04 Oct 2026 23:16:54 GMT"
+  },
+  {
+    "ciclo": "2026-10-04T23-17-25-721Z",
+    "chave": "pres-zz",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/zz/zz-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"2648cf66417b3f3248eb60606156a873\"",
+    "cacheControl": "max-age=50",
+    "lastModified": "Sun, 04 Oct 2026 23:16:50 GMT"
+  },
+  {
+    "ciclo": "2026-10-05T00-01-02-086Z",
+    "chave": "presidente",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/br/br-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"2294ee010793f8dba65da3c7ddc1a054\"",
+    "cacheControl": "max-age=46",
+    "lastModified": "Mon, 05 Oct 2026 00:00:14 GMT"
+  },
+  {
+    "ciclo": "2026-10-05T00-01-02-086Z",
+    "chave": "governador",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6259/dados/pa/pa-c0003-e006259-u.json",
+    "status": 200,
+    "etag": "\"6e3ed9a551ce82e2b747ae24beed5f60\"",
+    "cacheControl": "max-age=50",
+    "lastModified": "Mon, 05 Oct 2026 00:00:17 GMT"
+  },
+  {
+    "ciclo": "2026-10-05T00-01-02-086Z",
+    "chave": "senador",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6259/dados/pa/pa-c0005-e006259-u.json",
+    "status": 200,
+    "etag": "\"e56e00f0787408048eb85e0f029df52f\"",
+    "cacheControl": "max-age=47",
+    "lastModified": "Mon, 05 Oct 2026 00:00:19 GMT"
+  },
+  {
+    "ciclo": "2026-10-05T00-01-02-086Z",
+    "chave": "depfed",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6259/dados/pa/pa-c0006-e006259-u.json",
+    "status": 200,
+    "etag": "\"6b18b2c2ca0fbf1a97fe3c564214061d\"",
+    "cacheControl": "max-age=57",
+    "lastModified": "Mon, 05 Oct 2026 00:00:19 GMT"
+  },
+  {
+    "ciclo": "2026-10-05T00-01-02-086Z",
+    "chave": "depest",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6259/dados/pa/pa-c0007-e006259-u.json",
+    "status": 200,
+    "etag": "\"78050444689bcd8dded9e79e6ef2f63e\"",
+    "cacheControl": "max-age=46",
+    "lastModified": "Mon, 05 Oct 2026 00:00:20 GMT"
+  },
+  {
+    "ciclo": "2026-10-05T00-01-02-086Z",
+    "chave": "pres-ac",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/ac/ac-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"bd25d52b4dc810fb3a2a84bec7fa2ed2\"",
+    "cacheControl": "max-age=46",
+    "lastModified": "Mon, 05 Oct 2026 00:00:18 GMT"
+  },
+  {
+    "ciclo": "2026-10-05T00-01-02-086Z",
+    "chave": "pres-al",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/al/al-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"1ec1ff5474213cc29758f370d026d7e9\"",
+    "cacheControl": "max-age=54",
+    "lastModified": "Mon, 05 Oct 2026 00:00:52 GMT"
+  },
+  {
+    "ciclo": "2026-10-05T00-01-02-086Z",
+    "chave": "pres-am",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/am/am-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"36e0bd0366ada6f3efdff71329ec7c77\"",
+    "cacheControl": "max-age=51",
+    "lastModified": "Mon, 05 Oct 2026 00:00:29 GMT"
+  },
+  {
+    "ciclo": "2026-10-05T00-01-02-086Z",
+    "chave": "pres-ap",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/ap/ap-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"ec074eba23b60d4b936c0ea223a831bd\"",
+    "cacheControl": "max-age=45",
+    "lastModified": "Mon, 05 Oct 2026 00:00:18 GMT"
+  },
+  {
+    "ciclo": "2026-10-05T00-01-02-086Z",
+    "chave": "pres-ba",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/ba/ba-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"7c3f4cc109f9f3f4a5ed20d8e5a0c6de\"",
+    "cacheControl": "max-age=51",
+    "lastModified": "Sun, 04 Oct 2026 23:59:59 GMT"
+  },
+  {
+    "ciclo": "2026-10-05T00-01-02-086Z",
+    "chave": "pres-ce",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/ce/ce-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"b15b38f2d4068bad862c66bf18d6e1ab\"",
+    "cacheControl": "max-age=50",
+    "lastModified": "Mon, 05 Oct 2026 00:00:46 GMT"
+  },
+  {
+    "ciclo": "2026-10-05T00-01-02-086Z",
+    "chave": "pres-df",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/df/df-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"864f37dd9cdf888e12e1c901a0e410c2\"",
+    "cacheControl": "max-age=57",
+    "lastModified": "Mon, 05 Oct 2026 00:00:15 GMT"
+  },
+  {
+    "ciclo": "2026-10-05T00-01-02-086Z",
+    "chave": "pres-es",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/es/es-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"c1703dcfd6bf398dd4bd9a8daf7eb4c2\"",
+    "cacheControl": "max-age=47",
+    "lastModified": "Mon, 05 Oct 2026 00:00:48 GMT"
+  },
+  {
+    "ciclo": "2026-10-05T00-01-02-086Z",
+    "chave": "pres-go",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/go/go-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"0993f51fecefd402941f94c87319b12e\"",
+    "cacheControl": "max-age=46",
+    "lastModified": "Mon, 05 Oct 2026 00:00:12 GMT"
+  },
+  {
+    "ciclo": "2026-10-05T00-01-02-086Z",
+    "chave": "pres-ma",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/ma/ma-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"81e113d3a64263ad622c7ec9388a3955\"",
+    "cacheControl": "max-age=60",
+    "lastModified": "Mon, 05 Oct 2026 00:00:10 GMT"
+  },
+  {
+    "ciclo": "2026-10-05T00-01-02-086Z",
+    "chave": "pres-ms",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/ms/ms-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"05cd68f197c75ed57dea27146abe15dd\"",
+    "cacheControl": "max-age=55",
+    "lastModified": "Mon, 05 Oct 2026 00:00:18 GMT"
+  },
+  {
+    "ciclo": "2026-10-05T00-01-02-086Z",
+    "chave": "pres-mt",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/mt/mt-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"f5a1574dde1f06e0d700634d49546817\"",
+    "cacheControl": "max-age=49",
+    "lastModified": "Mon, 05 Oct 2026 00:00:21 GMT"
+  },
+  {
+    "ciclo": "2026-10-05T00-01-02-086Z",
+    "chave": "pres-pa",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/pa/pa-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"f5280a2c39b0811b15aa451ad4bc32ea\"",
+    "cacheControl": "max-age=56",
+    "lastModified": "Mon, 05 Oct 2026 00:00:12 GMT"
+  },
+  {
+    "ciclo": "2026-10-05T00-01-02-086Z",
+    "chave": "pres-pb",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/pb/pb-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"8a3e21d3d467a81538f6828dda86b9f5\"",
+    "cacheControl": "max-age=59",
+    "lastModified": "Mon, 05 Oct 2026 00:00:14 GMT"
+  },
+  {
+    "ciclo": "2026-10-05T00-01-02-086Z",
+    "chave": "pres-pe",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/pe/pe-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"ecd352a840e93d5f9ce3e2408d8937ef\"",
+    "cacheControl": "max-age=56",
+    "lastModified": "Mon, 05 Oct 2026 00:00:17 GMT"
+  },
+  {
+    "ciclo": "2026-10-05T00-01-02-086Z",
+    "chave": "pres-pi",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/pi/pi-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"e35a8312364cec234232973a41b24293\"",
+    "cacheControl": "max-age=49",
+    "lastModified": "Mon, 05 Oct 2026 00:00:18 GMT"
+  },
+  {
+    "ciclo": "2026-10-05T00-01-02-086Z",
+    "chave": "pres-pr",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/pr/pr-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"f7c06f1c7f63ad04c710fc83c3be75a7\"",
+    "cacheControl": "max-age=53",
+    "lastModified": "Mon, 05 Oct 2026 00:00:45 GMT"
+  },
+  {
+    "ciclo": "2026-10-05T00-01-02-086Z",
+    "chave": "pres-rj",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/rj/rj-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"50e9fda212c256c58114fad912e55e9d\"",
+    "cacheControl": "max-age=50",
+    "lastModified": "Mon, 05 Oct 2026 00:00:51 GMT"
+  },
+  {
+    "ciclo": "2026-10-05T00-01-02-086Z",
+    "chave": "pres-ro",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/ro/ro-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"08d0b7666afde25d8e970d9e5b04d2eb\"",
+    "cacheControl": "max-age=33",
+    "lastModified": "Mon, 05 Oct 2026 00:00:28 GMT"
+  },
+  {
+    "ciclo": "2026-10-05T00-01-02-086Z",
+    "chave": "pres-rr",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/rr/rr-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"d6460b4f7b71d98fae1bda6228c79672\"",
+    "cacheControl": "max-age=59",
+    "lastModified": "Mon, 05 Oct 2026 00:00:22 GMT"
+  },
+  {
+    "ciclo": "2026-10-05T00-01-02-086Z",
+    "chave": "pres-sc",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/sc/sc-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"5761857449e936f93cd06f023830aab8\"",
+    "cacheControl": "max-age=55",
+    "lastModified": "Mon, 05 Oct 2026 00:00:49 GMT"
+  },
+  {
+    "ciclo": "2026-10-05T00-01-02-086Z",
+    "chave": "pres-se",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/se/se-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"45c4239f86e5fe290b0a92dd3fa64174\"",
+    "cacheControl": "max-age=59",
+    "lastModified": "Mon, 05 Oct 2026 00:00:49 GMT"
+  },
+  {
+    "ciclo": "2026-10-05T00-01-02-086Z",
+    "chave": "pres-sp",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/sp/sp-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"ca23632dfdc1eb81b4fb450e9c5795d5\"",
+    "cacheControl": "max-age=47",
+    "lastModified": "Sun, 04 Oct 2026 23:59:58 GMT"
+  },
+  {
+    "ciclo": "2026-10-05T00-01-02-086Z",
+    "chave": "pres-to",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/to/to-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"416fb2732b9e0e8f54a702e15a563a9a\"",
+    "cacheControl": "max-age=52",
+    "lastModified": "Mon, 05 Oct 2026 00:00:31 GMT"
+  },
+  {
+    "ciclo": "2026-10-05T00-01-02-086Z",
+    "chave": "pres-zz",
+    "url": "https://resultados.tse.jus.br/oficial/ele2026/6257/dados/zz/zz-c0001-e006257-u.json",
+    "status": 200,
+    "etag": "\"00be960d01008ea132b6cce209aee45d\"",
+    "cacheControl": "max-age=51",
+    "lastModified": "Mon, 05 Oct 2026 00:00:50 GMT"
+  }
+]
