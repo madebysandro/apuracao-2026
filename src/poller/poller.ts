@@ -6,11 +6,8 @@ import {
 	type ConfigTse,
 } from "../config/tse";
 import { SIGLAS_UF, urlPresidenteUf } from "../config/ufs";
-import { normalizarGovernador } from "../dominio/cargos/governador";
-import {
-	normalizarPresidente,
-	type DadosBrutosCargo,
-} from "../dominio/cargos/presidente";
+import type { DadosBrutosCargo } from "../dominio/cargos/dados-brutos";
+import { normalizarMajoritario } from "../dominio/cargos/majoritario";
 import {
 	normalizarPresidenteUf,
 	ufMudou,
@@ -19,13 +16,15 @@ import {
 	ehCargoProporcional,
 	normalizarProporcional,
 } from "../dominio/cargos/proporcional";
-import { normalizarSenador } from "../dominio/cargos/senador";
 import { montarDestaques } from "../dominio/destaques";
 import { analisarMajoritarias } from "../dominio/majoritarias/analise";
 import {
-	analiseProporcional,
+	acumularSeries,
 	aplicarVariacoes,
+	disputaInterna,
 	instantaneoDe,
+	type InstantaneoProporcional,
+	type SeriesProporcionais,
 } from "../dominio/proporcionais/variacoes";
 import type {
 	AnaliseApuracao,
@@ -38,7 +37,6 @@ import type {
 import { buscarArquivoTse, ErroTse } from "./cliente-tse";
 import { escoposProntosParaEncerrar } from "./encerrada";
 import { montarLeitura } from "./historico";
-import { fonteVariacoesDo } from "./variacoes-do";
 
 const CHAVE_ESTADO = "estado";
 const CHAVE_ETAGS = "etags";
@@ -46,6 +44,9 @@ const CHAVE_HISTORICO = "historico";
 const CHAVE_BACKOFF = "backoffSegundos";
 
 type Etags = Record<string, string>;
+
+const propVar = (cargoId: string, qual: "primeiro" | "anterior" | "series") =>
+	`prop-var:${qual}:${cargoId}`;
 
 function estadoVazio(): EstadoApuracao {
 	return {
@@ -80,9 +81,13 @@ function normalizarCargo(
 	json: DadosBrutosCargo,
 	cfg: ConfigTse,
 ): Cargo | null {
-	if (meta.id === "presidente") return normalizarPresidente(meta, json, cfg);
-	if (meta.id === "governador") return normalizarGovernador(meta, json, cfg);
-	if (meta.id === "senador") return normalizarSenador(meta, json, cfg);
+	if (
+		meta.id === "presidente" ||
+		meta.id === "governador" ||
+		meta.id === "senador"
+	) {
+		return normalizarMajoritario(meta, json, cfg);
+	}
 	if (ehCargoProporcional(meta.id)) {
 		return normalizarProporcional(meta, json, cfg);
 	}
@@ -154,7 +159,7 @@ export class PollerApuracao extends DurableObject<Env> {
 			(await this.ctx.storage.get<Etags>(CHAVE_ETAGS)) ?? {};
 		const backoffAnterior =
 			(await this.ctx.storage.get<number>(CHAVE_BACKOFF)) ?? null;
-		const variacoes = fonteVariacoesDo(this.ctx.storage);
+		const storage = this.ctx.storage;
 		const analiseProp: NonNullable<AnaliseApuracao["proporcionais"]> = {
 			...(estado.analise?.proporcionais ?? {}),
 		};
@@ -202,21 +207,42 @@ export class PollerApuracao extends DurableObject<Env> {
 				}
 
 				if (ehCargoProporcional(meta.id)) {
-					const anterior = await variacoes.obterAnterior(meta.id);
-					const primeiro = await variacoes.obterPrimeiro(meta.id);
-					const series = await variacoes.obterSeries(meta.id);
+					const anterior =
+						(await storage.get<InstantaneoProporcional>(
+							propVar(meta.id, "anterior"),
+						)) ?? null;
+					const primeiro =
+						(await storage.get<InstantaneoProporcional>(
+							propVar(meta.id, "primeiro"),
+						)) ?? null;
+					const series =
+						(await storage.get<SeriesProporcionais>(
+							propVar(meta.id, "series"),
+						)) ?? {};
 					const enriquecido = aplicarVariacoes(
 						novo,
 						anterior,
 						primeiro,
 						series,
 					);
-					analiseProp[meta.id] = analiseProporcional(enriquecido);
+					analiseProp[meta.id] = {
+						disputaInterna: disputaInterna(enriquecido),
+					};
 					if (cargoMudou(estado.cargos[meta.id], novo)) {
-						await variacoes.registrar(
-							meta.id,
-							instantaneoDe(novo),
+						const atual = instantaneoDe(novo);
+						const primeiroKey = propVar(meta.id, "primeiro");
+						if (!(await storage.get(primeiroKey))) {
+							await storage.put(primeiroKey, atual);
+						}
+						const seriesAnt =
+							(await storage.get<SeriesProporcionais>(
+								propVar(meta.id, "series"),
+							)) ?? {};
+						await storage.put(
+							propVar(meta.id, "series"),
+							acumularSeries(seriesAnt, atual),
 						);
+						await storage.put(propVar(meta.id, "anterior"), atual);
 					}
 					novo = enriquecido;
 				}

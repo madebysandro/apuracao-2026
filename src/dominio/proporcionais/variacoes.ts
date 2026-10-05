@@ -1,13 +1,6 @@
-import type {
-	AnaliseProporcional,
-	Cargo,
-	DisputaInterna,
-} from "../tipos";
+import type { Cargo, DisputaInterna } from "../tipos";
 
-/**
- * Instantâneo mínimo para variação de posição e de cadeiras.
- * A issue #5 pode substituir esta fonte pelo histórico de Leituras.
- */
+/** Instantâneo mínimo para variação de posição e de cadeiras. */
 export type InstantaneoProporcional = {
 	posPorCandidato: Record<string, number>;
 	pctPorCandidato: Record<string, number>;
@@ -18,21 +11,6 @@ export type InstantaneoProporcional = {
 export type SeriesProporcionais = Record<string, number[]>;
 
 const MAX_PONTOS_SERIE = 16;
-
-/**
- * Interface pequena que a #5 pode trocar: hoje o poller guarda primeiro/anterior
- * e as séries em chaves próprias do Durable Object; depois pode ler do histórico
- * de Leituras.
- */
-export interface FonteVariacoesProporcionais {
-	obterAnterior(cargoId: string): Promise<InstantaneoProporcional | null>;
-	obterPrimeiro(cargoId: string): Promise<InstantaneoProporcional | null>;
-	obterSeries(cargoId: string): Promise<SeriesProporcionais>;
-	registrar(
-		cargoId: string,
-		atual: InstantaneoProporcional,
-	): Promise<void>;
-}
 
 export function instantaneoDe(cargo: Cargo): InstantaneoProporcional {
 	return {
@@ -134,8 +112,4 @@ export function disputaInterna(cargo: Cargo): DisputaInterna[] {
 	}
 
 	return itens.sort((a, b) => a.diferenca - b.diferenca);
-}
-
-export function analiseProporcional(cargo: Cargo): AnaliseProporcional {
-	return { disputaInterna: disputaInterna(cargo) };
 }
