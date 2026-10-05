@@ -1,10 +1,12 @@
 /** Shell da Tela 1 — marcação .db-* quase literal do protótipo (variante D). */
 
-import { renderizarCartaoMajoritario } from "./tela1-cartao.js";
+import { htmlRodapeArquivo, kpiAcompanhamento } from "./arquivo.js";
 import { barraViva } from "./movimento/fluxo-barras.js";
+import { renderizarCartaoMajoritario } from "./tela1-cartao.js";
 import { renderizarTela2 } from "./tela2-proporcionais.js";
 import {
 	conta,
+	definirArquivoCongelado,
 	deltaPp,
 	pf,
 	pontos,
@@ -27,10 +29,13 @@ function destaques(dados) {
  *   graficos: Map,
  *   horaTse: string,
  *   erro?: string|null,
+ *   encerrada?: boolean,
  * }} ctx
  */
 export function renderizarPainel(ctx) {
 	const { cargos, analise, hist, tela, graficos } = ctx;
+	const encerrada = Boolean(ctx.encerrada);
+	definirArquivoCongelado(encerrada);
 	const P = cargos.presidente;
 	const G = cargos.governador;
 	const leituras = pontos(hist, "presidente");
@@ -75,10 +80,19 @@ export function renderizarPainel(ctx) {
 							hist,
 							graficos,
 							maj[id],
+							{ encerrada },
 						),
 					)
 					.join("")}</div>`
 			: renderizarTela2({ cargos, analise });
+
+	const acomp = kpiAcompanhamento({
+		arquivada: encerrada,
+		hora: P?.hora || G?.hora,
+		nLeituras: leituras.length,
+		inicio,
+	});
+	const rodapeExtra = encerrada ? htmlRodapeArquivo() : "";
 
 	return `<div class="db">
     <header class="db-topo">
@@ -95,17 +109,17 @@ export function renderizarPainel(ctx) {
 					.join("")}
       </nav>
     </header>
-    <div class="db-ticker" aria-label="Destaques ao vivo"><b><i></i>DESTAQUES</b>
+    <div class="db-ticker" aria-label="${encerrada ? "Destaques do 1º turno" : "Destaques ao vivo"}"><b><i></i>DESTAQUES</b>
       <div class="db-janela"><div class="db-rolo">${tickerHtml}</div></div></div>
     <section class="db-kpis">
       ${kpi("Seções apuradas · Brasil", "presidente", "ap", P?.apurado)}
       ${kpi("Seções apuradas · Pará", "governador", "ap", G?.apurado)}
       ${kpi("Comparecimento · Brasil", "presidente", "comp", P?.totais?.comparecimento, P ? ` · abstenção ${pf.format(P.totais.abstencao)}%` : "")}
       ${kpi("Comparecimento · Pará", "governador", "comp", G?.totais?.comparecimento, G ? ` · abstenção ${pf.format(G.totais.abstencao)}%` : "")}
-      <div class="db-kpi"><span class="db-kpi-rot">Acompanhamento</span><b class="db-kpi-val">${leituras.length} leituras</b>
-        <span class="db-kpi-sub">desde ${inicio} · o TSE publica a cada poucos minutos</span></div>
+      <div class="db-kpi"><span class="db-kpi-rot">${acomp.rotulo}</span><b class="db-kpi-val">${acomp.valor}</b>
+        <span class="db-kpi-sub">${acomp.sub}</span></div>
     </section>
     <main class="db-tela">${telaHtml}</main>
-    <p class="db-rodape">Estimativas de votos a apurar, virada e 1º turno supõem que as seções ainda não apuradas têm o mesmo comparecimento das já apuradas. Como a ordem de chegada das urnas não é aleatória, use-as como referência, não como previsão. Nas proporcionais, a distribuição de cadeiras é a calculada pelo TSE com os votos de agora.</p>
+    <p class="db-rodape">Estimativas de votos a apurar, virada e 1º turno supõem que as seções ainda não apuradas têm o mesmo comparecimento das já apuradas. Como a ordem de chegada das urnas não é aleatória, use-as como referência, não como previsão. Nas proporcionais, a distribuição de cadeiras é a calculada pelo TSE com os votos de agora.${rodapeExtra}</p>
   </div>`;
 }

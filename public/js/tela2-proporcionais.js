@@ -86,7 +86,7 @@ function dbProp(id, cargo, disputa) {
 			return `<tr data-flip="${id}-${x.n}" style="--c:${corAgr(x.agr)}">
       <td class="n">${x.pos}º</td>
       <td class="n">${pa == null ? "" : deltaInt(pa)}</td>
-      <td><div class="db-pessoa">${foto(pessoa, "db-rosto p")}<span><b>${esc(nomeBonito(x.nome))}</b> <small>${esc(x.partido)}</small>${x.eleito ? ' <span class="db-ok">✓ eleito</span>' : ""}</span></div></td>
+      <td><div class="db-pessoa">${foto(pessoa, "db-rosto p")}<span><b title="${esc(nomeBonito(x.nome))}">${esc(nomeBonito(x.nome))}</b> <small>${esc(x.partido)}</small>${x.eleito ? ' <span class="db-ok">✓ eleito</span>' : ""}</span></div></td>
       <td class="n">${nf.format(x.votos)}</td>
       <td class="n db-oculta-mob">${pf.format(x.pct)}%</td>
       <td class="db-oculta-mob">${spark(x.seriePct, 64, 18)}</td>

@@ -2,8 +2,9 @@
  * Faixa de status fixa no topo (issue #13 / protótipo commit 2b80ca4).
  * Vive fora de #app — animações (odômetro, anel, ciclo) não reiniciam no redesenho.
  */
-import { preferirCalmo } from "./calmo.js";
+import { apresentarFaixa } from "../arquivo.js";
 import { esc } from "../tela1-util.js";
+import { preferirCalmo } from "./calmo.js";
 
 /** @type {HTMLElement | null} */
 let sd = null;
@@ -76,28 +77,43 @@ function quadroStatus() {
 	);
 	if (sd.hidden === ativo) sd.hidden = !ativo;
 	if (!ativo) return;
+	const ap = apresentarFaixa(dados);
 	const a = dados.consultadoEm;
-	const b = dados.proximaConsulta;
+	const b = ap.consulta ? dados.proximaConsulta : null;
 	const agora = Date.now();
 	const frac = a && b > a ? Math.min(1, (agora - a) / (b - a)) : 1;
 	const s = b ? Math.max(0, Math.ceil((b - agora) / 1000)) : 0;
 	sdEl(".sd-arco").style.strokeDashoffset = (50.27 * frac).toFixed(2);
 	sdEl(".sd-ciclo").style.transform = `scaleX(${frac.toFixed(4)})`;
-	sdEl(".sd-anel").classList.toggle("girando", s === 0);
+	sdEl(".sd-anel").classList.toggle("girando", ap.consulta && s === 0);
 	odometro(sdEl(".sd-seg"), s ? `${String(s).padStart(2, "0")}s` : "···");
 	odometro(
 		sdEl(".sd-relogio"),
 		new Date().toLocaleTimeString("pt-BR", { hour12: false }),
 	);
 	odometro(sdEl(".sd-tse"), hora ?? "—");
-	const idade = idadeTse(hora);
+	// Arquivo: uma hora só (a do TSE). Ao vivo: também a idade relativa.
+	const idade = ap.mostrarIdade ? idadeTse(hora) : "";
 	if (sdEl(".sd-idade").textContent !== idade) {
 		sdEl(".sd-idade").textContent = idade;
 	}
-	const txt = dados.erro ? "TSE instável" : "Ao vivo";
-	if (sdEl(".sd-vivo-txt").textContent !== txt) {
-		sdEl(".sd-vivo-txt").textContent = txt;
-		sd.classList.toggle("erro", Boolean(dados.erro));
+	const rot = sdEl(".sd-rot-tse");
+	if (rot && rot.textContent !== ap.rotuloTse) rot.textContent = ap.rotuloTse;
+	sd.classList.toggle("encerrada", ap.modo === "arquivo");
+	if (sdEl(".sd-vivo-txt").textContent !== ap.rotulo) {
+		sdEl(".sd-vivo-txt").textContent = ap.rotulo;
+	}
+	sd.classList.toggle("erro", ap.modo === "instavel");
+	let arq = sd.querySelector(".sd-arquivo");
+	if (ap.carimbo) {
+		if (!arq) {
+			arq = document.createElement("span");
+			arq.className = "sd-arquivo";
+			sdEl(".sd-dir").insertBefore(arq, sdEl(".sd-dir").firstChild);
+		}
+		if (arq.textContent !== ap.carimbo) arq.textContent = ap.carimbo;
+	} else if (arq) {
+		arq.remove();
 	}
 }
 
