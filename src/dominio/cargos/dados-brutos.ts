@@ -1,7 +1,9 @@
 /** Formato bruto do JSON de cargo do TSE (campos usados na normalização). */
 export type DadosBrutosCargo = {
 	hg?: string;
-	s?: { pstn?: string; ts?: string; st?: string };
+	/** Totalização final do TSE (`s` / `n`). */
+	tf?: string;
+	s?: { pst?: string; pstn?: string; ts?: string; st?: string };
 	e?: { te?: string; est?: string; pcn?: string; pan?: string };
 	v?: { vv?: string; vl?: string; pvbn?: string; ptvnn?: string };
 	carg: Array<{

@@ -36,6 +36,7 @@ import type {
 	UfPresidente,
 } from "../dominio/tipos";
 import { buscarArquivoTse, ErroTse } from "./cliente-tse";
+import { escoposProntosParaEncerrar } from "./encerrada";
 import { montarLeitura } from "./historico";
 import { fonteVariacoesDo } from "./variacoes-do";
 
@@ -128,10 +129,13 @@ export class PollerApuracao extends DurableObject<Env> {
 	}
 
 	private async garantirAlarme(): Promise<void> {
+		const estado = await this.lerEstado();
+		// #19: depois do fim, visitante não religa o alarme.
+		if (estado.encerrada) return;
+
 		const alarme = await this.ctx.storage.getAlarm();
 		if (alarme != null) return;
 
-		const estado = await this.lerEstado();
 		if (estado.consultadoEm == null) {
 			// Primeira visita: consulta já e agenda o próximo ciclo.
 			await this.consultar();
@@ -143,6 +147,9 @@ export class PollerApuracao extends DurableObject<Env> {
 	private async consultar(): Promise<void> {
 		const cfg = this.cfg();
 		const estado = await this.lerEstado();
+		// Já encerrada: não consulta de novo nem reabre o alarme (#19).
+		if (estado.encerrada) return;
+
 		const etags =
 			(await this.ctx.storage.get<Etags>(CHAVE_ETAGS)) ?? {};
 		const backoffAnterior =
@@ -154,10 +161,24 @@ export class PollerApuracao extends DurableObject<Env> {
 
 		let maxAgeCiclo = 0;
 		let novoBackoff: number | null = null;
+		/** Ciclo sem falha e sem arquivo faltando (304 órfão / UF com erro). */
+		let cicloCompleto = true;
+		const tfPorEscopo: Record<string, string | undefined> = {
+			...(estado.tfPorEscopo ?? {}),
+		};
+
+		const guardarTfEscopo = (chave: string, bruto: DadosBrutosCargo) => {
+			// Último tf do 200; 304 seguinte reutiliza este valor (#19).
+			tfPorEscopo[chave] =
+				bruto.tf == null || bruto.tf === ""
+					? undefined
+					: String(bruto.tf);
+		};
 
 		try {
 			let mudou = false;
-			for (const meta of metasCargos(cfg)) {
+			const metas = metasCargos(cfg);
+			for (const meta of metas) {
 				const url = urlArquivoCargo(cfg, meta);
 				const { maxAge, json, etag } = await buscarArquivoTse(
 					url,
@@ -165,14 +186,20 @@ export class PollerApuracao extends DurableObject<Env> {
 				);
 				maxAgeCiclo = Math.max(maxAgeCiclo, maxAge);
 				if (etag) etags[meta.id] = etag;
-				if (!json) continue;
+				if (!json) {
+					// 304 sem dado prévio: ciclo parcial — não encerra (#19).
+					// 304 com dado guardado: apurado/tf do último 200 seguem válidos.
+					if (!estado.cargos[meta.id]) cicloCompleto = false;
+					continue;
+				}
+				const bruto = json as DadosBrutosCargo;
+				guardarTfEscopo(meta.id, bruto);
 
-				let novo = normalizarCargo(
-					meta,
-					json as DadosBrutosCargo,
-					cfg,
-				);
-				if (!novo) continue;
+				let novo = normalizarCargo(meta, bruto, cfg);
+				if (!novo) {
+					cicloCompleto = false;
+					continue;
+				}
 
 				if (ehCargoProporcional(meta.id)) {
 					const anterior = await variacoes.obterAnterior(meta.id);
@@ -212,19 +239,21 @@ export class PollerApuracao extends DurableObject<Env> {
 					);
 					maxAgeCiclo = Math.max(maxAgeCiclo, maxAge);
 					if (json) {
-						const novo = normalizarPresidenteUf(
-							uf,
-							json as DadosBrutosCargo,
-						);
+						const bruto = json as DadosBrutosCargo;
+						guardarTfEscopo(uf, bruto);
+						const novo = normalizarPresidenteUf(uf, bruto);
 						if (ufMudou(ufs[uf], novo)) mudou = true;
 						ufs[uf] = novo;
 						if (etag) etags[chave] = etag;
 						estado.ufs = ufs;
 					} else if (ufs[uf] && etag) {
-						// 304: só renova ETag se o dado dessa UF já está no estado.
+						// 304: só renova ETag; apurado/tf guardados continuam válidos.
 						etags[chave] = etag;
+					} else {
+						cicloCompleto = false;
 					}
 				} catch (erroUf) {
+					cicloCompleto = false;
 					const e = erroUf as ErroTse;
 					if (typeof e.espera === "number") {
 						estado.ufs = ufs;
@@ -238,6 +267,7 @@ export class PollerApuracao extends DurableObject<Env> {
 				}
 			}
 			estado.ufs = ufs;
+			estado.tfPorEscopo = tfPorEscopo;
 
 			if (mudou) {
 				estado.versao += 1;
@@ -258,9 +288,17 @@ export class PollerApuracao extends DurableObject<Env> {
 			};
 			estado.erro = null;
 			novoBackoff = null;
+
+			const idsCargos = metas.map((m) => m.id);
+			estado.encerrada =
+				cicloCompleto &&
+				escoposProntosParaEncerrar(estado, idsCargos, SIGLAS_UF);
 		} catch (erro) {
 			const e = erro as ErroTse;
 			estado.erro = e.message ?? String(erro);
+			// Erro / 429 neste ciclo: não marcar encerrada (nunca revoga um fim já gravado —
+			// consultar() retorna cedo se estado.encerrada).
+			estado.encerrada = false;
 			if (typeof e.espera === "number") {
 				maxAgeCiclo = e.espera;
 				novoBackoff = null;
@@ -271,17 +309,26 @@ export class PollerApuracao extends DurableObject<Env> {
 			}
 		}
 
-		// Sucesso: max(30 s, maior max-age do ciclo). Erro: Retry-After ou backoff.
-		const esperaSegundos = Math.max(30, maxAgeCiclo || 60);
 		estado.consultadoEm = Date.now();
-		estado.proximaConsulta = Date.now() + esperaSegundos * 1000;
-		await this.ctx.storage.put(CHAVE_ESTADO, estado);
 		await this.ctx.storage.put(CHAVE_ETAGS, etags);
 		if (novoBackoff == null) {
 			await this.ctx.storage.delete(CHAVE_BACKOFF);
 		} else {
 			await this.ctx.storage.put(CHAVE_BACKOFF, novoBackoff);
 		}
+
+		if (estado.encerrada) {
+			// #19: fim da apuração — não agenda mais alarme.
+			estado.proximaConsulta = null;
+			await this.ctx.storage.put(CHAVE_ESTADO, estado);
+			await this.ctx.storage.deleteAlarm();
+			return;
+		}
+
+		// Sucesso: max(30 s, maior max-age do ciclo). Erro: Retry-After ou backoff.
+		const esperaSegundos = Math.max(30, maxAgeCiclo || 60);
+		estado.proximaConsulta = Date.now() + esperaSegundos * 1000;
+		await this.ctx.storage.put(CHAVE_ESTADO, estado);
 		await this.ctx.storage.setAlarm(estado.proximaConsulta);
 	}
 
