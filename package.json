@@ -34,7 +34,7 @@
 		"@msw/cloudflare": "^0.2.0",
 		"@types/node": "^24.5.2",
 		"msw": "^3.0.0",
-		"typescript": "^5.9.2",
+		"typescript": "^7.0.2",
 		"vitest": "^4.1.0",
 		"wrangler": "^4.147.0"
 	}
