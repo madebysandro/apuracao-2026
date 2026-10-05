@@ -15,6 +15,7 @@ import {
 	alternarTema,
 	aplicarTema,
 	ativar,
+	definirArquivoCongelado,
 	temaSalvo,
 } from "./tela1-util.js";
 import { eh, montarSwitcher, varianteAtual } from "./proto-variant.js";
@@ -167,6 +168,7 @@ async function carregar() {
 		// Arquivo: não há próxima consulta.
 		dados.proximaConsulta = null;
 		dados.encerrada = true;
+		definirArquivoCongelado(true);
 		atualizarFaixaDados(dados);
 		pintar(true);
 	} catch (erro) {

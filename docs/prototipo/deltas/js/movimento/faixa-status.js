@@ -90,11 +90,15 @@ function quadroStatus() {
 		new Date().toLocaleTimeString("pt-BR", { hour12: false }),
 	);
 	odometro(sdEl(".sd-tse"), hora ?? "—");
-	const idade = dados.encerrada && !dados.erro
-		? (hora ? `última atualização ${hora}` : "arquivo")
-		: idadeTse(hora);
+	// Arquivo: uma hora só (não repetir em .sd-idade). Ao vivo: idade relativa.
+	const idade = dados.encerrada && !dados.erro ? "" : idadeTse(hora);
 	if (sdEl(".sd-idade").textContent !== idade) {
 		sdEl(".sd-idade").textContent = idade;
+	}
+	const rot = sdEl(".sd-rot");
+	if (rot) {
+		const rotulo = dados.encerrada && !dados.erro ? "Última atualização do TSE" : "Dados do TSE";
+		if (rot.textContent !== rotulo) rot.textContent = rotulo;
 	}
 	const encerrada = Boolean(dados.encerrada);
 	sd.classList.toggle("encerrada", encerrada && !dados.erro);

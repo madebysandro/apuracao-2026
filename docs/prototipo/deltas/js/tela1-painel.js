@@ -97,8 +97,12 @@ export function renderizarPainel(ctx) {
 				[2, "Proporcionais", "Deputados federais e estaduais"],
 			];
 
+	const horaFinal = P?.hora || G?.hora || "—";
+	const kpiAcompVal = encerrada
+		? horaFinal
+		: `${leituras.length || "—"} leitura${leituras.length === 1 ? "" : "s"}`;
 	const kpiAcompSub = encerrada
-		? "1º turno encerrado · 100% das seções · 2º turno em 25/10"
+		? "última atualização do TSE · 1º turno encerrado · 2º turno em 25/10"
 		: `desde ${inicio} · o TSE publica a cada poucos minutos`;
 
 	const kpisHtml = `<section class="db-kpis" ${eh("C") ? 'id="painel-kpis"' : ""}>
@@ -106,7 +110,7 @@ export function renderizarPainel(ctx) {
       ${kpi("Seções apuradas · Pará", "governador", "ap", G?.apurado)}
       ${kpi("Comparecimento · Brasil", "presidente", "comp", P?.totais?.comparecimento, P ? ` · abstenção ${pf.format(P.totais.abstencao)}%` : "")}
       ${kpi("Comparecimento · Pará", "governador", "comp", G?.totais?.comparecimento, G ? ` · abstenção ${pf.format(G.totais.abstencao)}%` : "")}
-      <div class="db-kpi"><span class="db-kpi-rot">Acompanhamento</span><b class="db-kpi-val">${leituras.length || "—"} leituras</b>
+      <div class="db-kpi"><span class="db-kpi-rot">${encerrada ? "Última atualização" : "Acompanhamento"}</span><b class="db-kpi-val">${kpiAcompVal}</b>
         <span class="db-kpi-sub">${kpiAcompSub}</span></div>
     </section>`;
 

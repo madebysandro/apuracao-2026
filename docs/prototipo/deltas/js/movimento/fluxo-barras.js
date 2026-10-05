@@ -4,6 +4,7 @@
  * O estado por chave sobrevive aos redesenhos do #app.
  */
 import { preferirCalmo } from "./calmo.js";
+import { arquivoCongelado } from "../tela1-util.js";
 
 const estadoBarras = new Map();
 /** @type {{ el: HTMLElement, st: any }[]} */
@@ -24,12 +25,20 @@ export function ligarBarras() {
 		if (!st) {
 			estadoBarras.set(
 				k,
-				(st = { v: 0, vel: 0, energia: 1, parts: [], acum: 0 }),
+				(st = {
+					v: arquivoCongelado ? alvo : 0,
+					vel: 0,
+					energia: arquivoCongelado ? 0 : 1,
+					parts: [],
+					acum: 0,
+				}),
 			);
 		} else if (Math.abs(alvo - (st.alvo ?? 0)) > 1e-6) {
-			st.energia = 1;
+			st.energia = arquivoCongelado ? 0 : 1;
+			if (arquivoCongelado) { st.v = alvo; st.vel = 0; }
 		}
 		Object.assign(st, { alvo, ritmo: +el.dataset.ritmo });
+		if (arquivoCongelado) { st.v = alvo; st.vel = 0; st.energia = 0; st.parts = []; }
 		el._cv = el.querySelector("canvas");
 		el._cor = getComputedStyle(el).getPropertyValue("--c").trim();
 		return { el, st };

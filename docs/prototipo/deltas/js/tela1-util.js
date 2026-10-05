@@ -53,11 +53,14 @@ export function fmt(v, t = "n") {
 }
 
 const memoria = new Map();
+/** Quando true, conta() não anima a partir de 0 (arquivo encerrado). */
+export let arquivoCongelado = false;
+export function definirArquivoCongelado(v) { arquivoCongelado = Boolean(v); }
 
 export function conta(k, v, t = "n") {
-	const de = memoria.has(k) ? memoria.get(k) : 0;
+	const de = memoria.has(k) ? memoria.get(k) : arquivoCongelado ? v : 0;
 	memoria.set(k, v);
-	const mudou = de > 0 && fmt(de, t) !== fmt(v, t);
+	const mudou = !arquivoCongelado && de > 0 && fmt(de, t) !== fmt(v, t);
 	return `<span class="conta ${mudou ? "mudou" : ""}" data-de="${de}" data-para="${v}" data-t="${t}">${fmt(de, t)}</span>`;
 }
 

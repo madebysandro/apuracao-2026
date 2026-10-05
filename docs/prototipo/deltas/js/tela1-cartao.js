@@ -49,7 +49,7 @@ export function renderizarCartaoMajoritario(
 			const pa = ant?.c[x.n]?.[1];
 			return `<li class="db-cand" data-flip="${id}-${x.n}" style="--c:${corX}">
       ${foto(x, "db-rosto")}
-      <span class="db-nome"><b>${esc(nomeBonito(x.nome))}</b><small>${esc(x.partido)} · ${conta(`d-${id}-${x.n}-v`, x.votos)} votos</small>
+      <span class="db-nome"><b title="${esc(nomeBonito(x.nome))}">${esc(nomeBonito(x.nome))}</b><small title="${esc(x.partido)} · ${nf.format(x.votos)} votos">${esc(x.partido)} · ${conta(`d-${id}-${x.n}-v`, x.votos)} votos</small>
         ${barraViva(`${id}-${x.n}`, x.pct, pa, ganho(x) / maior, corX, duas ? "" : "<em></em>")}</span>
       <span class="db-pct">${conta(`d-${id}-${x.n}-p`, x.pct, "p")}</span>
       <span class="db-delta">${pa == null ? "" : deltaPp(x.pct - pa)}</span>
@@ -57,15 +57,20 @@ export function renderizarCartaoMajoritario(
 		})
 		.join("");
 
-	graficos.set(id, {
-		rotulo: `Evolução do percentual de votos válidos de ${c.titulo}`,
-		ref: duas ? null : 50,
-		series: noGrafico.map((x) => ({
+	if (!opts.encerrada) {
+		const series = noGrafico.map((x) => ({
 			nome: nomeBonito(x.nome),
 			cor: corD(id, x.n),
 			pts: serieCand(hist, id, x.n),
-		})),
-	});
+		}));
+		if (series.some((x) => x.pts.length > 1)) {
+			graficos.set(id, {
+				rotulo: `Evolução do percentual de votos válidos de ${c.titulo}`,
+				ref: duas ? null : 50,
+				series,
+			});
+		}
+	}
 
 	const manchete = duas
 		? `<b class="db-heroi menor">${esc(nomeBonito(a.nome))} e ${esc(nomeBonito(b.nome))}</b><span>ocupam as 2 vagas · 3º lugar a ${pf.format(b.pct - d3.pct)} p.p. da 2ª vaga</span>`
@@ -78,11 +83,15 @@ export function renderizarCartaoMajoritario(
     </header>
     <div class="db-manchete">${manchete}</div>
     <ol class="db-cands">${linhas}</ol>
-    <figure class="db-fig">
+    ${
+			opts.encerrada || noGrafico.every((x) => !(serieCand(hist, id, x.n)?.length > 1))
+				? `<p class="db-vazio db-fig-final">Resultado final do 1º turno · evolução por leitura indisponível neste arquivo</p>`
+				: `<figure class="db-fig">
       <figcaption><span>% dos votos válidos conforme as seções são apuradas</span>
         <span class="db-leg">${noGrafico.map((x) => `<span><i class="db-sw" style="background:${corD(id, x.n)}"></i>${esc(nomeBonito(x.nome))}</span>`).join("")}</span></figcaption>
       <div class="db-graf" data-graf="${id}"></div>
-    </figure>
+    </figure>`
+		}
     ${dbAnalise(c, analiseMaj, opts)}
   </article>`;
 }
