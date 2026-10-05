@@ -1,0 +1,120 @@
+/* PROTOTYPE ONLY — deltas mínimos sobre tema.css de produção. Não é redesign. */
+
+/* A/B/C: faixa Encerrada (sem pulso "ao vivo") */
+#status-d.encerrada .sd-vivo i {
+  background: var(--tinta-3);
+  animation: none;
+}
+#status-d.encerrada .sd-vivo { color: var(--tinta-2); }
+#status-d.encerrada .sd-anel,
+#status-d.encerrada .sd-seg,
+#status-d.encerrada .sd-ciclo { display: none; }
+#status-d.encerrada .sd-rot-prox::after { content: none; }
+#status-d.encerrada .sd-rot-prox { display: none; }
+#status-d.encerrada .sd-arquivo {
+  color: var(--tinta-3);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.db-rodape a {
+  color: var(--acento);
+  text-underline-offset: 2px;
+}
+.db-rodape .db-arquivo {
+  display: block;
+  margin-top: 8px;
+  color: var(--tinta-2);
+}
+
+/* B/C: Presidente acima dos KPIs */
+.db-pres-acima { margin-bottom: 14px; }
+.db-pres-acima .db-card { max-width: none; }
+.db-grade2-resto {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 14px;
+}
+@media (max-width: 1100px) {
+  .db-grade2-resto { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* B/C: abas em português humano (sem o dígito grande como âncora) */
+body[data-variant="B"] .db-abas button > b,
+body[data-variant="C"] .db-abas button > b { display: none; }
+body[data-variant="B"] .db-abas button,
+body[data-variant="C"] .db-abas button { padding-left: 14px; padding-right: 14px; }
+
+/* C: rótulos da faixa no celular (produção esconde .sd-rot e .sd-vivo-txt) */
+@media (max-width: 760px) {
+  body[data-variant="B"] .sd-rot,
+  body[data-variant="B"] .sd-vivo-txt,
+  body[data-variant="C"] .sd-rot,
+  body[data-variant="C"] .sd-vivo-txt { display: inline; }
+  body[data-variant="B"] #status-d,
+  body[data-variant="C"] #status-d { font-size: 12px; gap: 6px; }
+  body[data-variant="C"] .sd-relogio { display: none; }
+}
+
+/* C: waffle selecionado + ticker pausado por clique */
+.db-seat { cursor: pointer; }
+.db-seat.is-on { outline: 2px solid #fff; outline-offset: 1px; z-index: 1; position: relative; }
+.db-waffle-dica {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--tinta-2);
+  min-height: 1.3em;
+}
+.db-ticker.is-pausado .db-rolo { animation-play-state: paused !important; }
+.db-ticker[data-pause] { cursor: pointer; }
+.db-ticker[data-pause]::after {
+  content: " · toque para pausar";
+  color: var(--tinta-3);
+  font-size: 11px;
+  font-weight: 400;
+}
+.db-ticker.is-pausado[data-pause]::after { content: " · pausado — toque para seguir"; }
+
+/* PrototypeSwitcher — NÃO faz parte do design em avaliação */
+#proto-switcher {
+  position: fixed;
+  z-index: 9999;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: #ff2d78;
+  color: #fff;
+  font: 600 13px/1.2 ui-sans-serif, system-ui, sans-serif;
+  box-shadow: 0 8px 28px rgba(0,0,0,.45);
+  user-select: none;
+}
+#proto-switcher button {
+  appearance: none;
+  border: 0;
+  background: rgba(255,255,255,.2);
+  color: #fff;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 16px;
+}
+#proto-switcher button:hover { background: rgba(255,255,255,.35); }
+#proto-switcher .ps-label { min-width: 210px; text-align: center; }
+#proto-switcher .ps-label small { display: block; font-weight: 400; opacity: .85; font-size: 11px; margin-top: 2px; }
+#proto-banner {
+  position: sticky;
+  top: var(--faixa-altura);
+  z-index: 50;
+  background: #ff2d78;
+  color: #fff;
+  text-align: center;
+  font: 600 12px/1.4 ui-sans-serif, system-ui, sans-serif;
+  padding: 6px 12px;
+}
