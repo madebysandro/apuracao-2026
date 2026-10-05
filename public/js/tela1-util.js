@@ -1,6 +1,9 @@
 /** Utilitários compartilhados da Tela 1 (variante D do protótipo). */
 
 import { preferirCalmo } from "./movimento/calmo.js";
+import { pontos } from "./pontos-hist.js";
+
+export { pontos };
 
 export const nf = new Intl.NumberFormat("pt-BR");
 export const pf = new Intl.NumberFormat("pt-BR", {
@@ -140,17 +143,6 @@ export function spark(vals, w = 72, h = 22, vivo = false) {
 	return `<svg class="spark" width="${w}" height="${h}" aria-hidden="true"><polyline points="${pts
 		.map((p) => p.map((n) => n.toFixed(1)).join(","))
 		.join(" ")}"/>${vivo ? `<circle class="ping" cx="${lx}" cy="${ly}" r="2.5"/>` : ""}<circle cx="${lx}" cy="${ly}" r="2.5"/></svg>`;
-}
-
-export function pontos(hist, id) {
-	return hist.filter(
-		(p, i) =>
-			p.c[id] &&
-			!(
-				hist[i + 1]?.c[id]?.hora === p.c[id].hora &&
-				hist[i + 1]?.c[id]?.ap === p.c[id].ap
-			),
-	);
 }
 
 export function anteriorD(hist, id) {
