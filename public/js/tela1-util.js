@@ -103,13 +103,13 @@ export function ativar() {
 const coresD = new Map();
 const proxCor = new Map();
 
-export function corD(ns, id) {
+export function corD(ns, id, somenteExistente = false) {
 	const k = `${ns}:${id}`;
-	if (!coresD.has(k)) {
-		const i = proxCor.get(ns) ?? 0;
-		proxCor.set(ns, i + 1);
-		coresD.set(k, i < 8 ? `var(--s${i + 1})` : "var(--outros)");
-	}
+	if (coresD.has(k)) return coresD.get(k);
+	if (somenteExistente) return undefined;
+	const i = proxCor.get(ns) ?? 0;
+	proxCor.set(ns, i + 1);
+	coresD.set(k, i < 8 ? `var(--s${i + 1})` : "var(--outros)");
 	return coresD.get(k);
 }
 

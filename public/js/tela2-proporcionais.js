@@ -3,27 +3,18 @@
  * Marcação e classes `db-*` copiadas quase literalmente de dbProp / dbTela2.
  */
 
-import { foto } from "./tela1-util.js";
+import {
+	corD,
+	deltaInt,
+	esc,
+	foto,
+	nf,
+	nomeBonito,
+	pf,
+	spark,
+} from "./tela1-util.js";
 
-const pf = new Intl.NumberFormat("pt-BR", {
-	minimumFractionDigits: 2,
-	maximumFractionDigits: 2,
-});
-const nf = new Intl.NumberFormat("pt-BR");
-
-const coresD = new Map();
-const proxCor = new Map();
 let semeado = false;
-
-function corD(ns, chave) {
-	const k = `${ns}:${chave}`;
-	if (!coresD.has(k)) {
-		const i = proxCor.get(ns) ?? 0;
-		proxCor.set(ns, i + 1);
-		coresD.set(k, i < 8 ? `var(--s${i + 1})` : "var(--outros)");
-	}
-	return coresD.get(k);
-}
 
 function semearCoresAgr(cargos) {
 	const fed = cargos.depfed?.agremiacoes;
@@ -44,42 +35,6 @@ function semearCoresAgr(cargos) {
 }
 
 const corAgr = (s) => corD("agr", s);
-
-function nomeBonito(s) {
-	return String(s)
-		.toLowerCase()
-		.replace(/(^|[\s.-])(\p{L})/gu, (_m, a, b) => a + b.toUpperCase())
-		.replace(/ (Da|De|Do|Dos|Das|E) /g, (w) => w.toLowerCase());
-}
-
-function esc(texto) {
-	return String(texto)
-		.replaceAll("&", "&amp;")
-		.replaceAll("<", "&lt;")
-		.replaceAll(">", "&gt;")
-		.replaceAll('"', "&quot;");
-}
-
-function deltaInt(v) {
-	if (v == null) return "";
-	if (!v) return `<span class="d">=</span>`;
-	return `<span class="d ${v > 0 ? "sobe" : "desce"}">${v > 0 ? "▲" : "▼"} ${Math.abs(v)}</span>`;
-}
-
-function spark(vals, w = 64, h = 18) {
-	if (!vals || vals.length < 2) {
-		return `<svg class="spark" width="${w}" height="${h}" aria-hidden="true"></svg>`;
-	}
-	const mn = Math.min(...vals);
-	const mx = Math.max(...vals);
-	const d = mx - mn || 1;
-	const pts = vals.map((v, i) => [
-		2 + (i / (vals.length - 1)) * (w - 6),
-		h - 4 - ((v - mn) / d) * (h - 8),
-	]);
-	const [lx, ly] = pts.at(-1);
-	return `<svg class="spark" width="${w}" height="${h}" aria-hidden="true"><polyline points="${pts.map((p) => p.map((n) => n.toFixed(1)).join(",")).join(" ")}"/><circle cx="${lx}" cy="${ly}" r="2.5"/></svg>`;
-}
 
 function dbProp(id, cargo, disputa) {
 	if (!cargo) {
@@ -111,7 +66,7 @@ function dbProp(id, cargo, disputa) {
 		.map((a) => {
 			const dv = a.deltaCadeiras;
 			return `<tr data-flip="${id}-agr-${a.sigla}">
-      <td><span class="db-sw" style="background:${a.vagas ? corAgr(a.sigla) : coresD.get("agr:" + a.sigla) ?? "var(--outros)"}"></span>${esc(a.sigla)}${a.federacao ? " <small>federação</small>" : ""}</td>
+      <td><span class="db-sw" style="background:${a.vagas ? corAgr(a.sigla) : (corD("agr", a.sigla, true) ?? "var(--outros)")}"></span>${esc(a.sigla)}${a.federacao ? " <small>federação</small>" : ""}</td>
       <td class="n">${nf.format(a.votos)}</td>
       <td class="n db-oculta-mob">${pf.format((a.votos / cargo.totais.validos) * 100)}%</td>
       <td class="n">${cargo.qe ? pf.format(a.votos / cargo.qe) : "—"}</td>
