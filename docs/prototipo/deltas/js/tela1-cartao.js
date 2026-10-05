@@ -83,7 +83,7 @@ export function renderizarCartaoMajoritario(
         <span class="db-leg">${noGrafico.map((x) => `<span><i class="db-sw" style="background:${corD(id, x.n)}"></i>${esc(nomeBonito(x.nome))}</span>`).join("")}</span></figcaption>
       <div class="db-graf" data-graf="${id}"></div>
     </figure>
-    ${dbAnalise(c, analiseMaj)}
+    ${dbAnalise(c, analiseMaj, opts)}
   </article>`;
 }
 
@@ -92,7 +92,7 @@ export function renderizarCartaoMajoritario(
  * @param {object} c
  * @param {object|null|undefined} a
  */
-function dbAnalise(c, a) {
+function dbAnalise(c, a, opts = {}) {
 	if (!a?.defensor || !a?.perseguidor) return "";
 	const duas = c.vagas === 2;
 	const nm = (x) => esc(nomeBonito(x.nome));
