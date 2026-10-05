@@ -36,14 +36,16 @@ Layout da variante D do protótipo: quebras em torno de 1240 px, 1100 px e 760 p
 
 ### Consulta educada ao TSE
 
-Um Durable Object singleton (`PollerApuracao`) é o único cliente do TSE:
+Um Durable Object singleton (`PollerApuracao`) é o único cliente do TSE. O próximo alarme depende do resultado do ciclo:
 
 | Situação | O que acontece |
 | --- | --- |
-| Sucesso (200 ou 304) | Lê o `max-age` do `Cache-Control` de cada arquivo; o próximo ciclo espera **o maior** `max-age` do ciclo, com **piso de 30 s** |
+| Sucesso **com mudança** de dados | Próximo ciclo em `max(30 s, max-age)` — o maior `max-age` do `Cache-Control` dos arquivos daquele ciclo |
+| Sucesso **sem mudança** (estável) | Escada `60 → 120 → 300 → 600 → 1800 → 3600` s ([#24](https://github.com/madebysandro/apuracao-2026/issues/24) / [#25](https://github.com/madebysandro/apuracao-2026/pull/25)). Uma mudança seguinte reseta a escada e volta a `max(30 s, max-age)` |
+| Apuração **encerrada** | O poller para de agendar alarmes ([#19](https://github.com/madebysandro/apuracao-2026/issues/19)) |
 | `ETag` / `If-None-Match` | Se o arquivo não mudou (304), não reprocessa o JSON |
-| `429` | Respeita `Retry-After` (ou 120 s) e agenda o alarme para depois |
-| Outro erro | Backoff exponencial a partir de 60 s, dobrando até no máximo 600 s |
+| `429` | Backoff separado da escada: respeita `Retry-After` (ou 120 s) e agenda o alarme para depois |
+| Outro erro | Backoff separado da escada: a primeira espera é 120 s (dobra a base de 60 s) e segue dobrando até no máximo 600 s |
 
 O navegador pede `/api/apuracao` a cada 5 s. A borda pode cachear a resposta por `s-maxage=5`. Histórico (`/api/historico?desde=`) só é pedido quando a `versao` muda.
 
@@ -106,7 +108,7 @@ Fotos: `{TSE_BASE}/ele2026/{ELEICAO}/fotos/{uf}/{sqcand}.jpeg`.
 5. Nos proporcionais, um storage próprio guarda o instantâneo anterior/primeiro e as séries para Δ de posição e cadeiras.
 6. O Worker devolve o estado em JSON; o front em `public/js/` pinta as Telas 1 e 2 e anima com `public/js/movimento/`.
 
-O intervalo entre consultas ao TSE vem do **alarme do Durable Object**, não de Cron Trigger.
+O intervalo entre consultas ao TSE vem do **alarme do Durable Object** (tabela acima), não de Cron Trigger.
 
 ---
 
@@ -220,13 +222,7 @@ node prototipo-apuracao/server.mjs
 
 ## Roadmap
 
-Issues abertas (depois do #14):
-
-| Issue | O que falta |
-| --- | --- |
-| [#5](https://github.com/madebysandro/apuracao-2026/issues/5) | Histórico de leituras completo, gráficos e análises das majoritárias calculados no servidor |
-| [#7](https://github.com/madebysandro/apuracao-2026/issues/7) | Presidente por UF/exterior e faixa de destaques com frases reais da API |
-| [#2](https://github.com/madebysandro/apuracao-2026/issues/2) | Fixtures reais da noite toda (substituir/estender `fixtures/tse-provisorio/`) |
+Feitas: [#2](https://github.com/madebysandro/apuracao-2026/issues/2) (fixtures da noite), [#5](https://github.com/madebysandro/apuracao-2026/issues/5) (histórico e análises das majoritárias) e [#7](https://github.com/madebysandro/apuracao-2026/issues/7) (Presidente por UF e destaques).
 
 Spec geral: [#1](https://github.com/madebysandro/apuracao-2026/issues/1).
 
