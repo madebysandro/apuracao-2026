@@ -118,7 +118,7 @@ apuracao-2026/
 │   ├── tela1-majoritarias.png   # captura do app local
 │   ├── tela2-proporcionais.png
 │   └── prototipo/               # registro de alta fidelidade (tag prototipo-painel-v1)
-├── fixtures/tse-provisorio/     # gravações reais + ufs/ sintéticas (#2 substitui)
+├── fixtures/tse-provisorio/     # gravações reais do TSE (início/meio/fim) para os testes
 ├── public/                      # front estático (assets do Worker)
 │   ├── css/                     # tokens + tema
 │   ├── js/

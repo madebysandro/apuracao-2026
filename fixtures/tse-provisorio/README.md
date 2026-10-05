@@ -1,26 +1,30 @@
-# Fixtures provisórias do TSE
+# Fixtures reais do TSE (04/10/2026)
 
-Gravação real das respostas brutas do TSE na noite de **04/10/2026**, para os testes.
+Sequência real das respostas brutas do TSE, recortada da gravação das
+**21:04 BRT** (ainda em andamento). Cada pasta é um ciclo; só entram os
+arquivos que o gravador registrou naquele instante. Metadados (ETag,
+cache-control, URL) estão em `indice.jsonl`.
 
-## Presidente e majoritárias
+## Ciclos no repositório
 
-- `ele-c.json` — config oficial
-- `indice.jsonl` — uma linha por ciclo/arquivo (ciclo, chave, URL, ETag, cache-control)
-- `<ciclo>/presidente.json` — Presidente (Brasil)
-- `<ciclo>/governador.json` / `senador.json` — Governador e Senado do Pará (quando gravados)
+| Ciclo | Papel |
+| --- | --- |
+| `2026-10-04T21-36-05-598Z` | Início — leitura completa (5 cargos + Presidente nas 27 UFs e exterior) |
+| `2026-10-04T21-38-48-884Z` | Antes da troca de cadeira (Dep. Federal: PSB 2 / PSD 1) |
+| `2026-10-04T21-39-46-908Z` | Depois da troca (PSB 1 / PSD 2) + 2ª leitura de Presidente |
+| `2026-10-04T21-44-49-070Z` | 3ª leitura de Presidente (tendência) |
+| `2026-10-04T23-17-25-721Z` | Meio da noite |
+| `2026-10-05T00-01-02-086Z` | Mais recente da cópia (~97% no Pará; margem do Governador fora de alcance) |
 
-## Deputados do Pará (issue #6)
+Também: `ele-c.json` (config oficial do TSE). O gravador guardou o arquivo na
+raiz da gravação, sem linha própria de ETag/cache-control no `indice.jsonl`.
 
-- `2026-10-04T21-56-47-000Z/depfed.json` — Deputado Federal (c0006), gravação real
-- `2026-10-04T21-56-47-000Z/depest.json` — Deputado Estadual (c0007), gravação real
-- `2026-10-04T21-56-47-000Z-derivada-antes/` — **DERIVADA** da gravação real (ver README na pasta): troca mínima de `vag` (PSD/PSB) e um candidato inválido sintético no PL, para o teste de dança de cadeiras
-- `sintetica-quase-fim/governador.json` — **SINTÉTICA** (issue #5): ~99% apurado com os mesmos votos, para testar margem “fora de alcance” e “já tem a maioria (est.)”
+## O que os testes exercitam
 
-## Presidente por UF (issue #7)
+- Avanço da apuração (Presidente em 3 leituras → tendência).
+- Troca real de cadeiras entre agremiações (PSD/PSB).
+- Arquivo sem mudança → 304 via ETag (`If-None-Match`).
+- Presidente por UF / exterior com ETags reais do índice.
+- Governador quase no fim (leitura mais recente), sem fixture sintética.
 
-- `ufs/presidente-ufs.json` — 27 UFs + exterior (`zz`), **sintéticas** (valores controlados para placar, regiões, colégios, disputa e ritmo)
-- `ufs/gerar.mjs` — regenera o JSON
-
-**Provisórias:** a issue #2 substituirá/estenderá este conjunto com a sequência final da apuração (todos os cargos e UFs). O formato (pastas por ciclo + `indice.jsonl`) deve ser preservado.
-
-Origem: `gravacao-tse-provisoria.tgz` anexada à issue #3; Governador/Senado na #4; Deputados na #6; UFs sintéticas na #7.
+Origem: `gravacao-tse-2104.tar.gz` (cópia do gravador às 21:04 BRT). Ignorar `._*` (lixo do macOS).

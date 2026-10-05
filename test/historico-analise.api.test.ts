@@ -177,9 +177,9 @@ describe("GET /api/apuracao — analise.majoritarias (#5)", () => {
 		const g = dados.analise?.majoritarias?.governador;
 		expect(g!.defensor.n).toBe("20");
 		expect(g!.perseguidor.n).toBe("15");
-		expect(g!.vantagemVotos).toBe(199_104);
-		expect(g!.validosAApurar).toBeCloseTo(2_029_332.184861661, 2);
-		expect(g!.margemParaVirarPp).toBeCloseTo(9.811306472408452, 6);
+		expect(g!.vantagemVotos).toBe(173_113);
+		expect(g!.validosAApurar).toBeCloseTo(2_590_976.053396561, 2);
+		expect(g!.margemParaVirarPp).toBeCloseTo(6.681381704514898, 6);
 		expect(g!.primeiroTurno?.status).toBe("ok");
 
 		// Senado: disputa 2º × 3º; sem 1º turno.
@@ -188,8 +188,8 @@ describe("GET /api/apuracao — analise.majoritarias (#5)", () => {
 		expect(s!.defensor.nome).toBe("DELEGADO ÉDER MAURO");
 		expect(s!.perseguidor.n).toBe("200");
 		expect(s!.perseguidor.nome).toBe("ZEQUINHA MARINHO");
-		expect(s!.vantagemVotos).toBe(89_531);
-		expect(s!.margemParaVirarPp).toBeCloseTo(2.295438833866155, 6);
+		expect(s!.vantagemVotos).toBe(78_211);
+		expect(s!.margemParaVirarPp).toBeCloseTo(1.5568563271092684, 6);
 		expect(s!.primeiroTurno).toBeNull();
 	});
 
@@ -238,6 +238,6 @@ describe("GET /api/apuracao — analise.majoritarias (#5)", () => {
 		expect(g!.primeiroTurno?.fatiaPct).toBeLessThanOrEqual(0);
 		expect(
 			(await lerApuracao()).cargos.governador?.hora,
-		).toBe("20:00:00");
+		).toBe("20:59:59");
 	});
 });
