@@ -3,6 +3,10 @@ node_modules/
 .playwright-mcp/
 .wrangler/
 .dev.vars
+.env
+.env.*
+!.env.example
+coverage/
 # dados gerados em execução e mídia bruta do Grok
 *.PROTOTIPO-apagar.json
 prototipo-apuracao/public/media/raw/

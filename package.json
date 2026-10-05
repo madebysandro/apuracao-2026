@@ -2,8 +2,20 @@
 	"name": "apuracao-2026",
 	"version": "0.1.0",
 	"private": true,
+	"license": "MIT",
 	"type": "module",
 	"description": "Painel de apuração 2026 (Presidente e Pará) com dados oficiais do TSE, no Cloudflare Workers.",
+	"homepage": "https://apuracao.madebysandro.app",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/madebysandro/apuracao-2026.git"
+	},
+	"bugs": {
+		"url": "https://github.com/madebysandro/apuracao-2026/issues"
+	},
+	"engines": {
+		"node": "22.x"
+	},
 	"scripts": {
 		"dev": "wrangler dev",
 		"build": "tsc --noEmit",
@@ -12,6 +24,10 @@
 		"deploy": "wrangler deploy",
 		"deploy:dry-run": "wrangler deploy --dry-run",
 		"cf-typegen": "wrangler types"
+	},
+	"overrides": {
+		"undici": "7.30.0",
+		"sharp": "0.35.5"
 	},
 	"devDependencies": {
 		"@cloudflare/vitest-pool-workers": "^0.22.0",
