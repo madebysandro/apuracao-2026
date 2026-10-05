@@ -45,7 +45,7 @@ Um Durable Object singleton (`PollerApuracao`) é o único cliente do TSE. O pr�
 | Apuração **encerrada** | O poller para de agendar alarmes ([#19](https://github.com/madebysandro/apuracao-2026/issues/19)) |
 | `ETag` / `If-None-Match` | Se o arquivo não mudou (304), não reprocessa o JSON |
 | `429` | Backoff separado da escada: respeita `Retry-After` (ou 120 s) e agenda o alarme para depois |
-| Outro erro | Backoff separado da escada: exponencial a partir de 60 s, dobrando até no máximo 600 s |
+| Outro erro | Backoff separado da escada: a primeira espera é 120 s (dobra a base de 60 s) e segue dobrando até no máximo 600 s |
 
 O navegador pede `/api/apuracao` a cada 5 s. A borda pode cachear a resposta por `s-maxage=5`. Histórico (`/api/historico?desde=`) só é pedido quando a `versao` muda.
 
@@ -108,7 +108,7 @@ Fotos: `{TSE_BASE}/ele2026/{ELEICAO}/fotos/{uf}/{sqcand}.jpeg`.
 5. Nos proporcionais, um storage próprio guarda o instantâneo anterior/primeiro e as séries para Δ de posição e cadeiras.
 6. O Worker devolve o estado em JSON; o front em `public/js/` pinta as Telas 1 e 2 e anima com `public/js/movimento/`.
 
-O intervalo entre consultas ao TSE vem do **alarme do Durable Object** (mudança, escada estável ou backoff de erro — tabela acima), não de Cron Trigger. Com a apuração encerrada, o alarme não é reagendado.
+O intervalo entre consultas ao TSE vem do **alarme do Durable Object** (tabela acima), não de Cron Trigger.
 
 ---
 
