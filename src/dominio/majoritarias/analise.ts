@@ -1,5 +1,8 @@
 import type { Cargo, Leitura } from "../tipos";
 
+// @ts-expect-error JS compartilhado com o front (public/js/pontos-hist.js)
+import { pontos } from "../../../public/js/pontos-hist.js";
+
 /** Candidato citado na análise (defensor / perseguidor / tendência). */
 export type RefCandidatoAnalise = {
 	n: string;
@@ -41,18 +44,8 @@ export type AnaliseMajoritaria = {
 	tendencias: TendenciaCandidato[];
 };
 
-const media = (v: number[]) => v.reduce((a, b) => a + b, 0) / v.length;
-
-/** Leituras úteis de um cargo (sem repetir hora+apurado idênticos). */
-export function pontosCargo(hist: Leitura[], id: string): Leitura[] {
-	return hist.filter(
-		(p, i) =>
-			p.c[id] &&
-			!(
-				hist[i + 1]?.c[id]?.hora === p.c[id].hora &&
-				hist[i + 1]?.c[id]?.ap === p.c[id].ap
-			),
-	);
+function pontosCargo(hist: Leitura[], id: string): Leitura[] {
+	return pontos(hist, id) as Leitura[];
 }
 
 /** Votos válidos a apurar, supondo o mesmo comparecimento nas seções restantes. */
@@ -74,8 +67,8 @@ export function tendenciaCand(
 		.map((p) => [p.c[cargoId].ap, p.c[cargoId].c[n][1]] as const)
 		.slice(-8);
 	if (pts.length < 3) return null;
-	const mx = media(pts.map((p) => p[0]));
-	const my = media(pts.map((p) => p[1]));
+	const mx = pts.reduce((s, p) => s + p[0], 0) / pts.length;
+	const my = pts.reduce((s, p) => s + p[1], 0) / pts.length;
 	const sxx = pts.reduce((a, p) => a + (p[0] - mx) ** 2, 0);
 	if (sxx < 0.25) return null;
 	return (
