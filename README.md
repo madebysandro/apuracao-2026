@@ -156,8 +156,7 @@ Outros scripts:
 
 ```bash
 npm test             # Vitest (pool de Workers) + fixtures do TSE via MSW
-npm run typecheck    # tsc --noEmit (strict)
-npm run build        # igual ao typecheck — usado no Workers Builds
+npm run build        # tsc --noEmit (strict) — usado no Workers Builds
 npm run deploy:dry-run
 ```
 
