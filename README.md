@@ -1,4 +1,12 @@
 [![CI](https://github.com/madebysandro/apuracao-2026/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/madebysandro/apuracao-2026/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/github/license/madebysandro/apuracao-2026)](./LICENSE)
+[![Release](https://img.shields.io/github/v/release/madebysandro/apuracao-2026)](https://github.com/madebysandro/apuracao-2026/releases/latest)
+[![Site](https://img.shields.io/website?url=https%3A%2F%2Fapuracao.madebysandro.app&up_message=online&down_message=offline&label=site)](https://apuracao.madebysandro.app)
+
+[![Node](https://img.shields.io/badge/node-22.x-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020?logo=cloudflare&logoColor=white)](https://developers.cloudflare.com/workers/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Vitest](https://img.shields.io/badge/tested%20with-Vitest-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
 
 # Apuração 2026 · Presidente e Pará
 
