@@ -1,7 +1,8 @@
-import { urlFoto, type ConfigTse } from "../../config/tse";
+import type { ConfigTse } from "../../config/tse";
 import { numeroTse } from "../numeros";
-import type { Agremiacao, Candidato, Cargo, MetaCargo } from "../tipos";
-import type { DadosBrutosCargo } from "./presidente";
+import type { Agremiacao, Cargo, MetaCargo } from "../tipos";
+import type { DadosBrutosCargo } from "./dados-brutos";
+import { candidatoDe, totaisDe } from "./majoritario";
 
 /**
  * Normaliza Deputado Federal / Estadual a partir do JSON do TSE.
@@ -18,21 +19,11 @@ export function normalizarProporcional(
 
 	const agremiacoesComCands = (carg?.agr ?? []).map((agr) => {
 		const sigla = String(agr.com ?? "").replace(/\s+/g, "");
-		const cands: Candidato[] = (agr.par ?? [])
+		const cands = (agr.par ?? [])
 			.flatMap((par) =>
-				(par.cand ?? []).map((cand) => ({
-					n: String(cand.n ?? ""),
-					nome: String(cand.nmu ?? ""),
-					partido: String(par.sg ?? ""),
-					agr: sigla,
-					votos: Number(cand.vap) || 0,
-					pct: numeroTse(cand.pvapn),
-					eleito: cand.e === "s",
-					situacao: String(cand.st ?? ""),
-					valido: cand.dvt === "Válido",
-					foto: urlFoto(cfg, meta, String(cand.sqcand ?? "")),
-					pos: 0,
-				})),
+				(par.cand ?? []).map((cand) =>
+					candidatoDe(cand, par, sigla, meta, cfg),
+				),
 			)
 			.sort((a, b) => b.votos - a.votos);
 
@@ -86,16 +77,7 @@ export function normalizarProporcional(
 		apurado: numeroTse(dados.s?.pstn),
 		hora: String(dados.hg ?? ""),
 		qe: Number(carg?.qe) || null,
-		totais: {
-			eleitorado: Number(dados.e?.te) || 0,
-			eleitoradoApurado: Number(dados.e?.est) || 0,
-			comparecimento: numeroTse(dados.e?.pcn),
-			abstencao: numeroTse(dados.e?.pan),
-			validos: Number(dados.v?.vv) || 0,
-			legenda: Number(dados.v?.vl) || 0,
-			brancos: numeroTse(dados.v?.pvbn),
-			nulos: numeroTse(dados.v?.ptvnn),
-		},
+		totais: totaisDe(dados),
 		candidatos,
 		agremiacoes,
 	};
