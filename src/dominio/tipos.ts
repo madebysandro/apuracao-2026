@@ -110,6 +110,11 @@ export type EstadoApuracao = {
 	erro: string | null;
 	/** true quando todos os escopos acompanhados chegaram a 100% (#19). */
 	encerrada?: boolean;
+	/**
+	 * Último `tf` do TSE por escopo (id do cargo ou sigla UF), do último corpo 200.
+	 * Um 304 reutiliza este valor — o dado guardado é o atual (#19).
+	 */
+	tfPorEscopo?: Record<string, string | undefined>;
 	cargos: Record<string, Cargo>;
 	ufs?: Record<string, UfPresidente>;
 	analise?: AnaliseApuracao;

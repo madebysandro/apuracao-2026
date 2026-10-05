@@ -36,10 +36,7 @@ import type {
 	UfPresidente,
 } from "../dominio/tipos";
 import { buscarArquivoTse, ErroTse } from "./cliente-tse";
-import {
-	apuracaoTotalizada,
-	tfPermiteEncerrar,
-} from "./encerrada";
+import { escoposProntosParaEncerrar } from "./encerrada";
 import { montarLeitura } from "./historico";
 import { fonteVariacoesDo } from "./variacoes-do";
 
@@ -166,16 +163,16 @@ export class PollerApuracao extends DurableObject<Env> {
 		let novoBackoff: number | null = null;
 		/** Ciclo sem falha e sem arquivo faltando (304 órfão / UF com erro). */
 		let cicloCompleto = true;
-		/**
-		 * Encerrar só com corpo fresco (200) em todos os escopos: num 304
-		 * não dá para revalidar `tf` / pst do TSE neste ciclo.
-		 */
-		let cicloComCorposFrescos = true;
-		/** Se algum JSON trouxe `tf: "n"`, a totalização final ainda não veio. */
-		let tfOk = true;
+		const tfPorEscopo: Record<string, string | undefined> = {
+			...(estado.tfPorEscopo ?? {}),
+		};
 
-		const notarTf = (bruto: DadosBrutosCargo) => {
-			if (!tfPermiteEncerrar(bruto.tf)) tfOk = false;
+		const guardarTfEscopo = (chave: string, bruto: DadosBrutosCargo) => {
+			// Último tf do 200; 304 seguinte reutiliza este valor (#19).
+			tfPorEscopo[chave] =
+				bruto.tf == null || bruto.tf === ""
+					? undefined
+					: String(bruto.tf);
 		};
 
 		try {
@@ -191,12 +188,12 @@ export class PollerApuracao extends DurableObject<Env> {
 				if (etag) etags[meta.id] = etag;
 				if (!json) {
 					// 304 sem dado prévio: ciclo parcial — não encerra (#19).
+					// 304 com dado guardado: apurado/tf do último 200 seguem válidos.
 					if (!estado.cargos[meta.id]) cicloCompleto = false;
-					cicloComCorposFrescos = false;
 					continue;
 				}
 				const bruto = json as DadosBrutosCargo;
-				notarTf(bruto);
+				guardarTfEscopo(meta.id, bruto);
 
 				let novo = normalizarCargo(meta, bruto, cfg);
 				if (!novo) {
@@ -243,19 +240,17 @@ export class PollerApuracao extends DurableObject<Env> {
 					maxAgeCiclo = Math.max(maxAgeCiclo, maxAge);
 					if (json) {
 						const bruto = json as DadosBrutosCargo;
-						notarTf(bruto);
+						guardarTfEscopo(uf, bruto);
 						const novo = normalizarPresidenteUf(uf, bruto);
 						if (ufMudou(ufs[uf], novo)) mudou = true;
 						ufs[uf] = novo;
 						if (etag) etags[chave] = etag;
 						estado.ufs = ufs;
 					} else if (ufs[uf] && etag) {
-						// 304: só renova ETag se o dado dessa UF já está no estado.
+						// 304: só renova ETag; apurado/tf guardados continuam válidos.
 						etags[chave] = etag;
-						cicloComCorposFrescos = false;
 					} else {
 						cicloCompleto = false;
-						cicloComCorposFrescos = false;
 					}
 				} catch (erroUf) {
 					cicloCompleto = false;
@@ -272,6 +267,7 @@ export class PollerApuracao extends DurableObject<Env> {
 				}
 			}
 			estado.ufs = ufs;
+			estado.tfPorEscopo = tfPorEscopo;
 
 			if (mudou) {
 				estado.versao += 1;
@@ -294,12 +290,9 @@ export class PollerApuracao extends DurableObject<Env> {
 			novoBackoff = null;
 
 			const idsCargos = metas.map((m) => m.id);
-			const pronta =
+			estado.encerrada =
 				cicloCompleto &&
-				cicloComCorposFrescos &&
-				tfOk &&
-				apuracaoTotalizada(estado, idsCargos, SIGLAS_UF);
-			estado.encerrada = pronta;
+				escoposProntosParaEncerrar(estado, idsCargos, SIGLAS_UF);
 		} catch (erro) {
 			const e = erro as ErroTse;
 			estado.erro = e.message ?? String(erro);

@@ -429,11 +429,26 @@ export function instalarTseFalso(opcoes: OpcoesTseFalso = {}): TseFalso {
 		);
 	};
 
+	const pctDaChave = (chave: string): number | string => {
+		const v = estado.varianteSecoes;
+		if (!v) return "";
+		return v.porChave?.[chave] ?? v.padrao;
+	};
+
+	/** ETag estável por (chave, pct, tf) para o poller poder receber 304 entre ciclos. */
+	const etagDaResposta = (etagBase: string, chave: string): string => {
+		const v = estado.varianteSecoes;
+		if (!v) return etagBase;
+		const pct = String(pctDaChave(chave));
+		const tf = v.tf ?? "";
+		const base = etagBase.replaceAll('"', "");
+		return `"v-${pct}-${tf}-${base}"`;
+	};
+
 	const aplicarVariante = (chave: string, corpo: object): object => {
 		const v = estado.varianteSecoes;
 		if (!v) return corpo;
-		const pct = v.porChave?.[chave] ?? v.padrao;
-		return comPctSecoes(corpo, pct, v.tf);
+		return comPctSecoes(corpo, pctDaChave(chave), v.tf);
 	};
 
 	const responderArquivo = (
@@ -444,23 +459,19 @@ export function instalarTseFalso(opcoes: OpcoesTseFalso = {}): TseFalso {
 	) => {
 		estado.pedidos.push({ url, ifNoneMatch });
 		const cacheControl = estado.cacheControlOverride ?? atual.cacheControl;
-		// Variante muda o corpo: nunca devolver 304 (etag da fixture não cobre o patch).
-		if (
-			!estado.varianteSecoes &&
-			ifNoneMatch &&
-			ifNoneMatch === atual.etag
-		) {
+		const etag = etagDaResposta(atual.etag, chave);
+		if (ifNoneMatch && ifNoneMatch === etag) {
 			return new HttpResponse(null, {
 				status: 304,
 				headers: {
-					etag: atual.etag,
+					etag,
 					"cache-control": cacheControl,
 				},
 			});
 		}
 		return HttpResponse.json(aplicarVariante(chave, atual.corpo), {
 			headers: {
-				etag: atual.etag,
+				etag,
 				"cache-control": cacheControl,
 			},
 		});

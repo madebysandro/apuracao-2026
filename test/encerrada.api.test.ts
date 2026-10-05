@@ -190,4 +190,76 @@ describe("Poller — encerramento a 100% (#19)", () => {
 			estado.cargos.presidente?.hora,
 		);
 	});
+
+	it("escopos a 100% em ciclos diferentes + ciclo seguinte todo 304 → encerra", async () => {
+		// Ciclo 1: só o governador atrasa — os demais já estão a 100% com tf final.
+		tse.definirVarianteSecoes({
+			padrao: "100,00",
+			tf: "s",
+			porChave: { governador: "99,99" },
+		});
+		await forcarConsulta();
+		const parcial = await lerApuracao();
+		expect(parcial.encerrada).toBeFalsy();
+		expect(parcial.cargos.governador?.apurado).toBeCloseTo(99.99, 5);
+		expect(parcial.cargos.presidente?.apurado).toBe(100);
+		expect(await lerAlarme()).toEqual(expect.any(Number));
+
+		// Ciclo 2: governador chega a 100%; os outros respondem 304 (etag igual).
+		tse.definirVarianteSecoes({ padrao: "100,00", tf: "s" });
+		await forcarConsulta();
+		const aposUltimo = await lerApuracao();
+		// Pode encerrar já aqui (304 nos demais + dado guardado) ou no ciclo 304.
+		if (!aposUltimo.encerrada) {
+			expect(aposUltimo.cargos.governador?.apurado).toBe(100);
+			expect(await lerAlarme()).toEqual(expect.any(Number));
+		}
+
+		// Ciclo 3: tudo 304 — com o dado guardado, tem de encerrar e não reagendar.
+		const pedidosAntes = tse.pedidos.length;
+		await forcarConsulta();
+		const fim = await lerApuracao();
+		expect(fim.encerrada).toBe(true);
+		expect(fim.proximaConsulta).toBeNull();
+		expect(fim.cargos.governador?.apurado).toBe(100);
+		expect(Object.keys(fim.ufs ?? {})).toHaveLength(28);
+		expect(await lerAlarme()).toBeNull();
+		// Se já tinha encerrado no ciclo 2, consultar() retorna cedo (sem novos pedidos).
+		if (aposUltimo.encerrada) {
+			expect(tse.pedidos.length).toBe(pedidosAntes);
+		} else {
+			expect(tse.pedidos.length).toBeGreaterThan(pedidosAntes);
+		}
+	});
+
+	it("ciclo todo 304 com escopo guardado em tf \"n\" ou < 100% continua", async () => {
+		// 100% mas tf ainda "n": guarda o marcador e não encerra.
+		tse.definirVarianteSecoes({ padrao: "100,00", tf: "n" });
+		await forcarConsulta();
+		expect((await lerApuracao()).encerrada).toBeFalsy();
+
+		const pedidosApos200 = tse.pedidos.length;
+		await forcarConsulta(); // tudo 304, tf "n" permanece no estado
+		const apos304Tf = await lerApuracao();
+		expect(apos304Tf.encerrada).toBeFalsy();
+		expect(apos304Tf.proximaConsulta).toEqual(expect.any(Number));
+		expect(await lerAlarme()).toEqual(expect.any(Number));
+		expect(tse.pedidos.length).toBeGreaterThan(pedidosApos200);
+
+		await limparPoller();
+		tse = instalarTseFalso();
+
+		// < 100% com tf "s": 304 seguinte também não encerra.
+		tse.definirVarianteSecoes({ padrao: "99,99", tf: "s" });
+		await forcarConsulta();
+		expect((await lerApuracao()).cargos.presidente?.apurado).toBeCloseTo(
+			99.99,
+			5,
+		);
+		await forcarConsulta();
+		const apos304Pct = await lerApuracao();
+		expect(apos304Pct.encerrada).toBeFalsy();
+		expect(apos304Pct.proximaConsulta).toEqual(expect.any(Number));
+		expect(await lerAlarme()).toEqual(expect.any(Number));
+	});
 });

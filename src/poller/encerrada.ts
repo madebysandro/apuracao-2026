@@ -38,3 +38,27 @@ export function tfPermiteEncerrar(tf: unknown): boolean {
 	if (tf == null || tf === "") return true;
 	return String(tf).toLowerCase() === "s";
 }
+
+/**
+ * Todos os escopos presentes a ≥100% e com o último `tf` guardado
+ * (do último 200; 304 reutiliza) permitindo encerrar.
+ */
+export function escoposProntosParaEncerrar(
+	estado: {
+		cargos: Record<string, EscopoApurado | undefined>;
+		ufs?: Record<string, EscopoApurado | undefined>;
+		tfPorEscopo?: Record<string, string | undefined>;
+	},
+	idsCargos: readonly string[],
+	siglasUf: readonly string[],
+): boolean {
+	if (!apuracaoTotalizada(estado, idsCargos, siglasUf)) return false;
+	const tfs = estado.tfPorEscopo ?? {};
+	for (const id of idsCargos) {
+		if (!tfPermiteEncerrar(tfs[id])) return false;
+	}
+	for (const uf of siglasUf) {
+		if (!tfPermiteEncerrar(tfs[uf])) return false;
+	}
+	return true;
+}
