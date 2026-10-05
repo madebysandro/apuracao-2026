@@ -1,6 +1,5 @@
 /** Shell da Tela 1 — marcação .db-* quase literal do protótipo (variante D). */
 
-import { destaques } from "./tela1-destaques.js";
 import { renderizarCartaoMajoritario } from "./tela1-cartao.js";
 import { barraViva } from "./movimento/fluxo-barras.js";
 import { renderizarTela2 } from "./tela2-proporcionais.js";
@@ -11,6 +10,13 @@ import {
 	pontos,
 	spark,
 } from "./tela1-util.js";
+
+/** Faixa DESTAQUES — frases prontas do servidor; fallback mínimo se ainda não houver. */
+function destaques(dados) {
+	const prontas = dados?.analise?.destaques;
+	if (Array.isArray(prontas) && prontas.length) return prontas;
+	return ["<b>Destaques</b>Aguardando a primeira leitura do TSE…"];
+}
 
 /**
  * @param {{
