@@ -245,8 +245,9 @@ describe("GET /api/apuracao — Tela 1 (Presidente, Governador, Senado)", () => 
 		expect(alarme!).toBeGreaterThanOrEqual(antes + 45_000 - 50);
 		expect(alarme!).toBeLessThanOrEqual(Date.now() + 45_000 + 50);
 
-		// Abaixo de 30 s, o piso da política vale.
+		// Abaixo de 30 s, o piso da política vale (ciclo com mudança; #24).
 		tse.definirCacheControl("max-age=10");
+		tse.avancar();
 		const antesPiso = Date.now();
 		await forcarConsulta();
 		const aposPiso = (await lerApuracao()).dados;

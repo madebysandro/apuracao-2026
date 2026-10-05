@@ -42,6 +42,10 @@ const CHAVE_ESTADO = "estado";
 const CHAVE_ETAGS = "etags";
 const CHAVE_HISTORICO = "historico";
 const CHAVE_BACKOFF = "backoffSegundos";
+/** Índice do próximo degrau da escada de estabilidade (#24); separado do backoff de erro. */
+const CHAVE_ESCADA = "escadaEstavel";
+/** Sem mudança: 60 → 120 → 300 → 600 → 1800 → 3600 (teto 60 min). */
+const ESCADA_ESTAVEL = [60, 120, 300, 600, 1800, 3600] as const;
 
 type Etags = Record<string, string>;
 
@@ -166,6 +170,8 @@ export class PollerApuracao extends DurableObject<Env> {
 
 		let maxAgeCiclo = 0;
 		let novoBackoff: number | null = null;
+		/** Mesmo critério do bump de `versao` (#24). */
+		let mudou = false;
 		/** Ciclo sem falha e sem arquivo faltando (304 órfão / UF com erro). */
 		let cicloCompleto = true;
 		const tfPorEscopo: Record<string, string | undefined> = {
@@ -181,7 +187,6 @@ export class PollerApuracao extends DurableObject<Env> {
 		};
 
 		try {
-			let mudou = false;
 			const metas = metasCargos(cfg);
 			for (const meta of metas) {
 				const url = urlArquivoCargo(cfg, meta);
@@ -348,11 +353,28 @@ export class PollerApuracao extends DurableObject<Env> {
 			estado.proximaConsulta = null;
 			await this.ctx.storage.put(CHAVE_ESTADO, estado);
 			await this.ctx.storage.deleteAlarm();
+			await this.ctx.storage.delete(CHAVE_ESCADA);
 			return;
 		}
 
-		// Sucesso: max(30 s, maior max-age do ciclo). Erro: Retry-After ou backoff.
-		const esperaSegundos = Math.max(30, maxAgeCiclo || 60);
+		// Erro/429: backoff atual (não mistura com a escada). Com mudança: base + reset.
+		// Sem mudança: sobe um degrau da escada (#24).
+		let esperaSegundos: number;
+		if (estado.erro != null) {
+			esperaSegundos = Math.max(30, maxAgeCiclo || 60);
+		} else if (mudou) {
+			await this.ctx.storage.delete(CHAVE_ESCADA);
+			esperaSegundos = Math.max(30, maxAgeCiclo || 60);
+		} else {
+			const degrau =
+				(await this.ctx.storage.get<number>(CHAVE_ESCADA)) ?? 0;
+			const idx = Math.min(degrau, ESCADA_ESTAVEL.length - 1);
+			esperaSegundos = ESCADA_ESTAVEL[idx]!;
+			await this.ctx.storage.put(
+				CHAVE_ESCADA,
+				Math.min(degrau + 1, ESCADA_ESTAVEL.length - 1),
+			);
+		}
 		estado.proximaConsulta = Date.now() + esperaSegundos * 1000;
 		await this.ctx.storage.put(CHAVE_ESTADO, estado);
 		await this.ctx.storage.setAlarm(estado.proximaConsulta);
