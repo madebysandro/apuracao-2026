@@ -90,7 +90,9 @@ function quadroStatus() {
 		new Date().toLocaleTimeString("pt-BR", { hour12: false }),
 	);
 	odometro(sdEl(".sd-tse"), hora ?? "—");
-	const idade = idadeTse(hora);
+	const idade = dados.encerrada && !dados.erro
+		? (hora ? `última atualização ${hora}` : "arquivo")
+		: idadeTse(hora);
 	if (sdEl(".sd-idade").textContent !== idade) {
 		sdEl(".sd-idade").textContent = idade;
 	}

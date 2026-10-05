@@ -111,7 +111,7 @@ function dbProp(id, cargo, disputa) {
       <div><dt>Brancos · nulos</dt><dd>${pf.format(cargo.totais.brancos)}% · ${pf.format(cargo.totais.nulos)}%</dd></div>
     </dl>
     <section class="db-sec">
-      <h3>Bancada projetada <small>cada quadrado é uma cadeira; passe o mouse para ver quem ocupa</small></h3>
+      <h3>Bancada projetada <small>cada quadrado é uma cadeira; toque para ver quem ocupa</small></h3>
       <div class="db-waffle" role="list" aria-label="Distribuição projetada das ${cargo.vagas} cadeiras por agremiação — toque um quadrado">${waffle}</div>
       <p class="db-waffle-dica" data-waffle-dica hidden></p>
       <div class="db-rolagem"><table class="db-tab">
