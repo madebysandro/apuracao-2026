@@ -1,0 +1,13 @@
+version: 2
+# ponytail: package.json overrides pin undici 7.30.0 and sharp 0.35.5.
+# @cloudflare/vitest-pool-workers@0.22.0 (latest) still vendors miniflare with
+# undici 7.29.0 and sharp 0.35.2. Drop the overrides when that pool ships patched copies.
+updates:
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly

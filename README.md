@@ -1,3 +1,5 @@
+[![CI](https://github.com/madebysandro/apuracao-2026/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/madebysandro/apuracao-2026/actions/workflows/ci.yml)
+
 # Apuração 2026 · Presidente e Pará
 
 Painel público para acompanhar a apuração do 1º turno das eleições de 2026 (**04/10/2026**) com dados oficiais do TSE.
@@ -220,16 +222,26 @@ node prototipo-apuracao/server.mjs
 
 ---
 
-## Roadmap
+## Status
 
-Feitas: [#2](https://github.com/madebysandro/apuracao-2026/issues/2) (fixtures da noite), [#5](https://github.com/madebysandro/apuracao-2026/issues/5) (histórico e análises das majoritárias) e [#7](https://github.com/madebysandro/apuracao-2026/issues/7) (Presidente por UF e destaques).
+Painel no ar. Entregue:
 
-Spec geral: [#1](https://github.com/madebysandro/apuracao-2026/issues/1).
+- [#1](https://github.com/madebysandro/apuracao-2026/issues/1) spec
+- [#3](https://github.com/madebysandro/apuracao-2026/issues/3), [#4](https://github.com/madebysandro/apuracao-2026/issues/4), [#6](https://github.com/madebysandro/apuracao-2026/issues/6), [#8](https://github.com/madebysandro/apuracao-2026/issues/8) e [#13](https://github.com/madebysandro/apuracao-2026/issues/13) — Telas 1–2, poller, movimento e faixa
+- [#2](https://github.com/madebysandro/apuracao-2026/issues/2) fixtures reais da noite
+- [#5](https://github.com/madebysandro/apuracao-2026/issues/5) histórico, gráficos e análises das majoritárias
+- [#7](https://github.com/madebysandro/apuracao-2026/issues/7) Presidente por UF e destaques
+- [#19](https://github.com/madebysandro/apuracao-2026/issues/19) poller para ao encerrar
+- [#22](https://github.com/madebysandro/apuracao-2026/issues/22) simplificação
+- [#24](https://github.com/madebysandro/apuracao-2026/issues/24) escada de intervalo sem mudança
+- [#26](https://github.com/madebysandro/apuracao-2026/issues/26) CI, README e AGENTS.md
+
+Backlog de produto: vazio.
 
 ---
 
 ## Licença e créditos
 
-Os números, fotos e resultados eleitorais vêm da [API pública de resultados do TSE](https://resultados.tse.jus.br/oficial). Este painel só consulta, normaliza e apresenta esses dados — não é um produto oficial do Tribunal.
+O código deste repositório está sob a licença [MIT](LICENSE).
 
-Este repositório ainda não declara um arquivo `LICENSE` para o código-fonte.
+Os números, fotos e resultados eleitorais vêm da [API pública de resultados do TSE](https://resultados.tse.jus.br/oficial) e continuam sendo do TSE. Este painel só consulta, normaliza e apresenta esses dados — não é um produto oficial do Tribunal.
