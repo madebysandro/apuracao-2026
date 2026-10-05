@@ -108,6 +108,8 @@ export type EstadoApuracao = {
 	consultadoEm: number | null;
 	proximaConsulta: number | null;
 	erro: string | null;
+	/** true quando todos os escopos acompanhados chegaram a 100% (#19). */
+	encerrada?: boolean;
 	cargos: Record<string, Cargo>;
 	ufs?: Record<string, UfPresidente>;
 	analise?: AnaliseApuracao;

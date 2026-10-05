@@ -239,6 +239,16 @@ export type OpcoesTseFalso = {
 	sequenciaNoite?: boolean;
 };
 
+/** Sobrescrita do % de seções totalizadas (e opcionalmente `tf`) nas fixtures. */
+export type VarianteSecoes = {
+	/** Percentual padrão (ex. 100 ou "100,00"). */
+	padrao: number | string;
+	/** Sobrescritas por chave (`presidente`, `pres-sp`, …). */
+	porChave?: Record<string, number | string>;
+	/** Indicador de totalização final do TSE (`s` / `n`). */
+	tf?: "s" | "n";
+};
+
 export type TseFalso = {
 	indice: number;
 	indiceProp: number;
@@ -261,12 +271,45 @@ export type TseFalso = {
 	 * (útil para testar max(30 s, max-age) com valor controlado).
 	 */
 	definirCacheControl: (cacheControl: string) => void;
+	/**
+	 * Deriva variantes a 100% (ou quase) a partir das fixtures reais:
+	 * ajusta `s.pst` / `s.pstn` e, se informado, `tf`.
+	 */
+	definirVarianteSecoes: (variante: VarianteSecoes | null) => void;
 	urlPresidente: string;
 	urlDepfed: string;
 	urlDepest: string;
 	/** Ciclo vigente para UFs / sequência da noite. */
 	cicloAtual: () => string;
 };
+
+function formatarPctTse(valor: number | string): { pst: string; pstn: string } {
+	if (typeof valor === "string") {
+		const n = Number(valor.replace(",", ".")) || 0;
+		return { pst: valor.includes(",") ? valor : valor.replace(".", ","), pstn: String(n) };
+	}
+	const pst =
+		Number.isInteger(valor)
+			? `${valor},00`
+			: String(valor).replace(".", ",");
+	return { pst, pstn: String(valor) };
+}
+
+/** Clona o JSON do TSE e força o percentual de seções totalizadas. */
+export function comPctSecoes(
+	corpo: object,
+	pct: number | string,
+	tf?: "s" | "n",
+): object {
+	const clone = structuredClone(corpo) as {
+		tf?: string;
+		s?: Record<string, string>;
+	};
+	const { pst, pstn } = formatarPctTse(pct);
+	clone.s = { ...(clone.s ?? {}), pst, pstn };
+	if (tf) clone.tf = tf;
+	return clone;
+}
 
 type ModoEspecial =
 	| { tipo: "429"; retryAfter: number }
@@ -282,6 +325,7 @@ export function instalarTseFalso(opcoes: OpcoesTseFalso = {}): TseFalso {
 		pedidos: [] as PedidoTse[],
 		modo: null as ModoEspecial,
 		cacheControlOverride: null as string | null,
+		varianteSecoes: null as VarianteSecoes | null,
 		erroUf: null as {
 			uf: string;
 			status: number;
@@ -385,15 +429,27 @@ export function instalarTseFalso(opcoes: OpcoesTseFalso = {}): TseFalso {
 		);
 	};
 
+	const aplicarVariante = (chave: string, corpo: object): object => {
+		const v = estado.varianteSecoes;
+		if (!v) return corpo;
+		const pct = v.porChave?.[chave] ?? v.padrao;
+		return comPctSecoes(corpo, pct, v.tf);
+	};
+
 	const responderArquivo = (
 		url: string,
 		ifNoneMatch: string | null,
 		atual: { etag: string; cacheControl: string; corpo: object },
+		chave: string,
 	) => {
 		estado.pedidos.push({ url, ifNoneMatch });
 		const cacheControl = estado.cacheControlOverride ?? atual.cacheControl;
-
-		if (ifNoneMatch && ifNoneMatch === atual.etag) {
+		// Variante muda o corpo: nunca devolver 304 (etag da fixture não cobre o patch).
+		if (
+			!estado.varianteSecoes &&
+			ifNoneMatch &&
+			ifNoneMatch === atual.etag
+		) {
 			return new HttpResponse(null, {
 				status: 304,
 				headers: {
@@ -402,7 +458,7 @@ export function instalarTseFalso(opcoes: OpcoesTseFalso = {}): TseFalso {
 				},
 			});
 		}
-		return HttpResponse.json(atual.corpo, {
+		return HttpResponse.json(aplicarVariante(chave, atual.corpo), {
 			headers: {
 				etag: atual.etag,
 				"cache-control": cacheControl,
@@ -428,13 +484,19 @@ export function instalarTseFalso(opcoes: OpcoesTseFalso = {}): TseFalso {
 				estado.pedidos.push({ url: request.url, ifNoneMatch });
 				return new HttpResponse("falha", { status });
 			}
-			return responderArquivo(request.url, ifNoneMatch, presidenteAtual());
+			return responderArquivo(
+				request.url,
+				ifNoneMatch,
+				presidenteAtual(),
+				"presidente",
+			);
 		}),
 		http.get(URLS_TSE.governador, ({ request }) =>
 			responderArquivo(
 				request.url,
 				request.headers.get("if-none-match"),
 				governadorAtual(),
+				"governador",
 			),
 		),
 		http.get(URLS_TSE.senador, ({ request }) =>
@@ -442,6 +504,7 @@ export function instalarTseFalso(opcoes: OpcoesTseFalso = {}): TseFalso {
 				request.url,
 				request.headers.get("if-none-match"),
 				senadorAtual(),
+				"senador",
 			),
 		),
 		http.get(URLS_TSE.depfed, ({ request }) =>
@@ -449,6 +512,7 @@ export function instalarTseFalso(opcoes: OpcoesTseFalso = {}): TseFalso {
 				request.url,
 				request.headers.get("if-none-match"),
 				propAtual().depfed,
+				"depfed",
 			),
 		),
 		http.get(URLS_TSE.depest, ({ request }) =>
@@ -456,6 +520,7 @@ export function instalarTseFalso(opcoes: OpcoesTseFalso = {}): TseFalso {
 				request.url,
 				request.headers.get("if-none-match"),
 				propAtual().depest,
+				"depest",
 			),
 		),
 		// Presidente por UF / exterior: …/dados/{uf}/{uf}-c0001-e006257-u.json
@@ -483,11 +548,16 @@ export function instalarTseFalso(opcoes: OpcoesTseFalso = {}): TseFalso {
 					estado.pedidos.push({ url: request.url, ifNoneMatch });
 					return new HttpResponse("uf desconhecida", { status: 404 });
 				}
-				return responderArquivo(request.url, ifNoneMatch, {
-					etag: meta.etag,
-					cacheControl: meta.cacheControl,
-					corpo: meta.corpo,
-				});
+				return responderArquivo(
+					request.url,
+					ifNoneMatch,
+					{
+						etag: meta.etag,
+						cacheControl: meta.cacheControl,
+						corpo: meta.corpo,
+					},
+					`pres-${uf}`,
+				);
 			},
 		),
 	);
@@ -528,6 +598,9 @@ export function instalarTseFalso(opcoes: OpcoesTseFalso = {}): TseFalso {
 		},
 		definirCacheControl(cacheControl: string) {
 			estado.cacheControlOverride = cacheControl;
+		},
+		definirVarianteSecoes(variante: VarianteSecoes | null) {
+			estado.varianteSecoes = variante;
 		},
 		urlPresidente: URLS_TSE.presidente,
 		urlDepfed: URLS_TSE.depfed,
