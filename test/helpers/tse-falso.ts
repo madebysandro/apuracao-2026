@@ -1,6 +1,6 @@
 import { http, HttpResponse } from "msw";
 import { network } from "./rede";
-import indice from "../../fixtures/tse-provisorio/indice.json";
+import indiceJsonl from "../../fixtures/tse-provisorio/indice.jsonl?raw";
 
 /**
  * Corpos JSON das fixtures, indexados pelo caminho relativo ao glob.
@@ -27,6 +27,11 @@ type EntradaIndice = {
 	etag: string;
 	cacheControl: string;
 };
+
+const indice: EntradaIndice[] = indiceJsonl
+	.split("\n")
+	.filter((l) => l.trim())
+	.map((l) => JSON.parse(l) as EntradaIndice);
 
 /** Ciclos versionados, em ordem cronológica. */
 export const CICLOS = [
@@ -57,7 +62,7 @@ function arquivoDaChave(chave: string): string {
 /** Catálogo: por ciclo, por chave → meta + corpo. */
 function montarCatalogo(): Map<string, Map<string, MetaArquivo>> {
 	const out = new Map<string, Map<string, MetaArquivo>>();
-	for (const entrada of indice as EntradaIndice[]) {
+	for (const entrada of indice) {
 		if (!(CICLOS as readonly string[]).includes(entrada.ciclo)) continue;
 		const corpo = corpoDoCiclo(entrada.ciclo, arquivoDaChave(entrada.chave));
 		if (!corpo) continue;
@@ -80,15 +85,19 @@ function montarCatalogo(): Map<string, Map<string, MetaArquivo>> {
 
 const CATALOGO = montarCatalogo();
 
-/** Resolve o arquivo vigente até `ateCiclo` (inclusive), andando para trás. */
+/**
+ * Resolve o arquivo vigente até `ateCiclo` (inclusive), andando para trás
+ * na `ordem` informada (padrão: todos os ciclos versionados).
+ */
 export function resolverArquivo(
 	chave: string,
 	ateCiclo: string,
+	ordem: readonly string[] = CICLOS,
 ): MetaArquivo | null {
-	const idx = (CICLOS as readonly string[]).indexOf(ateCiclo);
+	const idx = ordem.indexOf(ateCiclo);
 	if (idx < 0) return null;
 	for (let i = idx; i >= 0; i--) {
-		const ciclo = CICLOS[i]!;
+		const ciclo = ordem[i]!;
 		const meta = CATALOGO.get(ciclo)?.get(chave);
 		if (meta) return meta;
 	}
@@ -282,6 +291,9 @@ export function instalarTseFalso(opcoes: OpcoesTseFalso = {}): TseFalso {
 	const modoProp = opcoes.proporcionais ?? "real";
 	const sequenciaNoite = opcoes.sequenciaNoite ?? false;
 
+	const ordemAtiva = (): readonly string[] =>
+		sequenciaNoite ? CICLOS_NOITE : CICLOS;
+
 	const cicloPresidente = () => {
 		if (sequenciaNoite) {
 			return (
@@ -293,14 +305,20 @@ export function instalarTseFalso(opcoes: OpcoesTseFalso = {}): TseFalso {
 		);
 	};
 
+	const resolver = (chave: string) =>
+		resolverArquivo(chave, cicloPresidente(), ordemAtiva());
+
 	const propAtual = () => {
 		if (modoProp === "cadeiras") {
 			return PROP_CADEIRAS[estado.indiceProp] ?? PROP_CADEIRAS.at(-1)!;
 		}
 		if (sequenciaNoite) {
 			const ciclo = cicloPresidente();
-			const depfed = metaObrigatoria("depfed", ciclo);
-			const depest = metaObrigatoria("depest", ciclo);
+			const depfed = resolver("depfed");
+			const depest = resolver("depest");
+			if (!depfed || !depest) {
+				throw new Error(`proporcionais ausentes @ ${ciclo}`);
+			}
 			return {
 				ciclo,
 				depfed: {
@@ -324,7 +342,8 @@ export function instalarTseFalso(opcoes: OpcoesTseFalso = {}): TseFalso {
 
 	const governadorAtual = () => {
 		if (sequenciaNoite) {
-			const m = metaObrigatoria("governador", cicloPresidente());
+			const m = resolver("governador");
+			if (!m) throw new Error("governador ausente na sequência da noite");
 			return {
 				etag: m.etag,
 				cacheControl: m.cacheControl,
@@ -339,7 +358,8 @@ export function instalarTseFalso(opcoes: OpcoesTseFalso = {}): TseFalso {
 
 	const senadorAtual = () => {
 		if (sequenciaNoite) {
-			const m = metaObrigatoria("senador", cicloPresidente());
+			const m = resolver("senador");
+			if (!m) throw new Error("senador ausente na sequência da noite");
 			return {
 				etag: m.etag,
 				cacheControl: m.cacheControl,
@@ -351,7 +371,8 @@ export function instalarTseFalso(opcoes: OpcoesTseFalso = {}): TseFalso {
 
 	const presidenteAtual = () => {
 		if (sequenciaNoite) {
-			const m = metaObrigatoria("presidente", cicloPresidente());
+			const m = resolver("presidente");
+			if (!m) throw new Error("presidente ausente na sequência da noite");
 			return {
 				etag: m.etag,
 				cacheControl: m.cacheControl,
@@ -457,7 +478,7 @@ export function instalarTseFalso(opcoes: OpcoesTseFalso = {}): TseFalso {
 					}
 					return new HttpResponse("falha uf", { status });
 				}
-				const meta = resolverArquivo(`pres-${uf}`, cicloPresidente());
+				const meta = resolver(`pres-${uf}`);
 				if (!meta) {
 					estado.pedidos.push({ url: request.url, ifNoneMatch });
 					return new HttpResponse("uf desconhecida", { status: 404 });

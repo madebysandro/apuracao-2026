@@ -108,4 +108,28 @@ describe("GET /api/apuracao — sequência real da noite (#2)", () => {
 		const apos = await lerApuracao();
 		expect(apos.versao).toBe(1);
 	});
+
+	it("arquivo sem mudança entre ciclos (pres-ba ausente no meio) segue com a mesma ETag", async () => {
+		const etagInicio = resolverArquivo(
+			"pres-ba",
+			CICLOS_NOITE[0],
+			CICLOS_NOITE,
+		)!.etag;
+		// No ciclo do meio a Bahia não foi regravada → resolução na sequência da noite.
+		expect(
+			resolverArquivo("pres-ba", CICLOS_NOITE[1], CICLOS_NOITE)?.etag,
+		).toBe(etagInicio);
+		expect(
+			resolverArquivo("pres-ba", CICLOS_NOITE[1], CICLOS_NOITE)?.ciclo,
+		).toBe(CICLOS_NOITE[0]);
+
+		await forcarConsulta();
+		tse.avancar();
+		const antes = tse.pedidos.length;
+		await forcarConsulta();
+		const pedidoBa = tse.pedidos
+			.slice(antes)
+			.find((p) => p.url.includes("/dados/ba/"));
+		expect(pedidoBa?.ifNoneMatch).toBe(etagInicio);
+	});
 });

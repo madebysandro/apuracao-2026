@@ -3,7 +3,7 @@
 Sequência real das respostas brutas do TSE, recortada da gravação das
 **21:04 BRT** (ainda em andamento). Cada pasta é um ciclo; só entram os
 arquivos que o gravador registrou naquele instante. Metadados (ETag,
-cache-control, URL) estão em `indice.jsonl` / `indice.json`.
+cache-control, URL) estão em `indice.jsonl`.
 
 ## Ciclos no repositório
 
@@ -16,7 +16,8 @@ cache-control, URL) estão em `indice.jsonl` / `indice.json`.
 | `2026-10-04T23-17-25-721Z` | Meio da noite |
 | `2026-10-05T00-01-02-086Z` | Mais recente da cópia (~97% no Pará; margem do Governador fora de alcance) |
 
-Também: `ele-c.json` (config oficial).
+Também: `ele-c.json` (config oficial do TSE). O gravador guardou o arquivo na
+raiz da gravação, sem linha própria de ETag/cache-control no `indice.jsonl`.
 
 ## O que os testes exercitam
 
