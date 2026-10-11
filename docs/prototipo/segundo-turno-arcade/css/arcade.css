@@ -147,8 +147,6 @@ body.flash::before { content: ""; position: fixed; inset: 0; z-index: 70; pointe
 .vs { font-size: clamp(40px, 10vw, 88px); color: #ff4d6d; }
 [data-motion="full"] .vs { animation: vs 1.2s steps(2) infinite; }
 @keyframes vs { 50% { color: var(--amarelo); } }
-.sel-cenario { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; align-items: center; font: 12px var(--mono); }
-.sel-cenario button[aria-pressed="true"] { background: var(--amarelo); color: #000; }
 .dica { font: 13px var(--mono); margin: 0; }
 #vitoria .ko { margin: 0; font-size: clamp(36px, 9vw, 80px); color: #e5383b; }
 #vitoria[data-n="22"] canvas { border-color: var(--c22); }

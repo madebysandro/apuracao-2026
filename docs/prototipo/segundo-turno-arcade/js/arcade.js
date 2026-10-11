@@ -35,7 +35,8 @@ const pf = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 2, maximumFra
 const p1 = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 
 const e1 = await (await fetch("dados/estado-1t.json")).json();
-const { hist } = gerar(e1, "encerrado");
+const col = await (await fetch("dados/colegios-1t.json")).json();
+const { hist } = gerar(e1, col, "encerrado");
 const passos = ROTEIRO.map((n) => {
 	if (!n) return { n, ap: 0, hora: "17:00", pct: { 22: null, 13: null }, votos: { 22: 0, 13: 0 } };
 	const p = hist[n - 1].c.presidente;
@@ -43,7 +44,7 @@ const passos = ROTEIRO.map((n) => {
 });
 
 // ---- estado + gancho para o teste (window.__arcade) ----
-const S = { fase: "selecao", i: -1, lider: null, sequencia: { 22: 0, 13: 0 }, cenario: "belem", arcade: true };
+const S = { fase: "selecao", i: -1, lider: null, sequencia: { 22: 0, 13: 0 }, arcade: true };
 const sonda = (window.__arcade = { eventos: [], tremidas: 0, flashes: 0, fase: "selecao" });
 
 const $ = (s) => document.querySelector(s);
@@ -118,11 +119,9 @@ const palco =
 				: null;
 if (variante === "a") {
 	palco.rostos(rosto24);
-	palco.cenario(S.cenario);
+	palco.cenario(); // só nacional: Brasília à noite
 }
 if (variante !== "a") $("#palco").hidden = true;
-$(".sel-cenario").hidden = variante !== "a";
-if (v2) $(".sel-cenario").remove(); // v2 é só nacional: nem o cenário de Belém fica no DOM
 if (v2) $("#vitoria h1").textContent = "YOU WIN";
 
 const painel = $("#painel");
@@ -139,14 +138,6 @@ if (variante === "b") {
 	});
 }
 const avisarPainel = (n) => painel.contentWindow?.postMessage({ arcadeN: n }, location.origin);
-
-for (const b of document.querySelectorAll("[data-cenario]"))
-	b.addEventListener("click", () => {
-		S.cenario = b.dataset.cenario;
-		for (const x of document.querySelectorAll("[data-cenario]")) x.setAttribute("aria-pressed", String(x === b));
-		palco?.cenario(S.cenario);
-		efeito("bip");
-	});
 
 // ---- locutor: fila de textos grandes; tudo vai também para "Lances da noite" ----
 const anuncio = $("#anuncio");

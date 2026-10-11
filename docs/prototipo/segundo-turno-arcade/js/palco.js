@@ -58,77 +58,7 @@ function lua(g, x, y) {
 	g.fillRect(x + 3, y + 3, 2, 2);
 }
 
-/** Belém: Mercado de Ferro do Ver-o-Peso (quatro torrinhas com agulhas), baía do Guajará e barcos. Desenho livre. */
-function cenarioBelem(g) {
-	ceu(g, ["#070b24", "#0c1233", "#131845", "#1d1e55", "#2a2463", "#3a2a6a"], 7);
-	lua(g, 272, 26);
-	// casario ao fundo
-	const r = rng(3);
-	g.fillStyle = "#10142e";
-	for (let x = 0; x < W; x += 18) {
-		const h = 16 + Math.floor(r() * 18);
-		g.fillRect(x, 104 - h, 16, h);
-		for (let k = 0; k < 4; k++) if (r() > 0.5) {
-			g.fillStyle = "#e9b85a";
-			g.fillRect(x + 3 + (k % 2) * 7, 104 - h + 4 + Math.floor(k / 2) * 7, 2, 3);
-			g.fillStyle = "#10142e";
-		}
-	}
-	// mercado: corpo, telhado, arcos, torrinhas
-	const ferro = "#3a6a9a", ferroEsc = "#23415f";
-	g.fillStyle = ferroEsc;
-	g.fillRect(64, 82, 192, 40);
-	g.fillStyle = ferro;
-	g.fillRect(64, 82, 192, 4);
-	for (let x = 70; x < 252; x += 12) {
-		g.fillStyle = "#f3c56b";
-		g.fillRect(x, 94, 6, 10);
-		g.fillRect(x + 1, 92, 4, 2);
-		g.fillStyle = ferroEsc;
-		g.fillRect(x + 2, 98, 2, 6);
-	}
-	g.fillStyle = "#2c5580";
-	for (let i = 0; i < 12; i++) g.fillRect(64 + i * 4, 82 - Math.min(i, 24 - i), 192 - i * 8, 1);
-	for (const tx of [60, 112, 194, 246]) {
-		g.fillStyle = ferro;
-		g.fillRect(tx, 62, 14, 60);
-		g.fillStyle = ferroEsc;
-		g.fillRect(tx + 2, 70, 3, 6);
-		g.fillRect(tx + 9, 70, 3, 6);
-		g.fillStyle = "#f3c56b";
-		g.fillRect(tx + 5, 86, 4, 8);
-		g.fillStyle = "#8fb4d6";
-		for (let k = 0; k < 9; k++) g.fillRect(tx + k * 0.8, 62 - k * 2, 14 - k * 1.6, 2);
-		g.fillRect(tx + 6, 40, 2, 6);
-	}
-	// cordão de luzes
-	for (let x = 64; x < 256; x += 5) {
-		g.fillStyle = ["#ffd166", "#ef476f", "#06d6a0", "#ffd166"][(x / 5) % 4];
-		g.fillRect(x, 86 + Math.round(2 * Math.sin(x / 9)), 1, 1);
-	}
-	// baía
-	faixas(g, ["#0b2638", "#0a2232", "#081c2a"], 122, 146);
-	g.fillStyle = "#f4e9c1";
-	for (let y = 124; y < 146; y += 3) g.fillRect(266 + ((y * 7) % 9) - 4, y, 10 - ((y * 3) % 5), 1);
-	// barcos regionais
-	for (const [bx, cor] of [[18, "#d64545"], [150, "#2f9e6e"], [286, "#e0a030"]]) {
-		g.fillStyle = "#3b2416";
-		g.fillRect(bx, 132, 30, 5);
-		g.fillRect(bx + 2, 137, 26, 2);
-		g.fillStyle = cor;
-		g.fillRect(bx, 132, 30, 1);
-		g.fillStyle = "#e7e2d4";
-		g.fillRect(bx + 8, 125, 14, 7);
-		g.fillStyle = "#3b2416";
-		g.fillRect(bx + 6, 124, 18, 1);
-	}
-	// cais de pedra
-	faixas(g, ["#3b3346", "#332c3e", "#2a2434"], 146, 180);
-	g.fillStyle = "#4a4157";
-	for (let y = 150; y < 180; y += 8) for (let x = (y / 8) % 2 ? 0 : 10; x < W; x += 20) g.fillRect(x, y, 18, 1);
-}
-
-/** Brasília: Congresso Nacional à noite (torres gêmeas, cúpula e "prato"), espelho d'água. Desenho livre. */
+/** Cenário único (só nacional): Brasília, o Congresso Nacional à noite (torres gêmeas, cúpula e "prato"), espelho d'água. Desenho livre. */
 function cenarioBrasilia(g) {
 	ceu(g, ["#060a22", "#0b1032", "#121844", "#1a1f57", "#241f63", "#33206a"], 11);
 	lua(g, 48, 30);
@@ -177,8 +107,6 @@ function cenarioBrasilia(g) {
 		g.fillRect(lx - 2, 118, 6, 2);
 	}
 }
-
-const CENARIOS = { belem: cenarioBelem, brasilia: cenarioBrasilia };
 
 /** Retângulo espelhado conforme o lado para onde o lutador olha. */
 function pincel(g, x, y, olha, branco) {
@@ -296,10 +224,10 @@ export function criarPalco(canvas, { reduzido }) {
 		r: rng(42),
 	};
 
-	function cenario(nome) {
+	function cenario() {
 		const gf = fundo.getContext("2d");
 		gf.clearRect(0, 0, W, 180);
-		CENARIOS[nome](gf);
+		cenarioBrasilia(gf);
 		desenhar(performance.now());
 	}
 

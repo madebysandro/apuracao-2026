@@ -18,6 +18,14 @@ let falhas = 0;
   console.log(`${ok ? "ok  " : "FAIL"} ia/ sem quadro de K.O. no chão · ${arqs.length} arquivos · poses ${poses}${extras.length ? " · extras " + extras : ""}`);
   falhas += ok ? 0 : 1;
 }
+// só nacional: nada de Pará/Belém/Tela 2 na página nem no painel do iframe (b), fora a tabela neutra "Todas as UFs"
+const PROIBIDO = /Pará|Belém|Ver-o-Peso|Tela 2/;
+const textoNacional = async (page) => {
+  let t = await page.locator("body").innerText();
+  if (await page.locator("#painel:not([hidden])").count())
+    t += await page.frameLocator("#painel").locator("body").evaluate((b) => { const c = b.cloneNode(true); c.querySelector(".t2-rolagem-uf")?.remove(); return c.textContent; });
+  return t.match(PROIBIDO)?.[0];
+};
 // selo em toda imagem renderizada da variante ia
 const selos = (page) => page.evaluate(() => {
   const imgs = [...document.querySelectorAll("img")].filter((i) => i.checkVisibility());
@@ -65,6 +73,7 @@ for (const v of ["a", "b", "c", "ia"]) for (const [nomeT, viewport] of tamanhos)
     const f = page.frameLocator("#painel");
     ok(await f.locator(".db-topo").count() === 1, "painel não carregou no iframe");
   }
+  ok(!(await textoNacional(page)), `texto não nacional na seleção: ${await textoNacional(page)}`);
   await page.screenshot({ path: `${OUT}/${nome}-1-selecao.png` });
   // observa .treme ao longo da luta
   await page.evaluate(() => { window.__treme = 0; new MutationObserver(() => { if (document.querySelector(".treme")) window.__treme++; }).observe(document.body, { subtree: true, attributes: true, attributeFilter: ["class"] }); });
@@ -93,6 +102,7 @@ for (const v of ["a", "b", "c", "ia"]) for (const [nomeT, viewport] of tamanhos)
   else ok(ev.tremidas === 0 && ev.flashes === 0 && treme === 0, `reduzido com tremor/flash: ${ev.tremidas}/${ev.flashes}/${treme}`);
   const txt = await page.locator("body").innerText();
   ok(!/undefined|NaN|\[object/.test(txt), "texto suspeito");
+  ok(!(await textoNacional(page)), `texto não nacional no fim: ${await textoNacional(page)}`);
   const largura = await page.evaluate(() => document.documentElement.scrollWidth);
   ok(largura <= viewport.width + 1, `rolagem horizontal ${largura}px`);
   await checaSelos("vitória");

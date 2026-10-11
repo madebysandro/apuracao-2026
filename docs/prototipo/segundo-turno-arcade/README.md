@@ -27,8 +27,8 @@ python3 -m http.server 8777
 | `variant` | O que é |
 |---|---|
 | `v2` (padrão) | **Luta 2.5D em three.js com as imagens de IA.** É a versão nova, que substitui as quatro abaixo. Detalhes em [Variante `v2`](#variante-v2-luta-25d-em-threejs). |
-| `a` | **16-bit completo.** Tela de seleção com os retratos e "VS", e escolha do cenário: **Belém, Ver-o-Peso à noite** (o Mercado de Ferro com as quatro torrinhas, a baía do Guajará e barcos regionais) ou **Brasília, o Congresso à noite** (torres gêmeas, cúpula, "prato" e espelho d'água). Depois vem a luta num canvas de 320×180 ampliado em pixel art, com linhas de varredura de CRT. Os lutadores são idênticos: quimono na cor da entidade, faixa preta, luvas brancas e o número no peito. A cabeça é a foto real pixelada. O topo tem as barras amarelas de vida com os retratos e o cronômetro no meio. |
-| `b` | **HUD sobre o painel sério.** O painel aprovado do 2º turno (cópia em `painel/`) roda num iframe e acompanha o simulador leitura a leitura. Por cima dele fica uma camada arcade: barras amarelas, cronômetro, retratos, ROUND/FIGHT/REVERSAL/K.O. e as telas de seleção e de vitória. O botão **🕹 Modo arcade** liga e desliga a camada, e o painel continua por baixo. |
+| `a` | **16-bit completo.** Tela de seleção com os retratos e "VS". O cenário é um só, nacional: **Brasília, o Congresso à noite** (torres gêmeas, cúpula, "prato" e espelho d'água). O cenário de Belém (Ver-o-Peso) e o seletor de cenário saíram quando o protótipo passou a ser só nacional. Depois vem a luta num canvas de 320×180 ampliado em pixel art, com linhas de varredura de CRT. Os lutadores são idênticos: quimono na cor da entidade, faixa preta, luvas brancas e o número no peito. A cabeça é a foto real pixelada. O topo tem as barras amarelas de vida com os retratos e o cronômetro no meio. |
+| `b` | **HUD sobre o painel sério.** O painel aprovado do 2º turno, na versão só nacional (cópia em `painel/`), roda num iframe e acompanha o simulador leitura a leitura. Por cima dele fica uma camada arcade: barras amarelas, cronômetro, retratos, ROUND/FIGHT/REVERSAL/K.O. e as telas de seleção e de vitória. O botão **🕹 Modo arcade** liga e desliga a camada, e o painel continua por baixo. |
 | `c` | **Neon minimalista.** Fundo preto, os dois rostos em anéis neon, barras finas que brilham, um cronômetro fino e um pulso de luz que cruza a tela do atacante até o atingido. Não há lutadores nem cenário. |
 | `ia` | **Imagens geradas por IA (sátira).** Usa as ilustrações que o Sandro gerou com IA, sem retoque. A tela de seleção mostra a cena VS e uma ficha de cada lutador. No HUD, os retratos são recortes dos rostos. A luta acontece num palco em CSS (céu de fim de tarde e chão), com os quadros de pose recortados e sem o fundo branco. Detalhes em [Variante `ia`](#variante-ia-imagens-geradas-por-ia). |
 
@@ -88,7 +88,7 @@ Os rostos vêm de fotos públicas com licença clara, em que os dois aparecem co
 
 Este protótipo usa só as **convenções do gênero**: tela de seleção com "VS", barras de vida no alto com o cronômetro no meio, "ROUND 1 / FIGHT!", rastro e faíscas de impacto, "PERFECT", "K.O.", tela de vitória, pixel art 16-bit e CRT. Nada foi copiado de nenhum jogo:
 
-- **Arte:** os lutadores, os cenários, as faíscas e a fonte 3×5 dos números são desenhados em código (`fillRect` em `js/palco.js`). Não há sprite, personagem, figurino icônico (o quimono é na cor da entidade, sem faixa de cabeça), logotipo nem cenário de jogo nenhum. Ver-o-Peso e Congresso são desenhos livres de lugares reais.
+- **Arte:** os lutadores, os cenários, as faíscas e a fonte 3×5 dos números são desenhados em código (`fillRect` em `js/palco.js`). Não há sprite, personagem, figurino icônico (o quimono é na cor da entidade, sem faixa de cabeça), logotipo nem cenário de jogo nenhum. O Congresso é um desenho livre de um lugar real.
 - **Fontes:** só as do sistema (`ui-monospace`/`system-ui`). O aspecto "em blocos" vem de sombras em degrau no CSS.
 - **Som:** tudo é sintetizado na hora. A melodia foi composta para cá, não imita trilha de jogo, e as vozes são do sintetizador do sistema.
 - **Nomes:** não há nome, marca ou golpe de franquia. Os termos ROUND, FIGHT, PERFECT, REVERSAL, K.O. e WINNER são vocabulário genérico de luta.
@@ -127,7 +127,7 @@ Este protótipo usa só as **convenções do gênero**: tela de seleção com "V
 
 As variantes a, b, c e ia não agradaram. A `v2` é a versão única nova e abre por padrão, sem `?variant`. Ela mantém o HUD (barras amarelas no alto, cronômetro no meio), a tela de seleção com "VS", o simulador (Próxima atualização, Autoplay e Reiniciar), a faixa fixa "DADOS DE EXEMPLO" e as regras do duelo descritas acima.
 
-**Só nacional.** A `v2` não tem cenário nem texto do Pará: o palco é a praça brasileira das próprias imagens, e o seletor de cenário (Belém/Brasília) sai do DOM. O smoke confere que "Pará", "Belém" e "Ver-o-Peso" não aparecem na página.
+**Só nacional.** A `v2` não tem cenário nem texto do Pará: o palco é a praça brasileira das próprias imagens. O smoke confere que "Pará", "Belém" e "Ver-o-Peso" não aparecem na página.
 
 ### Imagens
 
@@ -171,18 +171,31 @@ Com `prefers-reduced-motion: reduce` ou `?motion=reduced`, a `v2` não roda o la
 
 Usamos só as convenções do gênero: barras no alto, cronômetro, VS, ROUND/FIGHT, faíscas, câmera lenta, K.O. e YOU WIN. Não há sprite, som, voz, música, fonte nem logotipo de jogo nenhum. As imagens são as geradas por IA pelo Sandro, e todo o resto (formas, partículas, som) é gerado por código.
 
+## Só nacional
+
+O protótipo inteiro é só nacional, como o painel aprovado desde `8f985d1` (em `prototipo/segundo-turno`):
+
+- `painel/` foi atualizado para essa versão: saíram o cartão e os destaques do Pará, a Tela 2 (arquivo do 1º turno no Pará) e as abas; entraram os maiores colégios eleitorais, o exterior e o comparecimento/abstenção. Os patches `ARCADE` foram reaplicados por cima.
+- `dados/estado-1t.json` é o recortado (Presidente + UFs) e `dados/colegios-1t.json` é novo, os dois copiados do protótipo do 2º turno.
+- Variante a: só o cenário de Brasília à noite; o de Belém (Ver-o-Peso) e o seletor saíram do código.
+- Os smokes conferem que "Pará", "Belém", "Ver-o-Peso" e "Tela 2" não aparecem em nenhuma variante, nem no painel do iframe. A exceção é a tabela neutra "Todas as UFs" do painel, que lista as 27 UFs pelo nome.
+
 ## Arquivos
 
 - `js/v2.js` (palco three.js da `v2`), `js/vendor/` (three.js r185 + licença MIT), `smoke-v2.mjs` (smoke da `v2`).
 - `ia/` (assets WebP e `manifesto.json` das variantes `ia` e `v2`; `fundo.webp` só na `v2`), `ia-recortar.py` (gera `ia/` a partir dos originais), `js/ia.js` (quadros com selo e palco da variante `ia`).
-- `index.html`, `css/arcade.css`, `js/arcade.js` (estado, simulador, HUD, variantes e switcher), `js/palco.js` (canvas da variante a), `js/rosto.js` (pixelização), `js/som.js` (áudio).
-- `dados/estado-1t.json`, `dados/br-c0001-e006258-u.json`: cópias do protótipo `segundo-turno`. `dados/fotos/`: as fotos do Commons recortadas e as fotos do TSE de reserva.
-- `painel/`: cópia do protótipo aprovado (`docs/prototipo/segundo-turno/`). Os patches estão marcados com `ARCADE`:
-  - `mock-2t.js`: fotos locais, janelas de apuração em ondas (para o exemplo ter 3 viradas) e `gerar(e1, variante, n)`;
-  - `app-2t.js`: aceita `?n=` e `postMessage({ arcadeN })`;
+- `index.html`, `css/arcade.css`, `js/arcade.js` (estado, simulador, HUD, variantes e switcher), `js/palco.js` (canvas da variante a, cenário de Brasília), `js/rosto.js` (pixelização), `js/som.js` (áudio).
+- `dados/estado-1t.json`, `dados/colegios-1t.json`, `dados/br-c0001-e006258-u.json`: cópias do protótipo `segundo-turno` (versão só nacional). `dados/fotos/`: as fotos do Commons recortadas e as fotos do TSE de reserva.
+- `painel/`: cópia do protótipo aprovado, só nacional (`docs/prototipo/segundo-turno/` em `8f985d1`). Os patches estão marcados com `ARCADE`:
+  - `mock-2t.js`: fotos locais, janelas de apuração em ondas (para o exemplo ter 3 viradas) e `gerar(e1, col, variante, n)`;
+  - `app-2t.js`: lê `../dados/`, aceita `?n=` e `postMessage({ arcadeN })`;
   - `proto-switcher.js`: com `?embed`, não mostra a barra nem a faixa.
 
 ## Verificação
+
+**Painel** (`smoke-painel.cjs`, adaptado de `segundo-turno/smoke.cjs`). Com o servidor de pé em :8777, a partir de um diretório com `playwright` (ou `PW=/caminho`): `node smoke-painel.cjs`. São 14 casos: as 4 variantes do painel e o modo embutido da (b) (`?embed=1&n=0|24|60`), a 1440 e a 390 px. Confere: sem erro no console; sem "Pará", "Belém", "Ver-o-Peso" nem "Tela 2" fora da tabela de UFs; tabela de UFs com 28 linhas; os blocos duelo, exterior, comparecimento, comparação, estados e colégios (10 linhas); sem abas; sem rolagem horizontal; faixa "DADOS DE EXEMPLO" fora do iframe e sem switcher dentro dele; "Resultado final" em `n=60` e via `postMessage({ arcadeN: 60 })`.
+
+Resultado em 11/10/2026, depois da troca para só nacional: **14/14 ok** no `smoke-painel.cjs`, **todos os casos passaram** no `smoke.mjs` (23/23) e no `smoke-v2.mjs` (7/7).
 
 **Variante `v2`** (`smoke-v2.mjs`). Rode com o servidor de pé, a partir de um diretório com `playwright`: `node smoke-v2.mjs http://127.0.0.1:8777/`. O Chromium headless sobe com SwiftShader (`--use-gl=angle --use-angle=swiftshader --enable-unsafe-swiftshader`) para o WebGL funcionar sem GPU. São 5 casos: 1440×900 e 390×844, cada um com movimento completo e reduzido, mais `?motion=reduced` no desktop. Em todos, o smoke confere:
 
@@ -212,6 +225,7 @@ Cada caso cobre as 3 variantes a 1440×900 e a 390×844, com movimento completo 
 - que, clicando em "Próxima atualização" até o fim (14 cliques), aparecem ROUND 1, FIGHT!, REVERSAL! (3×), K.O. e a tela WINNER;
 - no modo completo, que houve tremor; no reduzido, nenhum `.treme` e nenhum flash;
 - que não há texto `undefined`/`NaN` nem rolagem horizontal;
+- que não há "Pará", "Belém", "Ver-o-Peso" nem "Tela 2" na página, na seleção e no fim (na (b), também no painel do iframe, fora a tabela de UFs);
 - que "Reiniciar" volta para a seleção e que o som liga no clique.
 
 Na variante (b), confere também que o painel carrega no iframe e chega a "Resultado final" e que o modo arcade desliga e volta. Por fim, o autoplay chega ao fim sozinho.
