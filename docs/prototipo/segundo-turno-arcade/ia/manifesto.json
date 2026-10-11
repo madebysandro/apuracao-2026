@@ -1,0 +1,77 @@
+{
+ "poses": {
+  "22": {
+   "guarda": {
+    "arquivo": "ia/22-guarda.webp",
+    "w": 295,
+    "h": 382
+   },
+   "chute": {
+    "arquivo": "ia/22-chute.webp",
+    "w": 286,
+    "h": 385
+   },
+   "golpeado": {
+    "arquivo": "ia/22-golpeado.webp",
+    "w": 230,
+    "h": 306
+   },
+   "vitoria": {
+    "arquivo": "ia/22-vitoria.webp",
+    "w": 182,
+    "h": 390
+   }
+  },
+  "13": {
+   "guarda": {
+    "arquivo": "ia/13-guarda.webp",
+    "w": 285,
+    "h": 389
+   },
+   "chute": {
+    "arquivo": "ia/13-chute.webp",
+    "w": 335,
+    "h": 406
+   },
+   "golpeado": {
+    "arquivo": "ia/13-golpeado.webp",
+    "w": 372,
+    "h": 366
+   },
+   "vitoria": {
+    "arquivo": "ia/13-vitoria.webp",
+    "w": 187,
+    "h": 388
+   }
+  }
+ },
+ "vs": {
+  "arquivo": "ia/vs.webp",
+  "w": 1600,
+  "h": 1200
+ },
+ "ficha": {
+  "22": {
+   "arquivo": "ia/22-ficha.webp",
+   "w": 496,
+   "h": 602
+  },
+  "13": {
+   "arquivo": "ia/13-ficha.webp",
+   "w": 496,
+   "h": 602
+  }
+ },
+ "retrato": {
+  "22": {
+   "arquivo": "ia/22-retrato.webp",
+   "w": 200,
+   "h": 203
+  },
+  "13": {
+   "arquivo": "ia/13-retrato.webp",
+   "w": 200,
+   "h": 203
+  }
+ }
+}

@@ -15,6 +15,7 @@ python3 -m http.server 8777
 # http://localhost:8777/?variant=a   (16-bit)
 # http://localhost:8777/?variant=b   (HUD sobre o painel)
 # http://localhost:8777/?variant=c   (neon minimalista)
+# http://localhost:8777/?variant=ia  (imagens geradas por IA, sátira)
 # acrescente &motion=reduced para testar o caminho de movimento reduzido
 ```
 
@@ -27,6 +28,7 @@ python3 -m http.server 8777
 | `a` (padrão) | **16-bit completo.** Tela de seleção com os retratos e "VS", e escolha do cenário: **Belém, Ver-o-Peso à noite** (o Mercado de Ferro com as quatro torrinhas, a baía do Guajará e barcos regionais) ou **Brasília, o Congresso à noite** (torres gêmeas, cúpula, "prato" e espelho d'água). Depois vem a luta num canvas de 320×180 ampliado em pixel art, com linhas de varredura de CRT. Os lutadores são idênticos: quimono na cor da entidade, faixa preta, luvas brancas e o número no peito. A cabeça é a foto real pixelada. O topo tem as barras amarelas de vida com os retratos e o cronômetro no meio. |
 | `b` | **HUD sobre o painel sério.** O painel aprovado do 2º turno (cópia em `painel/`) roda num iframe e acompanha o simulador leitura a leitura. Por cima dele fica uma camada arcade: barras amarelas, cronômetro, retratos, ROUND/FIGHT/REVERSAL/K.O. e as telas de seleção e de vitória. O botão **🕹 Modo arcade** liga e desliga a camada, e o painel continua por baixo. |
 | `c` | **Neon minimalista.** Fundo preto, os dois rostos em anéis neon, barras finas que brilham, um cronômetro fino e um pulso de luz que cruza a tela do atacante até o atingido. Não há lutadores nem cenário. |
+| `ia` | **Imagens geradas por IA (sátira).** Usa as ilustrações que o Sandro gerou com IA, sem retoque. A tela de seleção mostra a cena VS e uma ficha de cada lutador. No HUD, os retratos são recortes dos rostos. A luta acontece num palco em CSS (céu de fim de tarde e chão), com os quadros de pose recortados e sem o fundo branco. Detalhes em [Variante `ia`](#variante-ia-imagens-geradas-por-ia). |
 
 ## Regras do duelo (iguais para os dois lados)
 
@@ -90,8 +92,38 @@ Este protótipo usa só as **convenções do gênero**: tela de seleção com "V
 - **Nomes:** não há nome, marca ou golpe de franquia. Os termos ROUND, FIGHT, PERFECT, REVERSAL, K.O. e WINNER são vocabulário genérico de luta.
 - **Neutralidade:** os dois lutadores são idênticos, com os mesmos golpes, efeitos, regras e frase de vitória. Muda só a cor (22 azul `--s1`, 13 laranja `--s2`, como no protótipo aprovado) e o número.
 
+## Variante `ia`: imagens geradas por IA
+
+**Origem.** As imagens foram geradas por IA pelo Sandro no Higgsfield e depois ampliadas por upscale fiel, sem edição, para 4096×3072. Os originais ficam **fora do repositório** (`/workspace/arcade-upscale/`): `cena-flavio.png`, `cena-lula.png`, `cena-vs.png`, `poses-flavio.png` e `poses-lula.png`.
+
+**O que se fez com elas: só recortar, redimensionar e tirar o fundo branco das poses.** Nada foi retocado, recolorido ou gerado de novo. O script é `ia-recortar.py` (Pillow + numpy) e roda com `python3 -I ia-recortar.py /workspace/arcade-upscale ia`. Nas poses, o alfa sai assim: o papel é o pixel com todos os canais ≥ 226; o fundo é o papel ligado às bordas, achado por flood-fill; e fica só o boneco ligado a uma semente, outro flood-fill que descarta respingos e pedaços de poses vizinhas. Para as bordas saírem suaves, o trabalho é feito a 2× e reduzido no fim. Tudo é salvo em WebP. O `ia/manifesto.json` guarda os tamanhos, e o total fica em **~0,5 MB**.
+
+| Arquivo em `ia/` | Fonte e recorte (coordenadas na prévia 1200×900; × 3,413 = px do original) | Saída |
+|---|---|---|
+| `vs.webp` | `cena-vs.png` inteira | 1600×1200 |
+| `22-ficha.webp`, `13-ficha.webp` | `cena-flavio.png` e `cena-lula.png`, o **mesmo** retângulo (40,148)–(660,900): o lutador da esquerda, sem o HUD que já vem desenhado na imagem | 496×602 |
+| `22-retrato.webp`, `13-retrato.webp` | o quadro de retrato que já vem no canto das mesmas cenas, (20,20)–(138,140), igual nas duas | 200×203 |
+| `{22,13}-guarda/chute/golpeado/vitoria.webp` | `poses-flavio.png` e `poses-lula.png`, um retângulo por pose e sem o fundo; a mesma escala nas duas folhas (a guarda de Lula com 390 px) | 198–390 × 310–414 |
+
+**Poses usadas, as mesmas para os dois:** guarda (parado), chute (quem ganhou p.p. na leitura), golpeado (quem perdeu) e vitória (WINNER). Os golpes, os tempos e as regras de espelhamento são idênticos: cada quadro só é espelhado se, na folha, olha para o lado oposto ao do adversário.
+
+- **K.O. no chão: excluído.** Em `poses-lula.png`, o quadro do K.O. no chão tem o **rosto do outro candidato**. Por isso ele **nunca é usado**, nem mesmo como arquivo. Por isonomia, o K.O. no chão de `poses-flavio.png` também fica de fora. O K.O. dos dois é montado igual, a partir do quadro **golpeado** com CSS: queda para trás de 80° (girando no pé de trás, por 0,9 s), poeira e clarão branco no palco. Com movimento reduzido, aparece só a pose final deitada, sem queda, poeira ou clarão. O `ia-recortar.py` termina conferindo, por miniatura em tons de cinza, que nenhum arquivo de `ia/` se parece com os dois quadros de K.O. no chão. O `smoke.mjs` confere que `ia/` só tem os arquivos do manifesto.
+- **Soco: não usado.** Em `poses-flavio.png`, a folha tem uma guarda grande a mais, que se sobrepõe a duas poses: esconde a perna da frente da guarda pequena e o pé de trás do soco. Por isso, a guarda de Flávio é a grande, reduzida à altura da de Lula, e recortada com três polígonos que só separam os vizinhos que encostam nela. Como o soco de Flávio está incompleto na fonte, o soco fica de fora **para os dois**, e o golpe é sempre o chute.
+
+**Selo e aviso.** Toda imagem mostrada (cena VS, fichas, retratos e cada quadro de pose, inclusive no K.O. e na vitória) fica dentro de um `.ia-quadro` com o selo fixo **"Imagem gerada por IA · sátira"**. O selo é um elemento do DOM por cima da imagem, sem botão para esconder, e nos retratos pequenos usa 6,5–7 px. O rodapé fixo, sempre visível nesta variante, diz: *"Imagens criadas com IA para fins de humor. Não retratam fatos reais."* No retrato atingido, nada é pintado por cima do rosto, ao contrário das outras variantes: só a borda fica vermelha e pisca.
+
+**Diferenças de neutralidade observadas nas imagens (registradas, não corrigidas):**
+
+- **Partido e número:** só Lula tem marcas partidárias. Nas cenas aparecem a estrela do PT com a sigla "PT" no ombro e o "13" tatuado no braço, e nas poses, a estrela vermelha nos ombros. Flávio não tem símbolo do PL nem o número 22, só pequenos emblemas com a bandeira do Brasil e a faixa verde-amarela.
+- **Roupa:** Flávio veste colete e paletó escuros de terno, com camisa branca (e gravata verde na vitória) e a faixa nas cores nacionais. Lula usa colete vermelho com faixa vermelha, a cor do partido. As duas roupas são rasgadas nos ombros, com mãos enfaixadas e musculatura parecida, e a qualidade do desenho é equivalente.
+- **Torcida e cenário:** a praça é a mesma, com igreja colonial e piso de pedras portuguesas, e o adversário genérico de regata também. Muda a torcida: em `cena-flavio`, ela veste verde e amarelo, com faixa do Brasil; em `cena-lula`, aparece uma torcida de vermelho com bandeira vermelha à esquerda e outra de verde e amarelo à direita. Em `cena-vs`, a torcida de vermelho fica atrás de Flávio e a de verde e amarelo com a bandeira do Brasil, atrás de Lula.
+- **Expressão:** no retrato, Flávio aparece sério, de boca fechada, e Lula sorri de boca aberta. Na luta, os dois estão de cenho franzido. Na vitória, Flávio ergue os punhos e Lula faz "V" com as duas mãos, e os dois sorriem. O quadro "golpeado" de Lula é mais teatral (cabeça jogada para trás, braços abertos e quadro mais largo) do que o de Flávio, que se encolhe.
+- **Idade e escala:** Lula é desenhado mais velho (cabelo e barba brancos), com o mesmo corpo musculoso. Na mesma escala de folha, os quadros de Lula saem um pouco mais altos (chute com 414 px, contra 390 px de Flávio).
+- **Qualidade das folhas:** a de Flávio tem a guarda sobreposta (veja acima). A de Lula tem o K.O. com o rosto errado. Os dois problemas foram contornados por exclusão, igual para os dois, sem edição.
+
 ## Arquivos
 
+- `ia/` (assets WebP e `manifesto.json` da variante `ia`), `ia-recortar.py` (gera `ia/` a partir dos originais), `js/ia.js` (quadros com selo e palco da variante `ia`).
 - `index.html`, `css/arcade.css`, `js/arcade.js` (estado, simulador, HUD, variantes e switcher), `js/palco.js` (canvas da variante a), `js/rosto.js` (pixelização), `js/som.js` (áudio).
 - `dados/estado-1t.json`, `dados/br-c0001-e006258-u.json`: cópias do protótipo `segundo-turno`. `dados/fotos/`: as fotos do Commons recortadas e as fotos do TSE de reserva.
 - `painel/`: cópia do protótipo aprovado (`docs/prototipo/segundo-turno/`). Os patches estão marcados com `ARCADE`:
@@ -116,4 +148,8 @@ Cada caso cobre as 3 variantes a 1440×900 e a 390×844, com movimento completo 
 
 Na variante (b), confere também que o painel carrega no iframe e chega a "Resultado final" e que o modo arcade desliga e volta. Por fim, o autoplay chega ao fim sozinho.
 
-Resultado em 11/10/2026: **16/16 ok**: 15 casos (a/b/c × desktop/celular × completo/reduzido, mais `?motion=reduced` no desktop) e o autoplay. O smoke original do protótipo aprovado, rodado contra `painel/`, também passou nos 10 casos.
+Na variante `ia`, o smoke confere também: que todo `<img>` visível tem o selo "Imagem gerada por IA · sátira" dentro do mesmo quadro (na seleção, na luta e na vitória); que o rodapé de IA está sempre visível; que o K.O. usa o quadro "golpeado", com a animação `cai-*` no modo completo e sem animação no reduzido; e que `ia/` só tem os arquivos do manifesto, sem nenhum K.O. no chão. Rode `node smoke.mjs http://127.0.0.1:8777/ /caminho/para/ia/`, já que o 2º argumento indica a pasta `ia/` quando o smoke roda copiado.
+
+Resultado com a variante `ia` em 11/10/2026: **23/23 ok**. São 20 casos (a/b/c/ia × desktop/celular × completo/reduzido, mais `?motion=reduced` no desktop), mais o autoplay de a e de ia e a checagem de `ia/`. Na `ia`, todas as imagens têm selo: 7/7 na seleção, 4/4 na luta e 5/5 na vitória.
+
+Resultado anterior, em 11/10/2026: **16/16 ok**: 15 casos (a/b/c × desktop/celular × completo/reduzido, mais `?motion=reduced` no desktop) e o autoplay. O smoke original do protótipo aprovado, rodado contra `painel/`, também passou nos 10 casos.

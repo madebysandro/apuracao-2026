@@ -228,6 +228,83 @@ button:focus-visible { outline: 3px solid var(--amarelo); outline-offset: 2px; }
 [data-variant="c"] .tela-cheia h1, [data-variant="c"] .vs, [data-variant="c"] .ko { font-family: system-ui, sans-serif; font-weight: 200; letter-spacing: .25em; text-shadow: 0 0 8px currentColor, 0 0 28px currentColor; }
 [data-variant="c"] .treme { animation-name: treme; }
 
+/* ---------- variante (ia): imagens geradas por IA, usadas como estão; selo fixo em cada quadro ---------- */
+.ia-quadro { position: relative; display: block; line-height: 0; }
+.ia-quadro img { display: block; width: 100%; height: 100%; }
+.ia-selo {
+	position: absolute; left: 3px; bottom: 3px; z-index: 3; max-width: calc(100% - 6px); pointer-events: none;
+	padding: 1px 4px; border-radius: 2px; background: rgba(0, 0, 0, .78); color: #fff;
+	font: 600 10px/1.15 system-ui, sans-serif; letter-spacing: 0; text-transform: none; text-shadow: none; white-space: normal; text-align: left;
+}
+[data-variant="ia"] canvas.retrato, [data-variant="ia"] .tela-cheia canvas { display: none; }
+[data-variant="ia"] .hud-lado::before { display: none; } /* sem tinta nem rachadura por cima do rosto */
+.ia-retrato { width: 84px; height: auto; aspect-ratio: 200 / 203; flex: none; border: 3px solid #fff; box-shadow: 0 0 0 2px #000; background: #000; }
+.ia-retrato .ia-selo { left: 1px; bottom: 1px; max-width: calc(100% - 2px); padding: 1px 2px; font-size: 7px; line-height: 1.1; }
+.hud-lado[data-n="22"] .ia-retrato { border-color: var(--c22); }
+.hud-lado[data-n="13"] .ia-retrato { border-color: var(--c13); }
+.hud-lado.lider .ia-retrato { outline: 3px solid var(--amarelo); outline-offset: 1px; }
+.hud-lado.ferido .ia-retrato { border-color: #e5383b; }
+[data-motion="full"] .hud-lado.ferido .ia-retrato { animation: pisca-borda .5s steps(2) 1; }
+@keyframes pisca-borda { 0%, 49% { border-color: #fff; box-shadow: 0 0 0 2px #e5383b, 0 0 14px #e5383b; } }
+
+[data-variant="ia"] #arena { max-width: min(1100px, calc((100vh - 330px) * 16 / 9)); min-width: min(100%, 560px); }
+[data-variant="ia"] .palco-wrap { aspect-ratio: 16 / 9; }
+[data-variant="ia"] .hud { position: relative; z-index: 3; }
+[data-variant="ia"] .palco-wrap::after { display: none; }
+.ia-palco {
+	position: absolute; inset: 0; overflow: hidden;
+	background: linear-gradient(#1d2a63, #4b3f8c 45%, #b9786a 64%, #4a3a32 64.5%, #2a211c);
+}
+.ia-palco.clarao::after { content: ""; position: absolute; inset: 0; background: #fff; animation: some .45s steps(3) forwards; }
+.lutador { position: absolute; bottom: 5%; transition: transform .12s ease-out; }
+.lutador[data-n="22"] { left: 5%; transform-origin: 0 100%; }
+.lutador[data-n="13"] { right: 5%; transform-origin: 100% 100%; }
+.lutador .ia-quadro { height: 100%; }
+.lutador.espelha img { transform: scaleX(-1); }
+.lutador .ia-selo { font-size: 9px; }
+.lutador.lider img { filter: drop-shadow(0 0 6px var(--amarelo)); }
+.lutador[data-n="22"].ataca { transform: translateX(calc(8% + 22% * var(--int, .5))); }
+.lutador[data-n="13"].ataca { transform: translateX(calc(-8% - 22% * var(--int, .5))); }
+.lutador[data-n="22"].atingido { transform: translateX(calc(-4% - 12% * var(--int, .5))); }
+.lutador[data-n="13"].atingido { transform: translateX(calc(4% + 12% * var(--int, .5))); }
+.faisca { position: absolute; top: 34%; width: 12%; aspect-ratio: 1; opacity: 0; pointer-events: none; border-radius: 50%;
+	background: radial-gradient(#fff 0 18%, #ffe066 19% 40%, rgba(255, 120, 40, .7) 41% 62%, transparent 63%); }
+.faisca[data-alvo="13"] { right: 34%; }
+.faisca[data-alvo="22"] { left: 34%; }
+.faisca.pop { animation: faisca .35s steps(4) 1; }
+@keyframes faisca { from { opacity: 1; transform: scale(calc(.5 + var(--int, .5))); } to { opacity: 0; transform: scale(calc(1 + 1.4 * var(--int, .5))); } }
+/* K.O.: o quadro "golpeado" cai para trás (os dois do mesmo jeito, espelhados), com poeira e clarão */
+.lutador .poeira { position: absolute; bottom: -4%; width: 90%; height: 22%; opacity: 0; pointer-events: none;
+	background: radial-gradient(ellipse at 50% 70%, rgba(222, 196, 150, .9), rgba(222, 196, 150, 0) 68%); }
+.lutador[data-n="22"] .poeira { left: 0; }
+.lutador[data-n="13"] .poeira { right: 0; }
+/* gira pelo pé de trás e anda ~uma altura do quadro (--ar = largura/altura) para o corpo deitado caber no palco */
+.lutador[data-n="22"].ko { transform-origin: 0 100%; transform: translateX(calc(95% / var(--ar))) rotate(-80deg); }
+.lutador[data-n="13"].ko { transform-origin: 100% 100%; transform: translateX(calc(-95% / var(--ar))) rotate(80deg); }
+[data-motion="full"] .lutador.ko { transition: none; animation: cai-22 .9s cubic-bezier(.5, 0, .9, .6) 1; }
+[data-motion="full"] .lutador[data-n="13"].ko { animation-name: cai-13; }
+@keyframes cai-22 { 0% { transform: none; } 25% { transform: translate(10%, -8%) rotate(-12deg); } 100% { transform: translateX(calc(95% / var(--ar))) rotate(-80deg); } }
+@keyframes cai-13 { 0% { transform: none; } 25% { transform: translate(-10%, -8%) rotate(12deg); } 100% { transform: translateX(calc(-95% / var(--ar))) rotate(80deg); } }
+[data-motion="full"] .lutador.ko .poeira { animation: poeira 1.2s ease-out .7s 1 both; }
+@keyframes poeira { 0% { opacity: 0; transform: scale(.4); } 30% { opacity: 1; } 100% { opacity: 0; transform: scale(1.6, 1.3); } }
+
+[data-variant="ia"] .sel-grade { align-items: center; }
+.ia-ficha { width: clamp(120px, 16vw, 220px); aspect-ratio: 496 / 602; border: 4px solid #fff; box-shadow: 0 0 0 3px #000, 6px 6px 0 3px #000; }
+#selecao figure[data-n="22"] .ia-ficha { border-color: var(--c22); }
+#selecao figure[data-n="13"] .ia-ficha { border-color: var(--c13); }
+.ia-vs { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.ia-vs .ia-quadro { width: min(560px, 40vw); aspect-ratio: 4 / 3; border: 4px solid #fff; box-shadow: 0 0 0 3px #000, 6px 6px 0 3px #000; }
+.ia-vitoria { width: auto; height: clamp(180px, 36vh, 330px); aspect-ratio: 198 / 402; margin: 0 auto; }
+#vitoria .ia-vitoria img { width: auto; }
+[data-variant="ia"] #vitoria { background: rgba(7, 8, 26, .82); }
+[data-variant="ia"] #creditos {
+	position: fixed; bottom: 112px; left: 0; right: 0; z-index: 57; margin: 0; max-width: none; padding: 3px 8px;
+	text-align: center; background: rgba(5, 6, 20, .92); opacity: 1; font-size: 12px;
+}
+[data-variant="ia"] #creditos small { display: block; font-size: 10px; opacity: .8; }
+body[data-variant="ia"] { padding-bottom: 230px; }
+[data-variant="ia"] .tela-cheia { padding-bottom: 210px; }
+
 /* movimento reduzido: sem tremor, sem flash, sem zoom; estados mudam no lugar */
 [data-motion="reduced"] .treme, [data-motion="reduced"] #anuncio.entra { animation: none !important; }
 [data-motion="reduced"] .vida, [data-motion="reduced"] .dano { transition: none; }
@@ -259,4 +336,19 @@ button:focus-visible { outline: 3px solid var(--amarelo); outline-offset: 2px; }
 	[data-variant="c"] .retrato, [data-variant="c"] .hud-lado::before { width: 88px; height: 88px; }
 	[data-variant="c"] .hud-lado::before { margin-left: -44px; }
 	[data-variant="c"] .hud-tempo b { font-size: 40px; }
+	.ia-retrato { width: 62px; }
+	.ia-retrato .ia-selo { font-size: 6.5px; letter-spacing: -.02em; }
+	[data-variant="ia"] .tela-cheia { gap: 8px; }
+	[data-variant="ia"] #selecao h1 { font-size: 22px; }
+	[data-variant="ia"] .vs { font-size: 30px; }
+	[data-variant="ia"] .tela-cheia figcaption { margin-top: 4px; font-size: 12px; }
+	.lutador .ia-selo { font-size: 7px; }
+	[data-variant="ia"] .sel-grade { flex-wrap: wrap; justify-content: center; gap: 10px 18px; }
+	.ia-vs { order: -1; flex-basis: 100%; }
+	.ia-vs .ia-quadro { width: 100%; }
+	.ia-ficha { width: 30vw; }
+	[data-variant="ia"] #creditos { bottom: 150px; font-size: 10px; }
+	[data-variant="ia"] #creditos small { display: none; }
+	body[data-variant="ia"] { padding-bottom: 260px; }
+	[data-variant="ia"] .tela-cheia { padding-bottom: 240px; justify-content: flex-start; }
 }

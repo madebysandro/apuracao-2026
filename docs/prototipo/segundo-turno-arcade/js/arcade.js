@@ -1,5 +1,5 @@
 /**
- * PROTOTYPE — modo arcade do 2º turno. ?variant=a|b|c · ?motion=reduced · DADOS DE EXEMPLO.
+ * PROTOTYPE — modo arcade do 2º turno. ?variant=a|b|c|ia · ?motion=reduced · DADOS DE EXEMPLO.
  * Os números vêm do mesmo gerador do protótipo aprovado (painel/js/mock-2t.js); o simulador anda
  * por um roteiro fixo de leituras (ROTEIRO) que passa pelas 3 viradas do exemplo e termina em 100%.
  */
@@ -12,10 +12,12 @@ const VARIANTES = {
 	a: { nome: "16-bit", detalhe: "lutadores em pixel art, cenário noturno" },
 	b: { nome: "HUD sobre o painel", detalhe: "camada arcade liga/desliga sobre o painel sério" },
 	c: { nome: "neon minimalista", detalhe: "rostos, barras e placar em neon" },
+	ia: { nome: "imagens de IA", detalhe: "sátira com as imagens geradas por IA, sem retoque" },
 };
 const CHAVES = Object.keys(VARIANTES);
 const qs = new URLSearchParams(location.search);
 const variante = VARIANTES[qs.get("variant")] ? qs.get("variant") : "a";
+const ia = variante === "ia" ? await import("./ia.js") : null;
 const reduzido = qs.get("motion") === "reduced" || (qs.get("motion") !== "full" && matchMedia("(prefers-reduced-motion: reduce)").matches);
 document.body.dataset.variant = variante;
 document.documentElement.dataset.motion = reduzido ? "reduced" : "full";
@@ -81,14 +83,30 @@ const credito = (n) => {
 	if (fotos[n].origem === "tse") return `${CURTO[n]}: foto oficial de candidatura, TSE`;
 	return `${CURTO[n]}: sem foto`;
 };
-$("#creditos").innerHTML = `Fotos reais, recortadas e pixeladas por código (expressão original, sem edição por IA) · ${credito(22)} · ${credito(13)} · obra derivada sob CC BY-SA 4.0.`;
+$("#creditos").innerHTML = ia
+	? `<b>Imagens criadas com IA para fins de humor. Não retratam fatos reais.</b> <small>Geradas por Sandro Costa no Higgsfield e ampliadas; aqui só recortadas, redimensionadas e sem o fundo branco.</small>`
+	: `Fotos reais, recortadas e pixeladas por código (expressão original, sem edição por IA) · ${credito(22)} · ${credito(13)} · obra derivada sob CC BY-SA 4.0.`;
+
+// ---- variante (ia): retratos, fichas, tela VS e vitória com as imagens de IA (selo em cada quadro) ----
+if (ia) {
+	const m = ia.manifesto;
+	for (const n of [22, 13]) {
+		lado(n).querySelector(".retrato").before(ia.quadroIA(m.retrato[n], `Retrato de ${NOMES[n]} (imagem gerada por IA)`, "ia-retrato"));
+		$(`#selecao figure[data-n="${n}"] canvas`).before(ia.quadroIA(m.ficha[n], `${NOMES[n]} como lutador (imagem gerada por IA)`, "ia-ficha"));
+	}
+	const vs = document.createElement("div");
+	vs.className = "ia-vs";
+	vs.append(ia.quadroIA(m.vs, "Tela de VS com os dois candidatos como lutadores (imagem gerada por IA)"), $("#selecao .vs"));
+	$('#selecao figure[data-n="22"]').after(vs);
+}
 
 // ---- variante (a): palco em canvas; (b): painel em iframe; (c): só DOM ----
-const palco = variante === "a" ? criarPalco($("#palco"), { reduzido }) : null;
-if (palco) {
+const palco = variante === "a" ? criarPalco($("#palco"), { reduzido }) : ia ? ia.criarPalcoIA($(".palco-wrap"), { reduzido, nomes: NOMES }) : null;
+if (variante === "a") {
 	palco.rostos(rosto24);
 	palco.cenario(S.cenario);
-} else $("#palco").hidden = true;
+}
+if (variante !== "a") $("#palco").hidden = true;
 $(".sel-cenario").hidden = variante !== "a";
 
 const painel = $("#painel");
@@ -281,10 +299,15 @@ function fim(p) {
 	pararAuto();
 	const venc = S.lider;
 	efeito("ko");
+	palco?.ko?.(venc);
 	anunciar("K.O.", { classe: "ko", dur: 1300, falar: "K.O.", lance: `<b>K.O.</b> · ${p.hora} · 100% apurado` }).then(() => {
 		palco?.estado({ lider: venc, fase: "fim", vencedor: venc });
 		const v = $("#vitoria");
 		pintarEm(v.querySelector("canvas"), rosto40[venc]);
+		if (ia) {
+			v.querySelector("figure .ia-quadro")?.remove();
+			v.querySelector("figure").prepend(ia.quadroIA(ia.manifesto.poses[venc].vitoria, `${NOMES[venc]} comemorando (imagem gerada por IA)`, "ia-vitoria"));
+		}
 		v.querySelector("figcaption").innerHTML = `<b>${venc}</b> ${NOMES[venc]} <small>${pf.format(p.pct[venc])}% dos válidos</small>`;
 		v.dataset.n = String(venc);
 		v.hidden = false;

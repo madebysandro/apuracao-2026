@@ -1,12 +1,33 @@
 import { chromium } from "playwright";
-import { mkdirSync } from "node:fs";
+import { mkdirSync, readdirSync, readFileSync } from "node:fs";
 const BASE = process.argv[2] ?? "http://127.0.0.1:8777/";
 const OUT = "/tmp/arcade-shots"; mkdirSync(OUT, { recursive: true });
 const tamanhos = [["desktop", { width: 1440, height: 900 }], ["mobile", { width: 390, height: 844 }]];
 const movimentos = [["full", "no-preference", ""], ["reduce", "reduce", ""], ["param", "no-preference", "&motion=reduced"]];
 const browser = await chromium.launch();
 let falhas = 0;
-for (const v of ["a", "b", "c"]) for (const [nomeT, viewport] of tamanhos) for (const [mov, rm, q] of movimentos) {
+// ia/: só os arquivos do manifesto, nenhum quadro de K.O. no chão (a semelhança de pixels é conferida por ia-recortar.py)
+{
+  const dir = new URL(process.argv[3] ?? "./ia/", import.meta.url); // 2º argumento: caminho de ia/ (o smoke costuma rodar copiado)
+  const man = JSON.parse(readFileSync(new URL("manifesto.json", dir)));
+  const esperados = new Set(["manifesto.json", ...JSON.stringify(man).match(/ia\/[^"]+/g).map((a) => a.slice(3))]);
+  const arqs = readdirSync(dir);
+  const extras = arqs.filter((a) => !esperados.has(a) || /ko|ch[aã]o|floor/i.test(a));
+  const poses = Object.values(man.poses).flatMap((p) => Object.keys(p)).sort().join();
+  const ok = !extras.length && poses === "chute,chute,golpeado,golpeado,guarda,guarda,vitoria,vitoria";
+  console.log(`${ok ? "ok  " : "FAIL"} ia/ sem quadro de K.O. no chão · ${arqs.length} arquivos · poses ${poses}${extras.length ? " · extras " + extras : ""}`);
+  falhas += ok ? 0 : 1;
+}
+// selo em toda imagem renderizada da variante ia
+const selos = (page) => page.evaluate(() => {
+  const imgs = [...document.querySelectorAll("img")].filter((i) => i.checkVisibility());
+  const comSelo = imgs.filter((i) => {
+    const s = i.closest(".ia-quadro")?.querySelector(".ia-selo");
+    return s && s.checkVisibility() && s.textContent === "Imagem gerada por IA · sátira" && i.closest(".ia-quadro").contains(s);
+  });
+  return { imgs: imgs.length, selos: comSelo.length };
+});
+for (const v of ["a", "b", "c", "ia"]) for (const [nomeT, viewport] of tamanhos) for (const [mov, rm, q] of movimentos) {
   if (mov === "param" && nomeT === "mobile") continue;
   const ctx = await browser.newContext({ viewport, reducedMotion: rm });
   const page = await ctx.newPage();
@@ -26,7 +47,18 @@ for (const v of ["a", "b", "c"]) for (const [nomeT, viewport] of tamanhos) for (
   ok(await page.evaluate(() => typeof AudioContext === "function"), "sem AudioContext?");
   ok(await page.locator("#selecao").isVisible(), "seleção invisível");
   ok((await page.locator("#selecao").innerText()).includes("VS"), "sem VS");
-  ok((await page.locator("#creditos").innerText()).includes("CC BY-SA 4.0"), "sem crédito das fotos");
+  if (v === "ia") {
+    ok(await page.locator("#creditos").isVisible(), "rodapé IA invisível");
+    ok((await page.locator("#creditos").innerText()).includes("Imagens criadas com IA para fins de humor. Não retratam fatos reais."), "sem texto do rodapé IA");
+  } else ok((await page.locator("#creditos").innerText()).includes("CC BY-SA 4.0"), "sem crédito das fotos");
+  const checaSelos = async (onde) => {
+    if (v !== "ia") return;
+    const r = await selos(page);
+    ok(r.imgs > 0 && r.imgs === r.selos, `${onde}: ${r.imgs} imagens, ${r.selos} com selo`);
+    contagem.push(`${onde} ${r.selos}/${r.imgs}`);
+  };
+  const contagem = [];
+  await checaSelos("seleção");
   const motion = await page.evaluate(() => document.documentElement.dataset.motion);
   ok(motion === (mov === "full" ? "full" : "reduced"), `data-motion=${motion}`);
   if (v === "b") {
@@ -41,6 +73,7 @@ for (const v of ["a", "b", "c"]) for (const [nomeT, viewport] of tamanhos) for (
     await page.click("#proxima");
     cliques++;
     await page.waitForTimeout(cliques === 1 ? 2200 : 350);
+    if (cliques === 4) await checaSelos("luta");
     if (!shotMeio && (await page.evaluate(() => window.__arcade.eventos.includes("REVERSAL!")))) {
       await page.waitForTimeout(200);
       await page.screenshot({ path: `${OUT}/${nome}-2-reversal.png` });
@@ -62,6 +95,14 @@ for (const v of ["a", "b", "c"]) for (const [nomeT, viewport] of tamanhos) for (
   ok(!/undefined|NaN|\[object/.test(txt), "texto suspeito");
   const largura = await page.evaluate(() => document.documentElement.scrollWidth);
   ok(largura <= viewport.width + 1, `rolagem horizontal ${largura}px`);
+  await checaSelos("vitória");
+  if (v === "ia") {
+    const ko = await page.evaluate(() => [...document.querySelectorAll(".lutador.ko")].map((l) => ({ n: l.dataset.n, pose: l.dataset.pose, anim: getComputedStyle(l).animationName })));
+    ok(ko.length === 1 && ko[0].pose === "golpeado", `K.O. sem quadro golpeado: ${JSON.stringify(ko)}`);
+    ok(mov === "full" ? ko[0]?.anim.startsWith("cai-") : ko[0]?.anim === "none", `animação do K.O. ${ko[0]?.anim} em ${mov}`);
+    ok(await page.locator("#creditos").isVisible(), "rodapé IA sumiu no fim");
+    contagem.push(`K.O. ${ko[0]?.n} (${ko[0]?.anim})`);
+  }
   await page.screenshot({ path: `${OUT}/${nome}-3-winner.png` });
   if (v === "b") {
     await page.click("#modo-arcade");
@@ -81,18 +122,19 @@ for (const v of ["a", "b", "c"]) for (const [nomeT, viewport] of tamanhos) for (
   ok((await page.locator("#som").getAttribute("aria-pressed")) === "true", "som não ligou");
   await page.click("#som");
   const problemas = [...erros, ...p];
-  console.log(`${problemas.length ? "FAIL" : "ok  "} ${nome} · cliques ${cliques} · REVERSAL×${nRev} · PERFECT×${nPerf} · tremidas ${ev.tremidas}${problemas.length ? "\n   " + problemas.join("\n   ") : ""}`);
+  console.log(`${problemas.length ? "FAIL" : "ok  "} ${nome} · cliques ${cliques} · REVERSAL×${nRev} · PERFECT×${nPerf} · tremidas ${ev.tremidas}${contagem.length ? " · selos " + contagem.join(", ") : ""}${problemas.length ? "\n   " + problemas.join("\n   ") : ""}`);
   falhas += problemas.length ? 1 : 0;
   await ctx.close();
 }
-// autoplay chega ao fim sozinho (variante a, reduzido, rápido o bastante)
-{
+// autoplay chega ao fim sozinho (reduzido, rápido o bastante)
+for (const v of ["a", "ia"]) {
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, reducedMotion: "reduce" });
   const erros = []; page.on("pageerror", (e) => erros.push(e.message));
-  await page.goto(`${BASE}?variant=a`, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}?variant=${v}`, { waitUntil: "networkidle" });
   await page.click("#auto");
   await page.waitForFunction(() => window.__arcade.fase === "fim", null, { timeout: 60000 }).catch(() => erros.push("autoplay não terminou"));
-  console.log(`${erros.length ? "FAIL" : "ok  "} autoplay a${erros.length ? " " + erros.join("; ") : ""}`);
+  await page.locator("#vitoria").waitFor({ state: "visible", timeout: 10000 }).catch(() => erros.push("WINNER não apareceu"));
+  console.log(`${erros.length ? "FAIL" : "ok  "} autoplay ${v}${erros.length ? " " + erros.join("; ") : ""}`);
   falhas += erros.length ? 1 : 0;
 }
 await browser.close();
