@@ -5,25 +5,27 @@
 
 ## A pergunta
 
-Como o Painel de produção acompanha o 2º turno, que no site é **só Presidente** (Brasil e por UF)? A ideia é fazer isso sem redesign: o mesmo tema escuro, os mesmos cartões `.db-*` e o mesmo movimento, só com os deltas necessários. O que o protótipo precisa mostrar:
+Como o Painel de produção acompanha o 2º turno, que no site é **só Presidente, com foco nacional**? A ideia é fazer isso sem redesign: o mesmo tema escuro, os mesmos cartões `.db-*` e o mesmo movimento, só com os deltas necessários. O que o protótipo precisa mostrar:
 
 - o duelo de 2 candidatos: placar grande, vantagem, % dos válidos, votos e % apurado;
 - a comparação com o 1º turno: delta de cada candidato e para onde foram os votos de "outros" e da abstenção, **como estimativa**;
 - as viradas e a vantagem ao longo da apuração;
 - o placar por UF e por região, com as UFs que mudaram de líder em relação ao 1º turno;
-- o Pará em destaque;
-- o que acontece com a Tela 2 (proporcionais) e com Governador e Senado do Pará, que foram decididos no 1º turno e viram arquivo.
+- os maiores colégios eleitorais (os 10 municípios com mais eleitores), com o resultado do 2º turno e o do 1º;
+- o exterior como bloco próprio;
+- comparecimento e abstenção, 1º × 2º turno.
+
+**Decisão (Sandro, 11/10): foco só nacional.** Saíram o cartão do Pará ("decidido no 1º turno"), qualquer destaque do Pará (KPIs, destaques, links) e a Tela 2 (arquivo do 1º turno no Pará: Governador, Senado e proporcionais), junto com a navegação por abas e o código que só ela usava. O Pará aparece só como uma das 27 UFs, sem destaque.
 
 ## Como rodar
 
 ```bash
 cd docs/prototipo/segundo-turno
 python3 -m http.server 8765
-# http://localhost:8765/?variant=parcial        (Tela 1, 2º turno)
-# http://localhost:8765/?variant=parcial&tela=2 (Tela 2, arquivo do 1º turno no Pará)
+# http://localhost:8765/?variant=parcial
 ```
 
-Para trocar de estado, use as setas ← → ou a barra rosa flutuante. As teclas 1 e 2 trocam de tela, como em produção. A barra rosa e a faixa "DADOS DE EXEMPLO" **não fazem parte do design**.
+Para trocar de estado, use as setas ← → ou a barra rosa flutuante. Só existe uma tela. A barra rosa e a faixa "DADOS DE EXEMPLO" **não fazem parte do design**.
 
 ## Estados (`?variant=`)
 
@@ -38,34 +40,43 @@ Se não houver `variant`, o padrão é `parcial`.
 
 ## O que é real e o que é exemplo
 
-| Real (TSE / produção) | Exemplo (fictício) |
-|---|---|
-| `dados/estado-1t.json`: snapshot de `https://apuracao.madebysandro.app/api/apuracao` em 11/10/2026 (1º turno final: Presidente, Governador, Senado, Deputados e as 28 UFs) | Todos os votos, percentuais, % apurado, horários e viradas do 2º turno |
-| `dados/br-c0001-e006258-u.json`: arquivo oficial do 2º turno (eleição 6258, dg 10/10/2026), com os candidatos 22 (Flávio Bolsonaro, PL) e 13 (Lula, Fed. Brasil da Esperança), eleitorado de 150.238.779 e 469.329 seções | Comparecimento do 2º turno (+0,6 p.p.), brancos e nulos (4,2%), ritmo de apuração por região |
-| Fotos: `…/ele2026/6258/fotos/br/{sqcand}.jpeg` (conferidas, respondem 200) | O vencedor do exemplo (Lula, com 51,6%) é **arbitrário**: serve para exercitar a virada. Os parâmetros estão no topo de `js/mock-2t.js` |
+**Todo número do 2º turno é exemplo** (fictício), e a faixa rosa "DADOS DE EXEMPLO" avisa isso em todos os estados. Os números do 1º turno são reais.
 
-O gerador (`js/mock-2t.js`) parte da divisão F/(F+L) do 1º turno em cada UF, aplica um deslocamento uniforme e faz cada UF apurar numa janela de tempo. O resultado é determinístico, e o formato imita `/api/apuracao` + `/api/historico`. Algumas UFs têm roteiro próprio (AM, MG e TO) para que haja viradas em relação ao 1º turno nos dois sentidos.
+| Dado | Real ou exemplo | Fonte |
+|---|---|---|
+| Presidente 1º turno: Brasil e 27 UFs + exterior (votos, %, eleitorado, seções) | **real** | `dados/estado-1t.json`: snapshot de `https://apuracao.madebysandro.app/api/apuracao` em 11/10/2026, recortado para Presidente + UFs |
+| Comparecimento e abstenção do 1º turno (Brasil e exterior), maiores colégios no 1º turno (eleitorado, comparecimento, válidos, brancos, nulos, votos de 22 e 13) | **real** | `dados/colegios-1t.json`, gerado dos arquivos oficiais do TSE (eleição 6257, dg 05/10/2026): `…/ele2026/6257/dados/br/br-c0001-e006257-u.json`, `…/dados/zz/zz-c0001-e006257-u.json` e `…/dados/<uf>/<uf><cód. TSE do município>-c0001-e006257-u.json` (a URL de cada um está no próprio JSON). Os % de comparecimento e abstenção são os do TSE (`pcn`/`pan`, sobre o eleitorado das seções instaladas). |
+| Quais são os 10 maiores colégios | **real** | `te` dos arquivos municipais acima; candidatos verificados: as capitais e as maiores cidades (Guarulhos, Campinas, São Gonçalo, Duque de Caxias e outras). Top 10: São Paulo, Rio de Janeiro, Brasília, Belo Horizonte, Salvador, Fortaleza, Manaus, Curitiba, Recife e Porto Alegre. O 11º é Belém. Os códigos dos municípios vêm de `…/6257/config/mun-e006257-cm.json` |
+| Candidatos, fotos, eleitorado (150.238.779) e seções (469.329) do 2º turno | **real** | `dados/br-c0001-e006258-u.json` (arquivo oficial, eleição 6258, dg 10/10/2026) e `…/6258/fotos/br/{sqcand}.jpeg` |
+| Votos, %, % apurado, horários e viradas do 2º turno (Brasil, UFs, regiões, exterior e municípios) | **exemplo** | `js/mock-2t.js` |
+| Comparecimento do 2º turno (o do 1º turno + 0,6 p.p. em todo lugar) e brancos e nulos (4,2%) | **exemplo** | `js/mock-2t.js` (`COMP_PP`, `BN_2T`) |
+
+O vencedor do exemplo (Lula, com 51,6%) é **arbitrário**: serve para exercitar a virada. O gerador parte da divisão F/(F+L) do 1º turno em cada UF e em cada município, aplica um deslocamento uniforme e faz cada UF apurar numa janela de tempo (o município segue a janela da sua UF; o exterior apura por último). O resultado é determinístico, e o formato imita `/api/apuracao` + `/api/historico`. Algumas UFs têm roteiro próprio (AM, MG e TO) para que haja viradas em relação ao 1º turno nos dois sentidos.
+
+Para regenerar `dados/colegios-1t.json`, basta ler os arquivos do TSE listados acima. O script de uma vez ficou fora do repositório: ele só baixa os JSONs e copia `e.te`, `e.c`, `e.a`, `e.pcn`, `e.pan`, `v.vv`, `v.vb`, `v.tvn` e `vap` de 22 e 13.
 
 ## Arquivos
 
 - `index.html`: cópia da página de produção (faixa de status igual), com o caminho relativo.
 - `css/tokens.css` e `css/tema.css`: **cópia literal** da produção. `css/proto-2t.css` traz só os blocos novos (`.t2-*`), o estado "aguardando" da faixa, a barra e a faixa do protótipo.
-- `js/*.js` e `js/movimento/*`: cópia da produção. Os únicos patches estão marcados com `PROTO-2T`:
+- `js/tela1-util.js`, `js/arquivo.js`, `js/pontos-hist.js` e `js/movimento/{calmo,faixa-status,flip,fluxo-barras}.js`: cópia da produção. Os únicos patches estão marcados com `PROTO-2T`:
   - `arquivo.js`: modo "aguardando" e carimbo vindo do estado;
-  - `movimento/faixa-status.js`: classe `.aguardando`;
-  - `tela1-cartao.js`: "eleito no 1º turno" em vez de "lidera" quando o cartão é arquivo.
-- `js/app-2t.js`: entrada, que substitui o `app.js`. `js/tela-2t.js`: os cartões novos. `js/mock-2t.js`: os dados de exemplo. `js/proto-switcher.js`: a barra.
+  - `movimento/faixa-status.js`: classe `.aguardando`.
+- `js/app-2t.js`: entrada, que substitui o `app.js`. `js/tela-2t.js`: os cartões. `js/mock-2t.js`: os dados de exemplo. `js/proto-switcher.js`: a barra.
+- Removidos com a Tela 2: `tela1-cartao.js`, `tela2-proporcionais.js`, `tela1-painel.js`, `tela1-grafico.js`, `movimento/abas.js`, `movimento/revela-grafico.js` e `movimento/memoria.js`.
+- `smoke.cjs`: o smoke com Playwright.
 
 ## Verificação
 
-Rodei um smoke com Playwright (Chromium headless) em `?variant=pre|parcial|virada|encerrado` (Tela 1) e em `parcial&tela=2`, a 1440 px e a 390 px:
+Com o servidor de pé, rode `node smoke.cjs`. Ele procura o Playwright em `$PW` ou em `/tmp/pw`, e `SHOTS=<dir>` salva as capturas. O smoke abre `?variant=pre|parcial|virada|encerrado` a 1440 px e a 390 px e confere:
 
-- sem erro no console nem `pageerror`;
-- nenhum texto "Falha", `undefined` ou `NaN`;
-- a faixa "DADOS DE EXEMPLO" aparece;
-- sem rolagem horizontal.
+- que não há erro no console nem `pageerror`;
+- que não aparece nenhum texto "Falha", `undefined`, `NaN`, "Pará" ou "Tela 2". A tabela neutra "Todas as UFs", que lista as 27 UFs pelo nome, fica fora dessa busca;
+- que os blocos estão presentes: duelo, exterior, comparecimento, comparação, estados e colégios (com 10 linhas). A tabela de UFs tem 28 linhas, e não há abas nem `data-tela`;
+- que a faixa "DADOS DE EXEMPLO" aparece;
+- que não há rolagem horizontal na página.
 
-Todos os 10 casos passaram. Também testei o link do Pará para a Tela 2, a tecla 1, a seta → da barra, a tooltip do gráfico e o tema claro. As capturas ficaram em `/tmp/proto2t-shots/`, fora do repositório.
+Resultado em 11/10/2026: **8/8 casos ok**. As capturas ficaram em `/tmp/proto2t-shots/`, fora do repositório.
 
 ## Decisões e perguntas em aberto
 

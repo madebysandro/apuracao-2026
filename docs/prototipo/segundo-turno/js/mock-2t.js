@@ -128,16 +128,43 @@ function leitura(x, i) {
 	const c = {};
 	const ord = [["22", x.F], ["13", x.L]].sort((a, b) => b[1] - a[1]);
 	ord.forEach(([n, v], k) => (c[n] = [v, (v / x.V) * 100, k + 1]));
-	const pa = x.ufs.pa;
-	const cpa = {};
-	pa.candidatos.forEach((k, j) => (cpa[k.n] = [k.votos, k.pct, j + 1]));
+	const zz = x.ufs.zz;
 	return {
 		t: Date.UTC(2026, 9, 25, 20, 0) + i * 200_000,
 		c: {
 			presidente: { ap: x.ap, hora: x.hora, vv: x.V, c },
-			pa: { ap: pa.apurado, hora: x.hora, vv: pa.validos, c: cpa },
+			zz: { ap: zz.apurado, hora: x.hora, vv: zz.validos },
 		},
 	};
+}
+
+/**
+ * Maiores colégios (municípios) no instante t. 1º turno real (dados/colegios-1t.json);
+ * o 2º turno é EXEMPLO: mesmo deslocamento das UFs e a janela de apuração da UF.
+ * ponytail: eleitorado do 2º turno = o do 1º (o 6258 municipal ainda vem parcial; ver DESIGN-NOTAS).
+ */
+function colegios(col, B, t) {
+	const jan = Object.fromEntries(B.map((u) => [u.uf, u.jan]));
+	return col.municipios.map((m) => {
+		const [j0, j1] = jan[m.uf];
+		const ap = Math.min(1, Math.max(0, (t - j0) / (j1 - j0)));
+		const comp1 = m.pctComparecimento / 100;
+		const comp2 = comp1 + COMP_PP / 100;
+		const F1 = m.votos["22"], L1 = m.votos["13"];
+		const f = Math.min(0.9, Math.max(0.1, F1 / (F1 + L1) + SWING + (SWING_UF[m.uf] ?? 0) + ruido(m.cd.slice(-2))));
+		const vv = Math.round(m.eleitorado * comp2 * (1 - BN_2T) * ap);
+		const fv = Math.round(vv * f);
+		const cands = [
+			{ n: "22", votos: fv, pct: vv ? (fv / vv) * 100 : 0 },
+			{ n: "13", votos: vv - fv, pct: vv ? ((vv - fv) / vv) * 100 : 0 },
+		];
+		return {
+			uf: m.uf, cd: m.cd, nome: m.nome, eleitorado: m.eleitorado, apurado: ap * 100, validos: vv,
+			candidatos: vv ? cands.sort((a, b) => b.votos - a.votos) : cands,
+			comparecimento: vv ? comp2 * 100 : 0,
+			t1: { pf: (F1 / m.validos) * 100, pl: (L1 / m.validos) * 100, lider: F1 >= L1 ? "22" : "13", comparecimento: comp1 * 100 },
+		};
+	});
 }
 
 /** Viradas: pares de leituras em que o líder nacional muda. */
@@ -179,9 +206,10 @@ function analise(P, hist) {
 
 /**
  * @param {any} e1 snapshot real do 1º turno (GET /api/apuracao de produção)
+ * @param {any} col 1º turno real de Brasil, exterior e maiores colégios (dados/colegios-1t.json)
  * @param {"pre"|"parcial"|"virada"|"encerrado"} variante
  */
-export function gerar(e1, variante) {
+export function gerar(e1, col, variante) {
 	const B = base(e1);
 	const todas = [];
 	for (let i = 1; i <= LEITURAS; i++) todas.push(instante(B, i / LEITURAS));
@@ -192,6 +220,7 @@ export function gerar(e1, variante) {
 	else if (variante === "parcial") n = todas.findIndex((x) => x.ap >= 35) + 1;
 	else if (variante === "virada") n = histTodo.findIndex((h) => h.c.presidente.ap >= (vir.at(-1)?.ap ?? 70)) + 2;
 	else n = todas.length;
+	const tN = n ? n / LEITURAS : 0;
 	const x = n ? todas[n - 1] : instante(B, 0);
 	const hist = histTodo.slice(0, n);
 	const P = cargoPresidente(x, e1);
@@ -208,6 +237,9 @@ export function gerar(e1, variante) {
 			carimbo: encerrada ? "Resultado final · 2º turno" : null,
 			cargos: { presidente: P },
 			ufs: x.ufs,
+			colegios: colegios(col, B, tN),
+			// exterior: comparecimento do 1º turno real + o mesmo COMP_PP do exemplo
+			compExterior: x.ufs.zz.validos ? col.exterior.pctComparecimento + COMP_PP : 0,
 			analise: { majoritarias: { presidente: analise(P, hist) } },
 		},
 		hist,

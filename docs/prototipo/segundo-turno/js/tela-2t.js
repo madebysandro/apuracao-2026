@@ -440,53 +440,98 @@ export function cartaoEstados(ctx) {
   </article>`;
 }
 
-/* ---------- Pará ---------- */
+/* ---------- exterior ---------- */
 
-export function cartaoPara(ctx) {
-	const { ufs, e1, pre } = ctx;
-	const u = ufs.pa;
-	const u1 = e1.ufs.pa;
-	const G = e1.cargos.governador;
-	const S = e1.cargos.senador;
+export function cartaoExterior(ctx) {
+	const { ufs, e1, col, compExterior, pre } = ctx;
+	const u = ufs.zz;
+	const u1 = e1.ufs.zz;
 	const linhas = CANDIDATOS_2T.map((k) => {
 		const c = u.candidatos.find((x) => x.n === k.n);
 		const p1 = u1.candidatos.find((x) => x.n === k.n).pct;
 		return `<li class="db-cand" style="--c:${cor(k.n)}">${foto(k, "db-rosto")}
-      <span class="db-nome"><b>${esc(nomeBonito(k.nome))}</b><small>1º turno no Pará: ${pf.format(p1)}%</small>
-        ${barraViva(`pa-${k.n}`, pre ? 0 : c.pct, null, 0.3, cor(k.n), "<em></em>")}</span>
-      <span class="db-pct">${pre ? "—" : conta(`t2-pa-${k.n}`, c.pct, "p")}</span>
-      <span class="db-delta">${pre ? "" : deltaPp(c.pct - p1)}</span></li>`;
+      <span class="db-nome"><b>${esc(nomeBonito(k.nome))}</b><small>1º turno no exterior: ${pf.format(p1)}%</small>
+        ${barraViva(`zz-${k.n}`, pre || !u.validos ? 0 : c.pct, null, 0.3, cor(k.n), "<em></em>")}</span>
+      <span class="db-pct">${u.validos ? conta(`t2-zz-${k.n}`, c.pct, "p") : "—"}</span>
+      <span class="db-delta">${u.validos ? deltaPp(c.pct - p1) : ""}</span></li>`;
 	}).join("");
-	const eleito = (cargo) => cargo.candidatos.filter((c) => c.situacao === "Eleito");
-	const gov = eleito(G);
-	const sen = eleito(S);
-	return `<article class="db-card t2-para">
+	const X = col.exterior;
+	const comp1 = X.pctComparecimento;
+	return `<article class="db-card t2-exterior">
     <header class="db-card-topo">
-      <div><h2>Pará</h2><span>Presidente no estado · Δ vs 1º turno no Pará</span></div>
-      <div class="db-apu">${conta("t2-pa-ap", u.apurado, "p")}<small>das seções apuradas</small></div>
+      <div><h2>Exterior</h2><span>Presidente · eleitores fora do país · Δ vs 1º turno no exterior</span></div>
+      <div class="db-apu">${conta("t2-zz-ap", u.apurado, "p")}<small>das seções apuradas</small></div>
     </header>
     <ol class="db-cands">${linhas}</ol>
-    <section class="db-sec t2-decidido"><h3>Decidido no 1º turno <small>sem 2º turno no Pará</small></h3>
-      <ul>
-        <li>${gov.map((c) => foto(c, "db-rosto p")).join("")}<span><b>Governador</b> ${gov.map((c) => `${esc(nomeBonito(c.nome))} <span class="db-ok">✓ eleito</span> ${pf.format(c.pct)}%`).join("")}</span></li>
-        <li>${sen.map((c) => foto(c, "db-rosto p")).join("")}<span><b>Senado</b> ${sen.map((c) => esc(nomeBonito(c.nome))).join(" e ")} <span class="db-ok">✓ eleitos</span></span></li>
-        <li><span class="t2-ico" aria-hidden="true">▦</span><span><b>Deputados</b> 17 federais e 41 estaduais definidos em 04/10</span></li>
-      </ul>
-      <button type="button" class="t2-link" data-tela="2">Ver o arquivo do 1º turno no Pará →</button>
-    </section>
+    <dl class="db-analise t2-mini">
+      <div><dt>ELEITORADO</dt><dd>${nf.format(X.eleitorado)}</dd><dd class="db-sub">1º turno · ${nf.format(u1.secoes)} seções</dd></div>
+      <div><dt>COMPARECIMENTO</dt><dd>${compExterior ? `${pf.format(compExterior)}%` : "—"}</dd><dd class="db-sub">1º turno: ${pf.format(comp1)}% (abstenção ${pf.format(X.pctAbstencao)}%)</dd></div>
+    </dl>
+    ${u.validos ? "" : '<p class="db-vazio">O exterior costuma ser o último a apurar: as urnas fecham no fuso de cada país.</p>'}
+  </article>`;
+}
+
+/* ---------- comparecimento e abstenção ---------- */
+
+export function cartaoComparecimento(ctx) {
+	const { P, col, compExterior, encerrada } = ctx;
+	const linha = (rot, t1, c2) => {
+		const c1 = t1.pctComparecimento;
+		const a1 = t1.pctAbstencao;
+		return `<tr><td><b>${rot}</b><small class="t2-bloco">${cf.format(t1.eleitorado)} eleitores</small></td>
+      <td class="n">${pf.format(c1)}%</td><td class="n">${c2 ? `${pf.format(c2)}%<small class="t2-bloco">${deltaPp(c2 - c1, true)}</small>` : "—"}</td>
+      <td class="n">${pf.format(a1)}%<small class="t2-bloco">${cf.format(t1.abstencao)}</small></td><td class="n">${c2 ? `${pf.format(100 - c2)}%<small class="t2-bloco">${deltaPp(100 - c2 - a1, true)}</small>` : "—"}</td></tr>`;
+	};
+	const c2 = P.totais.comparecimento;
+	return `<article class="db-card t2-compar">
+    <header class="db-card-topo"><div><h2>Comparecimento e abstenção</h2><span>% do eleitorado · 1º turno real (04/10) × 2º turno${encerrada ? "" : " nas seções apuradas"}</span></div></header>
+    <div class="db-rolagem"><table class="db-tab">
+      <thead><tr><th></th><th class="n">Compar. 1º</th><th class="n">Compar. 2º</th><th class="n">Abst. 1º</th><th class="n">Abst. 2º</th></tr></thead>
+      <tbody>${linha("Brasil", col.brasil, c2)}${linha("Exterior", col.exterior, compExterior)}</tbody></table></div>
+    <p class="t2-nota">Δ em p.p. vs 1º turno. Comparecimento por município está em "Maiores colégios eleitorais".</p>
+  </article>`;
+}
+
+/* ---------- maiores colégios eleitorais ---------- */
+
+export function cartaoColegios(ctx) {
+	const { colegios, pre } = ctx;
+	const linha = (m) => {
+		const l = liderUf(m);
+		const virou = l && l.n !== m.t1.lider;
+		const p = (n) => m.candidatos.find((c) => c.n === n).pct;
+		const m1 = Math.abs(m.t1.pf - m.t1.pl);
+		return `<tr data-flip="mun-${m.cd}"><td><b>${esc(m.nome)}</b> <small>${m.uf.toUpperCase()}</small><small class="t2-bloco">${cf.format(m.eleitorado)} eleitores</small></td>
+      <td class="n db-oculta-mob">${pf.format(m.apurado)}%</td>
+      <td class="n">${l ? pf.format(p(K22)) + "%" : "—"}<small class="t2-bloco">1º: ${pf.format(m.t1.pf)}%</small></td>
+      <td class="n">${l ? pf.format(p(K13)) + "%" : "—"}<small class="t2-bloco">1º: ${pf.format(m.t1.pl)}%</small></td>
+      <td>${l ? `<span class="db-sw" style="background:${cor(l.n)}"></span>+${pf.format(l.m)}` : "—"}<small class="t2-bloco"><span class="db-sw" style="background:${cor(m.t1.lider)}"></span>1º: +${pf.format(m1)}</small></td>
+      <td class="n db-oculta-mob">${m.comparecimento ? `${pf.format(m.comparecimento)}%` : "—"}<small class="t2-bloco">1º: ${pf.format(m.t1.comparecimento)}%</small></td>
+      <td>${virou ? '<span class="t2-virou">↻ virou</span>' : ""}</td></tr>`;
+	};
+	const soma = colegios.reduce((s, m) => s + m.eleitorado, 0);
+	return `<article class="db-card t2-colegios">
+    <header class="db-card-topo">
+      <div><h2>Maiores colégios eleitorais</h2><span>os 10 municípios com mais eleitores · ${cf.format(soma)} eleitores, ${pf.format((soma / ctx.col.brasil.eleitorado) * 100)}% do país · ↻ = líder diferente do 1º turno</span></div>
+    </header>
+    <div class="db-rolagem"><table class="db-tab t2-tab-mun">
+      <thead><tr><th>Município</th><th class="n db-oculta-mob">Apurado</th><th class="n">${esc(nomeDe(K22).split(" ")[0])}</th><th class="n">${esc(nomeDe(K13))}</th><th>Vantagem</th><th class="n db-oculta-mob">Comparec.</th><th></th></tr></thead>
+      <tbody>${colegios.map(linha).join("")}</tbody></table></div>
+    ${pre ? '<p class="t2-nota">Antes das 17h: só o 1º turno (real, TSE). Os números do 2º turno aparecem com as primeiras seções.</p>' : ""}
   </article>`;
 }
 
 /* ---------- destaques ---------- */
 
 export function destaques2t(ctx) {
-	const { P, ufs, viradas, pre, encerrada } = ctx;
+	const { P, ufs, colegios, viradas, pre, encerrada } = ctx;
 	if (pre) {
 		return [
 			"<b>2º turno · 25/10</b>Flavio Bolsonaro (PL) × Lula (PT) para Presidente",
 			"<b>Apuração</b>primeiros resultados a partir das 17h (horário de Brasília)",
 			"<b>1º turno</b>Flavio Bolsonaro 47,03% × Lula 45,16% · liderou em 15 UFs, Lula em 12",
-			"<b>Pará</b>Governador e Senado decididos no 1º turno; aqui só Presidente",
+			"<b>Maior colégio</b>São Paulo, 9,1 milhões de eleitores · no 1º turno: Lula 46,58% × Flavio Bolsonaro 42,13%",
+			"<b>Exterior</b>916.534 eleitores fora do país · comparecimento de 37,31% no 1º turno",
 			"<b>Eleitorado</b>150,2 milhões aptos no arquivo oficial do 2º turno",
 		];
 	}
@@ -508,7 +553,9 @@ export function destaques2t(ctx) {
 		it.push(`<b>Disputa mais apertada</b>${ap.nome}: ${pf.format(liderUf(ap).m)} p.p. de diferença`);
 	}
 	if (viradas.length) it.push(`<b>Virada</b>${esc(nomeDe(viradas.at(-1).para))} passou à frente às ${viradas.at(-1).hora.slice(0, 5)}, com ${pf.format(viradas.at(-1).ap)}% apurado`);
-	const pa = ufs.pa;
-	if (pa.validos) it.push(`<b>Pará</b>${esc(nomeDe(pa.candidatos[0].n))} ${pf.format(pa.candidatos[0].pct)}% × ${esc(nomeDe(pa.candidatos[1].n))} ${pf.format(pa.candidatos[1].pct)}% · ${pf.format(pa.apurado)}% apurado`);
+	const [sp] = colegios;
+	if (sp.validos) it.push(`<b>Maior colégio · ${esc(sp.nome)}</b>${esc(nomeDe(sp.candidatos[0].n))} ${pf.format(sp.candidatos[0].pct)}% × ${esc(nomeDe(sp.candidatos[1].n))} ${pf.format(sp.candidatos[1].pct)}% · ${pf.format(sp.apurado)}% apurado`);
+	const zz = ufs.zz;
+	if (zz.validos) it.push(`<b>Exterior</b>${esc(nomeDe(zz.candidatos[0].n))} ${pf.format(zz.candidatos[0].pct)}% × ${esc(nomeDe(zz.candidatos[1].n))} ${pf.format(zz.candidatos[1].pct)}% · ${pf.format(zz.apurado)}% apurado`);
 	return it;
 }

@@ -7,31 +7,24 @@ Decisões tomadas no protótipo `docs/prototipo/segundo-turno/` (branch `prototi
 - O 2º turno de 2026 usa o **pleito 3221**: federal `6258` (Presidente, abrangência `br`) e estadual `6260` (Governador só em AM, RN, DF, ES e AC). **O Pará não tem 2º turno.** O arquivo `…/6260/dados/pa/pa-c0003-e006260-u.json` responde 404.
 - A URL do Presidente é a mesma do 1º turno, com outro código: `ele2026/6258/dados/{uf}/{uf}-c0001-e006258-u.json`. Para o poller, basta trocar `ELEICAO_FEDERAL` de 6257 para 6258.
 - O arquivo do 2º turno já está publicado e zerado desde 10/10, com `t:"2"`, 2 candidatos e `e.te = 150.238.779`.
-- Consequência: no site, o 2º turno é **só Presidente** (Brasil + 27 UFs + exterior). Governador, Senado e Deputados do Pará viram arquivo final do 1º turno.
+- Consequência: no site, o 2º turno é **só Presidente** (Brasil + 27 UFs + exterior).
+- **Decisão de 11/10 (Sandro): foco só nacional.** O 2º turno não tem nada específico do Pará: nem cartão, nem KPI, nem destaque, nem link, nem a Tela 2 de arquivo. O Pará é uma das 27 UFs, sem ênfase.
+- O TSE publica o resultado **por município** (`…/dados/<uf>/<uf><cód>-c0001-e<ele>-u.json`, com os códigos em `…/config/mun-e<ele>-cm.json`) e o do **exterior** (`…/dados/zz/zz-c0001-e<ele>-u.json`). Os dois existem para o 6257 (1º turno, final) e para o 6258 (2º turno, zerado). O protótipo usa os do 6257 como dados reais.
 
 ## Estrutura
 
-1. **Abas:** o modelo "Tela 1 / Tela 2" continua, mas com outros rótulos:
-   - **1 · 2º turno** (Presidente · Brasil e estados);
-   - **2 · 1º turno · Pará** (Governador, Senado e Deputados · final).
-
-   As teclas 1 e 2 e `?tela=` continuam iguais. Não criei uma 3ª aba, para não ter o que manter.
+1. **Uma tela só**, sem abas: o 2º turno é Presidente · Brasil. As teclas 1 e 2 e `?tela=` saem. O `?variant=` do protótipo continua.
 2. **Faixa de status:** é a mesma da produção, com um estado novo:
    - **Aguardando 17h** (ponto cinza, sem pulso, "Primeiros resultados às 17:00") antes da primeira seção;
    - depois "Ao vivo";
    - por fim "Encerrada", com o carimbo **"Resultado final · 2º turno"** (o mesmo mecanismo do arquivo do 1º turno, #37, com o texto vindo do estado).
-3. **Tela 1 (2º turno):** a ordem é DESTAQUES → 5 KPIs → grade de 2/3 + 1/3.
-   - **KPIs:** seções apuradas do Brasil e do Pará; comparecimento do Brasil e do Pará **com Δ vs 1º turno**; e o acompanhamento.
+3. **A ordem é** DESTAQUES → 5 KPIs → grade de 2/3 + 1/3.
+   - **KPIs:** seções apuradas no Brasil; comparecimento e abstenção no Brasil, **com Δ vs 1º turno**; seções apuradas no exterior; e o acompanhamento.
    - **Esquerda, 2/3:** o cartão "Presidente · 2º turno" (placar, cabo de guerra, frase, gráfico da vantagem, análise e momentos da noite).
-   - **Direita, 1/3:** o cartão Pará e, embaixo, "Do 1º ao 2º turno".
-   - **Linha inteira:** "Estados e regiões".
-   - **Abaixo de 1240 px:** tudo numa coluna, nesta ordem: duelo, Pará, comparação, estados.
-4. **Tela 2 (arquivo):**
-   - um aviso tracejado ("Arquivo do 1º turno · 04/10 · resultado final…");
-   - os cartões de **Governador e Senado de produção** em modo arquivo (`encerrada:true`), com "eleito no 1º turno" no lugar de "lidera";
-   - "Proporcionais · Pará" com a Tela 2 de produção sem mudanças.
-
-   A faixa de destaques dessa tela mostra os destaques finais do 1º turno, com o rótulo "1º TURNO".
+   - **Direita, 1/3:** Exterior, depois Comparecimento e abstenção, depois "Do 1º ao 2º turno".
+   - **Linha inteira:** "Estados e regiões" e, em seguida, "Maiores colégios eleitorais".
+   - **Abaixo de 1240 px:** tudo numa coluna, nesta ordem: duelo, exterior, comparecimento, comparação, estados, colégios.
+4. **Destaques:** Brasil, cada região, viradas vs 1º turno, a disputa mais apertada, a virada da noite, o maior colégio (São Paulo) e o exterior.
 
 ## Placar do duelo
 
@@ -74,10 +67,25 @@ Decisões tomadas no protótipo `docs/prototipo/segundo-turno/` (branch `prototi
 - **Por região:** os 5 agregados (a mesma soma do servidor), com o líder no 1º turno e "↻ virou".
 - **Todas as UFs:** tabela por eleitorado, com cabeçalho fixo e rolagem dentro do cartão (máx. 360 px), e as colunas apurado, %, vantagem, vantagem no 1º turno e ↻.
 
-## Pará
+## Exterior
 
-- O cartão Pará fica sempre visível na Tela 1: Presidente no Pará com as linhas `.db-cand` de produção, mas o Δ é **em relação ao 1º turno no Pará**, não à leitura anterior.
-- A seção "Decidido no 1º turno" mostra o Governador eleito, os 2 senadores eleitos e os deputados, com o botão "Ver o arquivo do 1º turno no Pará →" (Tela 2).
+- É um cartão próprio, com o mesmo formato `.db-cand` do Presidente: as duas linhas, com o Δ **em relação ao 1º turno no exterior** (real: Lula 47,57%, Flavio 43,49%).
+- Mostra o eleitorado (916.534 no 1º turno) e o comparecimento, 1º turno real (37,31%, abstenção de 62,69%) × 2º turno. O exterior também aparece como "EXT" no cartograma e na tabela de UFs, como antes. Não entra no placar de UFs.
+- Antes de apurar, o texto diz que o exterior costuma ser o último (as urnas fecham no fuso de cada país).
+
+## Comparecimento e abstenção
+
+- **KPIs** de comparecimento e abstenção no Brasil, com Δ em p.p. vs 1º turno.
+- **Cartão:** a tabela com Brasil e exterior, com as colunas comparecimento no 1º turno, comparecimento no 2º (Δ embaixo), abstenção no 1º (em votos embaixo) e abstenção no 2º (Δ embaixo). Durante a apuração, o valor do 2º turno é o das seções apuradas.
+- Os % do 1º turno são os do TSE (`pcn`/`pan`), calculados sobre o eleitorado das seções instaladas. Por isso diferem um pouco de `c/te`: no exterior, 37,31% contra 37,29%.
+- O comparecimento por município fica na tabela dos colégios. Não fiz um quadro por UF: o snapshot de produção não traz o comparecimento por UF. Daria para ler os 27 arquivos de UF, mas não é necessário para a pergunta do protótipo.
+
+## Maiores colégios eleitorais
+
+- São os **10 municípios com mais eleitores** pelo `te` do 1º turno: São Paulo, Rio de Janeiro, Brasília, Belo Horizonte, Salvador, Fortaleza, Manaus, Curitiba, Recife e Porto Alegre. Juntos somam 27,3 milhões de eleitores, 17,2% do país.
+- A lista é **fixa, pelo eleitorado do 1º turno**, e não reordena durante a noite.
+- Colunas: município com UF e eleitorado; apurado (oculta no celular); o % de cada candidato, com o do 1º turno embaixo; a vantagem, com a do 1º turno e a cor do líder; o comparecimento, com o do 1º turno embaixo (oculto no celular); e "↻ virou".
+- No produto real, isso custa **10 requisições a mais por ciclo** (um JSON por município, cerca de 9 KB cada). O código IBGE ↔ TSE e a lista vêm uma vez do `mun-e006258-cm.json`.
 
 ## Perguntas em aberto
 
@@ -85,6 +93,8 @@ Decisões tomadas no protótipo `docs/prototipo/segundo-turno/` (branch `prototi
 2. **Histórico:** separar as leituras do 2º turno das do 1º (namespace por eleição ou por turno no KV ou no armazenamento do poller), para que "Momentos da noite" e o gráfico não misturem as duas noites.
 3. **Ordem dos lados:** usei a ordem do arquivo do TSE (22, 13). A alternativa neutra é a ordem numérica (13, 22). É uma decisão editorial do Sandro.
 4. **Antes das 17h:** o mapa fica todo cinza. Vale um "fantasma" do líder do 1º turno em cada UF?
-5. **Governadores de 2º turno em outras UFs** (AM, RN, DF, ES, AC): fora de escopo (o site é "Presidente e Pará"). Talvez um item no ticker, mas exigiria consultar o 6260.
+5. **Governadores de 2º turno em outras UFs** (AM, RN, DF, ES, AC): fora de escopo, porque o foco é só nacional e Presidente. Talvez um item no ticker, mas exigiria consultar o 6260.
 6. **Eleito oficial:** confirmar se o TSE marca `e:"s"` / `st:"Eleito"` no 2º turno, como no 1º, para o selo "✓ Eleito" e para trocar a faixa para "Encerrada".
-7. **Tela 2:** confirmar se o arquivo do Pará na Tela 2 deve continuar lendo o snapshot final (estático) em vez de consultar o 6259 a cada ciclo. Recomendo estático: menos requisições e nada muda.
+7. **Eleitorado municipal do 6258:** o arquivo municipal zerado do 2º turno ainda traz um `te` **parcial** em várias capitais (São Paulo 5.887.209 contra 9.145.124 no 1º turno; Belo Horizonte 764.022 contra 1.966.966; Curitiba 569.895 contra 1.415.148). Fortaleza, Manaus, Recife e Brasília já batem com o 1º turno. É a mesma pergunta do item 1, agora no município. Por isso o protótipo usa o eleitorado do 1º turno para os colégios. **Rever no dia 25**, e escolher o top 10 pelo `te` final do 6258 se a ordem mudar.
+8. **Colégios no celular:** a 390 px a tabela de colégios ainda rola na horizontal dentro do cartão (vantagem e ↻), no mesmo padrão `db-rolagem` da tabela de UFs. A alternativa é uma linha por município em 2 andares.
+9. **Comparecimento por UF ou região:** fica fora por enquanto (ver "Comparecimento e abstenção"). Vale incluir se o editorial quiser um mapa de abstenção.
