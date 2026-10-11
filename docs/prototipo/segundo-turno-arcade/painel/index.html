@@ -1,0 +1,47 @@
+<!doctype html>
+<!--
+  PROTOTYPE (throwaway) — pergunta:
+  "Como o Painel de produção acompanha o 2º turno (só Presidente) sem redesign:
+   duelo, comparação com o 1º turno, viradas, estados/regiões e o que vira arquivo?"
+  Um layout (delta mínimo sobre produção) em 4 estados da noite via ?variant=pre|parcial|virada|encerrado.
+  Números do 2º turno são DADOS DE EXEMPLO. Branch: prototipo/segundo-turno · NÃO mergear na main.
+-->
+<html lang="pt-BR" data-tema="escuro">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Protótipo · 2º turno · Apuração 2026</title>
+		<link rel="icon" href="favicon.svg" type="image/svg+xml" />
+		<link rel="stylesheet" href="css/tokens.css" />
+		<link rel="stylesheet" href="css/tema.css" />
+		<link rel="stylesheet" href="css/proto-2t.css" />
+	</head>
+	<body data-tema="escuro">
+		<div id="status-d" hidden>
+			<div class="sd-esq">
+				<span class="sd-vivo"><i></i><span class="sd-vivo-txt">Ao vivo</span></span>
+				<b class="sd-relogio" aria-hidden="true"></b>
+			</div>
+			<div class="sd-meio">
+				<div class="sd-base">
+					<span class="sd-rot sd-rot-tse">Dados do TSE</span>
+					<b class="sd-tse"></b>
+					<span class="sd-idade"></span>
+				</div>
+				<div class="sd-novidade" hidden aria-live="polite"></div>
+			</div>
+			<div class="sd-dir">
+				<span class="sd-rot sd-rot-prox">Próxima consulta</span>
+				<svg class="sd-anel" viewBox="0 0 20 20" aria-hidden="true">
+					<circle class="sd-trilha" cx="10" cy="10" r="8"></circle>
+					<circle class="sd-arco" cx="10" cy="10" r="8"></circle>
+				</svg>
+				<b class="sd-seg"></b>
+				<button type="button" class="db-tema" data-tema-toggle title="Alternar tema claro/escuro" aria-label="Alternar tema claro/escuro">◐</button>
+			</div>
+			<i class="sd-ciclo"></i>
+		</div>
+		<div id="app"><div class="db"><div class="carregando"><b>Contando votos…</b><p>Carregando o protótipo.</p></div></div></div>
+		<script type="module" src="js/app-2t.js"></script>
+	</body>
+</html>

@@ -1,0 +1,83 @@
+<!doctype html>
+<!--
+  PROTOTYPE (descartável) — pergunta:
+  "Um 'modo arcade' (duelo de luta 2D, anos 90) para o 2º turno é divertido e legível sem tomar lado?"
+  Três variantes via ?variant=a|b|c: (a) 16-bit com lutadores em pixel art, (b) HUD sobre o painel sério,
+  (c) neon minimalista. DADOS DE EXEMPLO. Branch: prototipo/segundo-turno-arcade · NÃO mergear na main.
+-->
+<html lang="pt-BR">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Protótipo · Modo arcade · 2º turno · Apuração 2026</title>
+		<link rel="icon" href="favicon.svg" type="image/svg+xml" />
+		<link rel="stylesheet" href="css/arcade.css" />
+	</head>
+	<body>
+		<div id="banner"><b>DADOS DE EXEMPLO</b><span class="longo">&nbsp;· protótipo do modo arcade · números do 2º turno são fictícios · não é resultado do TSE</span><span class="curto">&nbsp;· números fictícios</span></div>
+
+		<iframe id="painel" title="Painel do 2º turno (protótipo aprovado, dados de exemplo)" hidden></iframe>
+
+		<main id="arena">
+			<section class="hud" aria-label="Placar do duelo">
+				<div class="hud-lado" data-n="22">
+					<canvas class="retrato" width="40" height="40" aria-hidden="true"></canvas>
+					<div class="hud-info">
+						<div class="barra" role="meter" aria-valuemin="0" aria-valuemax="100" aria-label="22 · % dos válidos"><i class="dano"></i><i class="vida"></i><i class="meio"></i></div>
+						<div class="hud-nome"><b class="num">22</b> <span class="nome">FLÁVIO BOLSONARO</span> <b class="pct">—</b></div>
+					</div>
+				</div>
+				<div class="hud-tempo"><b class="tempo">100</b><small>% a apurar</small></div>
+				<div class="hud-lado" data-n="13">
+					<canvas class="retrato" width="40" height="40" aria-hidden="true"></canvas>
+					<div class="hud-info">
+						<div class="barra" role="meter" aria-valuemin="0" aria-valuemax="100" aria-label="13 · % dos válidos"><i class="dano"></i><i class="vida"></i><i class="meio"></i></div>
+						<div class="hud-nome"><b class="num">13</b> <span class="nome">LULA</span> <b class="pct">—</b></div>
+					</div>
+				</div>
+			</section>
+			<div class="palco-wrap">
+				<canvas id="palco" width="320" height="180" aria-hidden="true"></canvas>
+				<div class="neon-duelo" aria-hidden="true"></div>
+				<div id="anuncio" aria-hidden="true"></div>
+			</div>
+			<p class="status" aria-live="polite"></p>
+			<details class="lances" open><summary>Lances da noite</summary><ol id="lances"></ol></details>
+		</main>
+
+		<section id="selecao" class="tela-cheia" aria-label="Seleção de lutadores">
+			<h1>2º turno · Presidente</h1>
+			<p class="sub">Escolha do duelo · dados de exemplo</p>
+			<div class="sel-grade">
+				<figure data-n="22"><canvas width="40" height="40"></canvas><figcaption><b>22</b> FLÁVIO BOLSONARO<small>PL</small></figcaption></figure>
+				<b class="vs">VS</b>
+				<figure data-n="13"><canvas width="40" height="40"></canvas><figcaption><b>13</b> LULA<small>Fed. Brasil da Esperança</small></figcaption></figure>
+			</div>
+			<div class="sel-cenario" role="group" aria-label="Cenário">
+				<span>Cenário:</span>
+				<button type="button" data-cenario="belem" aria-pressed="true">Belém · Ver-o-Peso à noite</button>
+				<button type="button" data-cenario="brasilia" aria-pressed="false">Brasília · Congresso à noite</button>
+			</div>
+			<p class="dica">Aperte <b>Próxima atualização</b> para começar a apuração.</p>
+		</section>
+
+		<section id="vitoria" class="tela-cheia" aria-label="Resultado do duelo" hidden>
+			<p class="ko" aria-hidden="true">K.O.</p>
+			<h1>WINNER</h1>
+			<figure><canvas width="40" height="40"></canvas><figcaption></figcaption></figure>
+			<blockquote>“A urna falou. Bom combate — e até a próxima eleição.”</blockquote>
+			<p class="sub">Resultado de exemplo · o vencedor deste roteiro é arbitrário</p>
+		</section>
+
+		<nav id="controles" aria-label="Simulador">
+			<button type="button" id="proxima">▶ Próxima atualização</button>
+			<button type="button" id="auto" aria-pressed="false">⏵ Autoplay</button>
+			<button type="button" id="reiniciar">↺ Reiniciar</button>
+			<button type="button" id="som" aria-pressed="false">🔇 Som desligado</button>
+			<button type="button" id="modo-arcade" aria-pressed="true" hidden>🕹 Modo arcade: ligado</button>
+		</nav>
+
+		<p id="creditos"></p>
+		<script type="module" src="js/arcade.js"></script>
+	</body>
+</html>
