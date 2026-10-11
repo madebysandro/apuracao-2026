@@ -12,6 +12,7 @@ Um "modo arcade" para a noite do 2º turno (Presidente: **22 Flávio Bolsonaro �
 ```bash
 cd docs/prototipo/segundo-turno-arcade
 python3 -m http.server 8777
+# http://localhost:8777/             (v2, o padrão: luta 2.5D em three.js com as imagens de IA)
 # http://localhost:8777/?variant=a   (16-bit)
 # http://localhost:8777/?variant=b   (HUD sobre o painel)
 # http://localhost:8777/?variant=c   (neon minimalista)
@@ -19,13 +20,14 @@ python3 -m http.server 8777
 # acrescente &motion=reduced para testar o caminho de movimento reduzido
 ```
 
-É um site estático, sem build nem CDN, só com caminhos relativos. Para trocar de variante, use as setas ← → ou a barra rosa flutuante. A barra rosa e a faixa amarela "DADOS DE EXEMPLO" **não fazem parte do design**.
+É um site estático, sem build nem CDN, só com caminhos relativos. Para trocar de variante, use as setas ← → ou a barra rosa flutuante. Na barra, as variantes antigas (a, b, c e ia) aparecem como links pequenos, em "antigas:". A barra rosa e a faixa amarela "DADOS DE EXEMPLO" **não fazem parte do design**.
 
 ## Variantes (`?variant=`)
 
 | `variant` | O que é |
 |---|---|
-| `a` (padrão) | **16-bit completo.** Tela de seleção com os retratos e "VS", e escolha do cenário: **Belém, Ver-o-Peso à noite** (o Mercado de Ferro com as quatro torrinhas, a baía do Guajará e barcos regionais) ou **Brasília, o Congresso à noite** (torres gêmeas, cúpula, "prato" e espelho d'água). Depois vem a luta num canvas de 320×180 ampliado em pixel art, com linhas de varredura de CRT. Os lutadores são idênticos: quimono na cor da entidade, faixa preta, luvas brancas e o número no peito. A cabeça é a foto real pixelada. O topo tem as barras amarelas de vida com os retratos e o cronômetro no meio. |
+| `v2` (padrão) | **Luta 2.5D em three.js com as imagens de IA.** É a versão nova, que substitui as quatro abaixo. Detalhes em [Variante `v2`](#variante-v2-luta-25d-em-threejs). |
+| `a` | **16-bit completo.** Tela de seleção com os retratos e "VS", e escolha do cenário: **Belém, Ver-o-Peso à noite** (o Mercado de Ferro com as quatro torrinhas, a baía do Guajará e barcos regionais) ou **Brasília, o Congresso à noite** (torres gêmeas, cúpula, "prato" e espelho d'água). Depois vem a luta num canvas de 320×180 ampliado em pixel art, com linhas de varredura de CRT. Os lutadores são idênticos: quimono na cor da entidade, faixa preta, luvas brancas e o número no peito. A cabeça é a foto real pixelada. O topo tem as barras amarelas de vida com os retratos e o cronômetro no meio. |
 | `b` | **HUD sobre o painel sério.** O painel aprovado do 2º turno (cópia em `painel/`) roda num iframe e acompanha o simulador leitura a leitura. Por cima dele fica uma camada arcade: barras amarelas, cronômetro, retratos, ROUND/FIGHT/REVERSAL/K.O. e as telas de seleção e de vitória. O botão **🕹 Modo arcade** liga e desliga a camada, e o painel continua por baixo. |
 | `c` | **Neon minimalista.** Fundo preto, os dois rostos em anéis neon, barras finas que brilham, um cronômetro fino e um pulso de luz que cruza a tela do atacante até o atingido. Não há lutadores nem cenário. |
 | `ia` | **Imagens geradas por IA (sátira).** Usa as ilustrações que o Sandro gerou com IA, sem retoque. A tela de seleção mostra a cena VS e uma ficha de cada lutador. No HUD, os retratos são recortes dos rostos. A luta acontece num palco em CSS (céu de fim de tarde e chão), com os quadros de pose recortados e sem o fundo branco. Detalhes em [Variante `ia`](#variante-ia-imagens-geradas-por-ia). |
@@ -121,9 +123,58 @@ Este protótipo usa só as **convenções do gênero**: tela de seleção com "V
 - **Idade e escala:** Lula é desenhado mais velho (cabelo e barba brancos), com o mesmo corpo musculoso. Na mesma escala de folha, os quadros de Lula saem um pouco mais altos (chute com 414 px, contra 390 px de Flávio).
 - **Qualidade das folhas:** a de Flávio tem a guarda sobreposta (veja acima). A de Lula tem o K.O. com o rosto errado. Os dois problemas foram contornados por exclusão, igual para os dois, sem edição.
 
+## Variante `v2`: luta 2.5D em three.js
+
+As variantes a, b, c e ia não agradaram. A `v2` é a versão única nova e abre por padrão, sem `?variant`. Ela mantém o HUD (barras amarelas no alto, cronômetro no meio), a tela de seleção com "VS", o simulador (Próxima atualização, Autoplay e Reiniciar), a faixa fixa "DADOS DE EXEMPLO" e as regras do duelo descritas acima.
+
+**Só nacional.** A `v2` não tem cenário nem texto do Pará: o palco é a praça brasileira das próprias imagens, e o seletor de cenário (Belém/Brasília) sai do DOM. O smoke confere que "Pará", "Belém" e "Ver-o-Peso" não aparecem na página.
+
+### Imagens
+
+- **Só as imagens de IA do Sandro** (`/workspace/arcade-upscale/`). Não há foto real (a `v2` nem carrega `dados/fotos/`) nem personagem desenhado por nós.
+- **Reaproveitadas de `ia/`**, sem mudança: as 8 poses (guarda, chute, golpeado e vitória de cada um), os 2 retratos do HUD, as 2 fichas e a cena VS da tela de seleção.
+- **Recorte novo:** `ia/fundo.webp` (989×1017, 17,7 kB), o fundo do palco. É um retângulo de `cena-flavio.png`, (582,382)–(872,680) na prévia 1200×900, entre o lutador e o letreiro "ROUND 1 FIGHT!", com a igreja, a coluna e a escadaria, **sem nenhum lutador e sem HUD**. A mesma praça aparece em `cena-lula.png` (as duas cenas só diferem no lutador da esquerda e na torcida). Foi só recorte, sem preenchimento nem inpainting. As faíscas que já estavam pintadas na imagem ficaram. Gerado por `ia-recortar.py`, que roda de novo de forma determinística (os outros arquivos de `ia/` saem idênticos byte a byte).
+- **Soco: continua fora**, para os dois. Na folha de Flávio, o punho da guarda grande cobre a perna de trás do soco, então não dá para recortar o quadro inteiro só com recorte.
+- **K.O. no chão: excluído e não publicado.** O quadro de `poses-lula.png` tem o rosto do outro candidato, e por isonomia o de Flávio também fica de fora. O K.O. dos dois é montado igual, a partir do quadro **golpeado**: o corpo é lançado e gira 80° para trás até deitar ao tocar o chão. A verificação de semelhança com os quadros de K.O. no chão, em `ia-recortar.py`, passa também por `fundo.webp`.
+- **Peso:** a `v2` baixa ~0,52 MB de imagens (todo o `ia/`, mais nada) e 0,75 MB de three.js.
+
+**Selo em todo quadro, inclusive no 3D.** Cada textura de IA do palco passa por `assar()` (`js/v2.js`). Ao carregar, essa função desenha o quadro num canvas e pinta por cima, no mesmo canvas, o selo **"Imagem gerada por IA · sátira"**. Nas poses, o selo fica numa faixa logo abaixo dos pés; no fundo, no canto de cima à direita. Só depois o canvas vira a textura, então não há como mostrar o quadro sem o selo. Os quadros espelhados são espelhados no canvas **antes** do selo, para o texto não sair invertido. Por cima do palco há ainda um selo no DOM, e retratos, fichas, cena VS e vitória usam o `.ia-quadro` da variante ia. O rodapé fixo diz: *"Imagens criadas com IA para fins de humor. Não retratam fatos reais."* Para o smoke, `window.__v2` conta as texturas assadas (`selosAssados`, `texturas`), e `__v2.auditar()` percorre a cena e conta texturas sem selo.
+
+### Movimento (three.js)
+
+- **three.js r185** (`three@0.185.0` do npm), vendorizado em `js/vendor/three.module.min.js` e `js/vendor/three.core.min.js` (0,75 MB no total), sem CDN nem build. A licença MIT está em `js/vendor/three-LICENSE`. Escolhemos a 0.185.0 porque a mais nova, 0.186.1, já não traz o build minificado (só os arquivos sem minificar, 2,1 MB). SHA-256: `three.module.min.js` `86bcee248b64f44bcfc23c331ae74619061957d59cab040171dcb6fb5900beb6`, `three.core.min.js` `0e9dd2793e01d0d9eb4f2ab00b4ffcdd4488275ebebee5c31fa8d347bc29f0bf`.
+- **Cena 2.5D:** cada lutador é um plano com a pose recortada, com sombra no chão e uma aura amarela em quem lidera. A câmera é em perspectiva e se enquadra sozinha pela proporção do palco (16:9 no desktop, quadrado no celular).
+- **Paralaxe:** o fundo fica a 14 unidades atrás dos lutadores, há uma camada de poeira no ar atrás e outra na frente, e a câmera deriva devagar, de modo que cada camada se move num ritmo diferente.
+- **Golpe:** sempre igual para os dois. O atacante recua (80 ms), avança com o chute e deixa um rastro de 3 cópias translúcidas. No contato (190 ms), o atingido passa ao quadro golpeado e leva um empurrão com física simples: velocidade, gravidade, chão, atrito no ar e no chão e uma mola que o traz de volta. Também saem faíscas 3D (um pool de 420 partículas com gravidade), a câmera treme e dá um zoom no ponto do impacto.
+- **Intensidade:** tudo escala com `int = min(1, √(|Δp.p.|/4))`, que é a mesma regra do resto do protótipo: alcance do avanço, empurrão, número de faíscas, tremor, zoom e volume. Abaixo de `int` 0,2, o golpe é **bloqueado**: o atingido fica em guarda, recua um pouco, as faíscas saem azuladas e o som é de bloqueio.
+- **Golpe decisivo** (virada de liderança, o REVERSAL) **e K.O.:** a câmera fica lenta (0,22× por 0,6 s ou 0,85 s) e um clarão branco cobre só o palco.
+- **K.O.:** usa o mesmo golpe, com lançamento, giro até deitar, poeira e tremor ao cair. A câmera se afasta para caber o corpo deitado, e o vencedor troca para a pose de vitória. Depois aparecem K.O. e a tela final **YOU WIN** com a pose de vitória e a mesma frase para os dois.
+- **Parado:** os dois respiram (escala vertical de ±1,4%) e balançam a guarda, com a mesma fase e a mesma amplitude.
+- **Sem WebGL:** o palco mostra um aviso, e o placar, o cronômetro, os lances e as telas continuam funcionando.
+
+### Som
+
+Nada vem de jogo. Não há sample, gravação nem arquivo de áudio: tudo é sintetizado em Web Audio (`js/som.js`), e nenhum som externo foi usado, nem CC0. O som começa **desligado**, com o botão sempre visível, e o `AudioContext` só nasce no clique.
+
+- **Chute:** um "whoosh" de ruído em passa-banda varrendo de 450 a 2800 Hz.
+- **Impacto:** um estalo seco (ruído curto em passa-banda a 1,9 kHz, mais uma onda quadrada caindo) e um baque grave (seno de 115 a 36 Hz), os dois escalados pela intensidade.
+- **Bloqueio:** dois tons curtos e metálicos com um tique de ruído agudo.
+- **Queda do K.O.:** seno de 72 a 28 Hz com ruído grave.
+- **Locutor robô** ("ROUND ONE", "FIGHT", "REVERSAL", "PERFECT", "K.O." e "YOU WIN"): síntese por formantes. Uma dente-de-serra monótona a 96 Hz, com uma sub-oitava quadrada, passa por 3 filtros passa-banda que seguem os formantes de cada fonema (ARPAbet, com ditongos interpolados). As consoantes são ruído filtrado, e um eco curto dá o efeito de arena. Não usa `speechSynthesis`, então a voz sai igual em qualquer sistema.
+- **Trilha:** uma composição original nova, em Mi menor, 150 bpm, 8 compassos (Em Em C D Em Em C B). A melodia é em onda de pulso de 25%, o arpejo em pulso de 12,5% (as duas por `PeriodicWave`), o baixo em triângulo, o bumbo em seno e a caixa e o chimbal em ruído. Não cita nenhuma trilha de jogo.
+
+### Movimento reduzido
+
+Com `prefers-reduced-motion: reduce` ou `?motion=reduced`, a `v2` não roda o laço de animação. Não há tremor, flash, zoom, câmera lenta, faíscas, poeira no ar, rastro, respiração nem balanço. Cada leitura troca as poses no lugar (chute × golpeado, ou chute × guarda no bloqueio) e desenha um único quadro. O K.O. aparece direto na pose final, deitada, e os letreiros só trocam de texto. O smoke confere zero tremor, zoom, flash, câmera lenta e faíscas, e nenhuma classe de clarão.
+
+### Originalidade
+
+Usamos só as convenções do gênero: barras no alto, cronômetro, VS, ROUND/FIGHT, faíscas, câmera lenta, K.O. e YOU WIN. Não há sprite, som, voz, música, fonte nem logotipo de jogo nenhum. As imagens são as geradas por IA pelo Sandro, e todo o resto (formas, partículas, som) é gerado por código.
+
 ## Arquivos
 
-- `ia/` (assets WebP e `manifesto.json` da variante `ia`), `ia-recortar.py` (gera `ia/` a partir dos originais), `js/ia.js` (quadros com selo e palco da variante `ia`).
+- `js/v2.js` (palco three.js da `v2`), `js/vendor/` (three.js r185 + licença MIT), `smoke-v2.mjs` (smoke da `v2`).
+- `ia/` (assets WebP e `manifesto.json` das variantes `ia` e `v2`; `fundo.webp` só na `v2`), `ia-recortar.py` (gera `ia/` a partir dos originais), `js/ia.js` (quadros com selo e palco da variante `ia`).
 - `index.html`, `css/arcade.css`, `js/arcade.js` (estado, simulador, HUD, variantes e switcher), `js/palco.js` (canvas da variante a), `js/rosto.js` (pixelização), `js/som.js` (áudio).
 - `dados/estado-1t.json`, `dados/br-c0001-e006258-u.json`: cópias do protótipo `segundo-turno`. `dados/fotos/`: as fotos do Commons recortadas e as fotos do TSE de reserva.
 - `painel/`: cópia do protótipo aprovado (`docs/prototipo/segundo-turno/`). Os patches estão marcados com `ARCADE`:
@@ -132,6 +183,23 @@ Este protótipo usa só as **convenções do gênero**: tela de seleção com "V
   - `proto-switcher.js`: com `?embed`, não mostra a barra nem a faixa.
 
 ## Verificação
+
+**Variante `v2`** (`smoke-v2.mjs`). Rode com o servidor de pé, a partir de um diretório com `playwright`: `node smoke-v2.mjs http://127.0.0.1:8777/`. O Chromium headless sobe com SwiftShader (`--use-gl=angle --use-angle=swiftshader --enable-unsafe-swiftshader`) para o WebGL funcionar sem GPU. São 5 casos: 1440×900 e 390×844, cada um com movimento completo e reduzido, mais `?motion=reduced` no desktop. Em todos, o smoke confere:
+
+- que não há erro no console, `pageerror` nem requisição falha;
+- que o WebGL desenha: lê os pixels do canvas e exige desvio de luminância maior que 10;
+- que as 9 texturas (fundo e 8 poses) foram assadas com selo e nenhuma textura da cena está sem selo;
+- o selo do DOM em toda `<img>` e sobre o palco (na seleção, na luta e na vitória);
+- o rodapé de IA, a faixa "DADOS DE EXEMPLO" e o som começando desligado;
+- que o simulador chega a ROUND 1, FIGHT!, REVERSAL! (3×), K.O. e YOU WIN em 14 cliques;
+- no completo, tremor, zoom acima de 1,05, flash, câmera lenta e faíscas; no reduzido, nada disso;
+- que não há "Pará", "Belém" nem "Ver-o-Peso" no DOM, nem rolagem horizontal.
+
+No modo completo, o som fica ligado durante a luta, para exercitar a síntese. Fora dos 5 casos, o smoke testa ainda o autoplay e um Chromium com `--disable-webgl --disable-3d-apis`, em que aparece o aviso e o simulador chega ao fim. As capturas ficam em `/tmp/arcade-shots/v2-*`.
+
+Resultado em 11/10/2026: **7/7 ok** na `v2`, e o `smoke.mjs` das variantes antigas segue **23/23 ok**.
+
+**Variantes antigas** (`smoke.mjs`):
 
 Smoke com Playwright (Chromium headless): `smoke.mjs`. Rode a partir de um diretório que tenha o `playwright` instalado, com o servidor de pé: `node smoke.mjs http://127.0.0.1:8777/`. As capturas ficam em `/tmp/arcade-shots/`, fora do repositório.
 

@@ -1,14 +1,15 @@
 /**
- * PROTOTYPE — modo arcade do 2º turno. ?variant=a|b|c|ia · ?motion=reduced · DADOS DE EXEMPLO.
+ * PROTOTYPE — modo arcade do 2º turno. ?variant=v2 (padrão)|a|b|c|ia · ?motion=reduced · DADOS DE EXEMPLO.
  * Os números vêm do mesmo gerador do protótipo aprovado (painel/js/mock-2t.js); o simulador anda
  * por um roteiro fixo de leituras (ROTEIRO) que passa pelas 3 viradas do exemplo e termina em 100%.
  */
 import { gerar } from "../painel/js/mock-2t.js";
 import { CORES, criarPalco } from "./palco.js";
 import { carregarFoto, FOTOS, pintarEm, pixelar } from "./rosto.js";
-import { alternarSom, efeito, voz } from "./som.js";
+import { alternarSom, configurarSom, efeito, voz } from "./som.js";
 
 const VARIANTES = {
+	v2: { nome: "luta 2.5D de IA", detalhe: "three.js: câmera, faíscas, câmera lenta e K.O. · sátira" },
 	a: { nome: "16-bit", detalhe: "lutadores em pixel art, cenário noturno" },
 	b: { nome: "HUD sobre o painel", detalhe: "camada arcade liga/desliga sobre o painel sério" },
 	c: { nome: "neon minimalista", detalhe: "rostos, barras e placar em neon" },
@@ -16,10 +17,13 @@ const VARIANTES = {
 };
 const CHAVES = Object.keys(VARIANTES);
 const qs = new URLSearchParams(location.search);
-const variante = VARIANTES[qs.get("variant")] ? qs.get("variant") : "a";
-const ia = variante === "ia" ? await import("./ia.js") : null;
+const variante = VARIANTES[qs.get("variant")] ? qs.get("variant") : "v2";
+const v2 = variante === "v2";
+// v2 usa as mesmas imagens de IA (e o mesmo selo) da variante ia para retratos, tela VS e vitória
+const ia = variante === "ia" || v2 ? await import("./ia.js") : null;
 const reduzido = qs.get("motion") === "reduced" || (qs.get("motion") !== "full" && matchMedia("(prefers-reduced-motion: reduce)").matches);
-document.body.dataset.variant = variante;
+document.body.dataset.variant = v2 ? "ia v2" : variante; // v2 herda o CSS da ia ([data-variant~="ia"])
+if (v2) configurarSom({ robo: true, trilha: "v2" });
 document.documentElement.dataset.motion = reduzido ? "reduced" : "full";
 
 // Leituras do gerador (1..60) usadas pelo simulador; 0 = antes da 1ª seção. Viradas em 3, 11 e 31.
@@ -49,7 +53,8 @@ const lado = (n) => $(`.hud-lado[data-n="${n}"]`);
 const bar = document.createElement("div");
 bar.id = "proto-switcher";
 bar.innerHTML = `<button type="button" data-ps="-1" aria-label="Variante anterior">←</button>
-  <div class="ps-label"><b>${variante.toUpperCase()} — ${VARIANTES[variante].nome}</b><small>${VARIANTES[variante].detalhe} · ${CHAVES.indexOf(variante) + 1}/${CHAVES.length}</small></div>
+  <div class="ps-label"><b>${variante.toUpperCase()} — ${VARIANTES[variante].nome}</b><small>${VARIANTES[variante].detalhe} · ${CHAVES.indexOf(variante) + 1}/${CHAVES.length}</small>
+  <span class="ps-antigas">${v2 ? "antigas:" : '<a href="?variant=v2">← v2</a> · antigas:'} ${CHAVES.slice(1).map((k) => `<a href="?variant=${k}"${k === variante ? ' aria-current="page"' : ""}>${k}</a>`).join(" ")}</span></div>
   <button type="button" data-ps="1" aria-label="Próxima variante">→</button>`;
 document.body.append(bar);
 const irVariante = (d) => {
@@ -69,14 +74,16 @@ document.addEventListener("keydown", (ev) => {
 });
 
 // ---- rostos: mesma pixelização para os dois ----
-const fotos = { 22: await carregarFoto(22), 13: await carregarFoto(13) };
+// v2: nenhuma foto real (só as imagens de IA)
+const fotos = v2 ? null : { 22: await carregarFoto(22), 13: await carregarFoto(13) };
 // retratos 40×40 (HUD, seleção, vitória) e cabeça 24×24 no palco: mesmos números para os dois
-const rosto40 = { 22: pixelar(fotos[22], 40, 22, CORES[22].gi), 13: pixelar(fotos[13], 40, 13, CORES[13].gi) };
-const rosto24 = { 22: pixelar(fotos[22], 24, 22, CORES[22].gi), 13: pixelar(fotos[13], 24, 13, CORES[13].gi) };
-for (const n of [22, 13]) {
-	pintarEm(lado(n).querySelector(".retrato"), rosto40[n]);
-	pintarEm($(`#selecao figure[data-n="${n}"] canvas`), rosto40[n]);
-}
+const rosto40 = fotos && { 22: pixelar(fotos[22], 40, 22, CORES[22].gi), 13: pixelar(fotos[13], 40, 13, CORES[13].gi) };
+const rosto24 = fotos && { 22: pixelar(fotos[22], 24, 22, CORES[22].gi), 13: pixelar(fotos[13], 24, 13, CORES[13].gi) };
+if (fotos)
+	for (const n of [22, 13]) {
+		pintarEm(lado(n).querySelector(".retrato"), rosto40[n]);
+		pintarEm($(`#selecao figure[data-n="${n}"] canvas`), rosto40[n]);
+	}
 const credito = (n) => {
 	const f = FOTOS[n];
 	if (fotos[n].origem === "commons") return `${CURTO[n]}: <a href="${f.fonte}" target="_blank" rel="noopener">${f.credito}</a> (${f.licenca}, Wikimedia Commons)`;
@@ -101,13 +108,22 @@ if (ia) {
 }
 
 // ---- variante (a): palco em canvas; (b): painel em iframe; (c): só DOM ----
-const palco = variante === "a" ? criarPalco($("#palco"), { reduzido }) : ia ? ia.criarPalcoIA($(".palco-wrap"), { reduzido, nomes: NOMES }) : null;
+const palco =
+	variante === "a"
+		? criarPalco($("#palco"), { reduzido })
+		: variante === "ia"
+			? ia.criarPalcoIA($(".palco-wrap"), { reduzido, nomes: NOMES })
+			: v2
+				? await (await import("./v2.js")).criarPalcoV2($(".palco-wrap"), { reduzido })
+				: null;
 if (variante === "a") {
 	palco.rostos(rosto24);
 	palco.cenario(S.cenario);
 }
 if (variante !== "a") $("#palco").hidden = true;
 $(".sel-cenario").hidden = variante !== "a";
+if (v2) $(".sel-cenario").remove(); // v2 é só nacional: nem o cenário de Belém fica no DOM
+if (v2) $("#vitoria h1").textContent = "YOU WIN";
 
 const painel = $("#painel");
 if (variante === "b") {
@@ -173,7 +189,7 @@ function impacto(alvo, int, virada) {
 	void ferido.offsetWidth;
 	ferido.classList.add("ferido"); // reduzido: tinta + rachadura estáticas, sem piscar (ver CSS)
 	ferido.style.setProperty("--rachadura", String(Math.min(1, 0.3 + int)));
-	if (reduzido) return;
+	if (reduzido || v2) return; // v2: tremor, zoom e flash acontecem no 3D, no instante do contato
 	const alvoTremor = variante === "b" ? $(".hud") : $(".palco-wrap");
 	alvoTremor.style.setProperty("--forca", `${Math.round(2 + 8 * int)}px`);
 	alvoTremor.classList.remove("treme");
@@ -270,9 +286,9 @@ function proxima() {
 		lado(atacante).classList.remove("ferido");
 		S.sequencia[atacante]++;
 		S.sequencia[alvo] = 0;
-		palco?.golpe(atacante, int);
+		palco?.golpe(atacante, int, { virada });
 		impacto(alvo, int, virada);
-		efeito("golpe", int);
+		if (!v2) efeito("golpe", int); // v2: o palco toca chute e impacto sincronizados com o contato
 		const combo = S.sequencia[atacante];
 		if (combo >= 2) lado(atacante).querySelector(".hud-nome").dataset.combo = `${combo} HIT COMBO`;
 		lado(alvo).querySelector(".hud-nome").dataset.combo = "";
@@ -300,10 +316,11 @@ function fim(p) {
 	const venc = S.lider;
 	efeito("ko");
 	palco?.ko?.(venc);
-	anunciar("K.O.", { classe: "ko", dur: 1300, falar: "K.O.", lance: `<b>K.O.</b> · ${p.hora} · 100% apurado` }).then(() => {
+	// v2: espera a câmera lenta e a queda antes da tela final
+	anunciar("K.O.", { classe: "ko", dur: v2 ? 2600 : 1300, falar: "K.O.", lance: `<b>K.O.</b> · ${p.hora} · 100% apurado` }).then(() => {
 		palco?.estado({ lider: venc, fase: "fim", vencedor: venc });
 		const v = $("#vitoria");
-		pintarEm(v.querySelector("canvas"), rosto40[venc]);
+		if (rosto40) pintarEm(v.querySelector("canvas"), rosto40[venc]);
 		if (ia) {
 			v.querySelector("figure .ia-quadro")?.remove();
 			v.querySelector("figure").prepend(ia.quadroIA(ia.manifesto.poses[venc].vitoria, `${NOMES[venc]} comemorando (imagem gerada por IA)`, "ia-vitoria"));
@@ -312,8 +329,8 @@ function fim(p) {
 		v.dataset.n = String(venc);
 		v.hidden = false;
 		efeito("vitoria");
-		voz("Winner!");
-		sonda.eventos.push("WINNER");
+		voz(v2 ? "You win!" : "Winner!");
+		sonda.eventos.push(v2 ? "YOU WIN" : "WINNER");
 		registrar(`<b>WINNER</b> · ${venc} · ${NOMES[venc]} · ${pf.format(p.pct[venc])}% (exemplo)`);
 		$("#proxima").disabled = true;
 		$("#proxima").textContent = "■ Apuração encerrada";

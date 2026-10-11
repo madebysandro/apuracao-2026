@@ -96,6 +96,11 @@ for n, arq in (("22", "cena-flavio"), ("13", "cena-lula")):
 	manifesto.setdefault("ficha", {})[n] = salvar(ficha, f"{n}-ficha.webp", 80)
 	manifesto.setdefault("retrato", {})[n] = salvar(retrato, f"{n}-retrato.webp", 85)
 
+# v2: fundo do palco 3D = um recorte da praça (igreja, coluna e escadaria) de cena-flavio.png, entre o lutador
+# e o letreiro/torcida, sem nenhum lutador; a mesma praça aparece igual em cena-lula.png. Só recorte.
+fundo = Image.open(ORIG / "cena-flavio.png").convert("RGB").crop(tuple(round(v * K) for v in (582, 382, 872, 680)))
+manifesto["fundo"] = salvar(fundo, "fundo.webp", 72)
+
 (SAIDA / "manifesto.json").write_text(json.dumps(manifesto, indent=1, ensure_ascii=False) + "\n")
 
 

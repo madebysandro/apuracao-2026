@@ -20,8 +20,8 @@ export function quadroIA({ arquivo, w, h }, alt, classe = "") {
 
 // Para onde cada quadro olha na folha original; o lado esquerdo (22) olha para a direita e o
 // direito (13) para a esquerda. Espelha só quando precisa: mesma regra para os dois.
-const OLHA = { guarda: "d", chute: "e", golpeado: "d", vitoria: "" };
-const QUER = { 22: "d", 13: "e" };
+export const OLHA = { guarda: "d", chute: "e", golpeado: "d", vitoria: "" };
+export const QUER = { 22: "d", 13: "e" };
 const ALTURA = 72; // % do palco para um quadro de 390 px (altura da guarda)
 
 export function criarPalcoIA(wrap, { reduzido, nomes }) {
