@@ -55,7 +55,7 @@ export function fmt(v, t = "n") {
 
 const memoria = new Map();
 /**
- * ponytail: trava global da pintura. Teto: um painel por aba; quem pinta
+ * limite: trava global da pintura. Teto: um painel por aba; quem pinta
  * (renderizarPainel / o cartão) chama definirArquivoCongelado antes de conta().
  * Upgrade: passar o flag em conta() se duas pinturas concorrerem.
  */
