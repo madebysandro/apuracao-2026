@@ -7,7 +7,7 @@
  * Official Vitest 5 support is still unreleased (cloudflare/workers-sdk#15500).
  * Until then, rewrite only outside of string/template literals.
  *
- * ponytail: ceiling = string-scanner ignores regex literals / comments; upgrade =
+ * limite: ceiling = string-scanner ignores regex literals / comments; upgrade =
  * drop this script when @cloudflare/vitest-plugin ships Vitest 5 support.
  */
 import fs from "node:fs";
