@@ -286,18 +286,19 @@ describe("GET /api/apuracao — Tela 1 (Presidente, Governador, Senado)", () => 
 		const erro1 = (await lerApuracao()).dados;
 		expect(erro1.erro).toMatch(/503/);
 		expect(erro1.versao).toBe(versaoOk);
-		const espera1 = erro1.proximaConsulta! - t1;
-		expect(espera1).toBeGreaterThanOrEqual(120_000 - 50);
-		expect(espera1).toBeLessThanOrEqual(120_000 + 50);
+		// O alarme é Date.now() no fim do ciclo, depois do t1. O teto usa o
+		// relógio de agora, como os outros testes de espera: 50 ms não cobrem
+		// o round-trip do workerd no CI.
+		expect(erro1.proximaConsulta!).toBeGreaterThanOrEqual(t1 + 120_000 - 50);
+		expect(erro1.proximaConsulta!).toBeLessThanOrEqual(Date.now() + 120_000 + 50);
 
 		const t2 = Date.now();
 		tse.simularErro(503);
 		await forcarConsulta();
 		const erro2 = (await lerApuracao()).dados;
 		expect(erro2.erro).toMatch(/503/);
-		const espera2 = erro2.proximaConsulta! - t2;
-		expect(espera2).toBeGreaterThanOrEqual(240_000 - 50);
-		expect(espera2).toBeLessThanOrEqual(240_000 + 50);
+		expect(erro2.proximaConsulta!).toBeGreaterThanOrEqual(t2 + 240_000 - 50);
+		expect(erro2.proximaConsulta!).toBeLessThanOrEqual(Date.now() + 240_000 + 50);
 
 		// Acelera o backoff até o teto de 10 min sem precisar de muitas iterações.
 		for (let i = 0; i < 4; i++) {
@@ -308,9 +309,8 @@ describe("GET /api/apuracao — Tela 1 (Presidente, Governador, Senado)", () => 
 		tse.simularErro(503);
 		await forcarConsulta();
 		const teto = (await lerApuracao()).dados;
-		const esperaTeto = teto.proximaConsulta! - tTeto;
-		expect(esperaTeto).toBeGreaterThanOrEqual(600_000 - 50);
-		expect(esperaTeto).toBeLessThanOrEqual(600_000 + 50);
+		expect(teto.proximaConsulta!).toBeGreaterThanOrEqual(tTeto + 600_000 - 50);
+		expect(teto.proximaConsulta!).toBeLessThanOrEqual(Date.now() + 600_000 + 50);
 	});
 
 	it("responde /api/apuracao com cache curto na borda (s-maxage)", async () => {
