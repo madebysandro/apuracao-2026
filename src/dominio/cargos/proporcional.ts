@@ -64,7 +64,7 @@ export function normalizarProporcional(
 		.map((a) => a.resumo)
 		.sort((a, b) => b.vagas - a.vagas || b.votos - a.votos);
 
-	// Ponytail: top vagas+15, todos os projetados e os 2 da fila de cada agr.
+	// limite: top vagas+15, todos os projetados e os 2 da fila de cada agr.
 	const candidatos = todos.filter(
 		(c, i) => i < vagas + 15 || c.projetado || c.fila,
 	);
