@@ -4,7 +4,28 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
 	plugins: [
 		cloudflareTest({
-			wrangler: { configPath: "./wrangler.jsonc" },
+			// O pool ainda não lê cloudflare.config.ts. Os bindings repetem
+			// o Worker: vars, PollerApuracao em SQLite e assets de public/.
+			main: "./src/index.ts",
+			miniflare: {
+				compatibilityDate: "2026-08-22",
+				bindings: {
+					TSE_BASE: "https://resultados.tse.jus.br/oficial",
+					ELEICAO_FEDERAL: "6257",
+					ELEICAO_ESTADUAL: "6259",
+				},
+				durableObjects: {
+					POLLER: {
+						className: "PollerApuracao",
+						useSQLite: true,
+					},
+				},
+				assets: {
+					directory: "./public",
+					binding: "ASSETS",
+					run_worker_first: ["/api/*"],
+				},
+			},
 		}),
 	],
 	test: {

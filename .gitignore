@@ -2,6 +2,7 @@
 node_modules/
 .playwright-mcp/
 .wrangler/
+.cloudflare/
 .dev.vars
 .env
 .env.*
