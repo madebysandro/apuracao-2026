@@ -146,7 +146,8 @@ apuracao-2026/
 │   └── poller/                  # Durable Object, cliente TSE, histórico
 ├── test/                        # Vitest + pool de Workers + TSE falso (MSW)
 ├── package.json
-├── wrangler.jsonc
+├── cloudflare.config.ts           # Worker: nome, rotas, bindings, DO
+├── wrangler.config.ts             # só o diretório de assets (bundler Wrangler)
 ├── tsconfig.json
 └── vitest.config.ts
 ```
@@ -161,20 +162,20 @@ Requisitos: **Node.js** (testado com v22) e npm.
 git clone https://github.com/madebysandro/apuracao-2026.git
 cd apuracao-2026
 npm ci
-npm run dev          # wrangler dev → http://localhost:8787
+npm run dev          # cf dev → http://localhost:8787
 ```
 
 Outros scripts:
 
 ```bash
 npm test             # Vitest (pool de Workers) + fixtures do TSE via MSW
-npm run build        # tsc --noEmit (strict) — usado no Workers Builds
+npm run build        # cf workers types && tsc --noEmit — usado no Workers Builds
 npm run deploy:dry-run
 ```
 
 ### Variáveis de ambiente
 
-Definidas em `wrangler.jsonc` → `vars` (e tipadas em `worker-configuration.d.ts`):
+Definidas em `cloudflare.config.ts` → `worker.env` (e tipadas por `cf workers types` em `.cloudflare/types/`):
 
 | Variável | Padrão | Função |
 | --- | --- | --- |
@@ -188,8 +189,8 @@ Para sobrescrever localmente, use `.dev.vars` (esse arquivo está no `.gitignore
 
 ### Testes e tipagem
 
-- **Testes:** `npm test` — `test/*.api.test.ts` (apuracao, proporcionais, destaques/UFs), pool `@cloudflare/vitest-pool-workers`, TSE interceptado com MSW e fixtures em `fixtures/tse-provisorio/`.
-- **Tipagem:** TypeScript strict (`tsc --noEmit`). Tipos do Worker gerados com `npm run cf-typegen` (`wrangler types` → `worker-configuration.d.ts`).
+- **Testes:** `npm test` — `test/*.api.test.ts` (apuracao, proporcionais, destaques/UFs), pool `@cloudflare/vitest-pool-workers`, TSE interceptado com MSW e fixtures em `fixtures/tse-provisorio/`. O pool não lê `cloudflare.config.ts`; `vitest.config.ts` repete vars, `POLLER` e `ASSETS`. O `vite` fica em `optionalDependencies` só para satisfazer o peer do Vitest: como dependência direta, o `cf build` trataria o Worker como app Vite.
+- **Tipagem:** TypeScript strict (`tsc --noEmit`). Tipos do Worker gerados com `npm run cf-typegen` (`cf workers types` → `.cloudflare/types/index.d.ts`, ignorado pelo git).
 
 ---
 
@@ -202,13 +203,13 @@ Deploy automático pela **Cloudflare Workers Builds** a cada push/merge na `main
 | Production branch | `main` |
 | Root directory | `/` |
 | Build command | `npm run build` |
-| Deploy command | `npx wrangler deploy` |
-| Worker name | `apuracao-2026` (igual ao `wrangler.jsonc`) |
+| Deploy command | `npx cf deploy` |
+| Worker name | `apuracao-2026` (igual ao `cloudflare.config.ts`) |
 
-Domínios (já no `wrangler.jsonc`):
+Domínios (já no `cloudflare.config.ts`):
 
-- Próprio: **https://apuracao.madebysandro.app** (`custom_domain`)
-- Fallback: `https://apuracao-2026.<conta>.workers.dev` (`workers_dev: true`)
+- Próprio: **https://apuracao.madebysandro.app** (`worker.domains`)
+- Fallback: `https://apuracao-2026.<conta>.workers.dev` (`workersDev: true`)
 
 Deploy manual (se precisar): `npm run deploy`.
 
