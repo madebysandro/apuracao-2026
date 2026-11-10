@@ -41,6 +41,6 @@
 		"msw": "^3.0.3",
 		"typescript": "^7.0.2",
 		"vitest": "^5.1.0",
-		"wrangler": "^4.155.0"
+		"wrangler": "^4.158.0"
 	}
 }
