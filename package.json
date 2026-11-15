@@ -31,7 +31,7 @@
 		"sharp": "0.35.5"
 	},
 	"optionalDependencies": {
-		"vite": "^8.3.5"
+		"vite": "^8.3.8"
 	},
 	"devDependencies": {
 		"@cloudflare/vitest-pool-workers": "^0.23.0",
